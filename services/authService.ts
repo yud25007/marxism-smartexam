@@ -1,88 +1,157 @@
 import { User, UserRole, UserStatus } from '../types';
-import { supabase } from './supabaseClient';
+import { supabase, DbUser, isSupabaseConfigured } from './supabaseClient';
 
+const USERS_KEY = 'smart_exam_users';
 const CURRENT_USER_KEY = 'smart_exam_current_user';
 
 export interface StoredUser extends User {
-  password: string;
+  id: string;
+  password?: string;
 }
 
-// Initialize default admin if not exists (runs once on first load)
-const initAuth = async () => {
-  try {
-    const { data: users } = await supabase.from('users').select('*').limit(1);
+// Convert database user to app user
+const dbUserToUser = (dbUser: DbUser): StoredUser => ({
+  id: dbUser.id,
+  username: dbUser.username,
+  role: dbUser.role,
+  status: dbUser.status,
+  aiEnabled: dbUser.ai_enabled
+});
 
-    if (!users || users.length === 0) {
-      // Create default admin and demo user
-      await supabase.from('users').insert([
-        {
-          username: 'admin',
-          password: '123456',
-          role: 'ADMIN',
-          status: 'ACTIVE',
-          ai_enabled: true
-        },
-        {
-          username: 'student',
-          password: '123',
-          role: 'MEMBER',
-          status: 'ACTIVE',
-          ai_enabled: false
-        }
-      ]);
-    }
-  } catch (error) {
-    console.error('Error initializing auth:', error);
-  }
-};
-
-initAuth();
-
-export const authService = {
-  login: async (username: string, password: string): Promise<User | null> => {
-    try {
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .eq('password', password)
-        .single();
-
-      if (error || !user) {
-        return null;
-      }
-
-      if (user.status === 'PENDING') {
-        return null;
-      }
-
-      const safeUser: User = {
-        username: user.username,
-        role: user.role,
-        status: user.status || 'ACTIVE',
-        aiEnabled: user.ai_enabled ?? false
+// ========== 本地存储模式 ==========
+const localAuth = {
+  init: () => {
+    const users = localStorage.getItem(USERS_KEY);
+    if (!users) {
+      const defaultAdmin = {
+        id: 'local-admin',
+        username: 'admin',
+        password: '123456',
+        role: 'ADMIN' as UserRole,
+        status: 'ACTIVE' as UserStatus,
+        aiEnabled: true
       };
-
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(safeUser));
-      return safeUser;
-    } catch (error) {
-      console.error('Login error:', error);
-      return null;
+      localStorage.setItem(USERS_KEY, JSON.stringify([defaultAdmin]));
     }
   },
 
-  getUserStatus: async (username: string): Promise<UserStatus | 'NOT_FOUND'> => {
-    try {
-      const { data: user } = await supabase
-        .from('users')
-        .select('status')
-        .eq('username', username)
-        .single();
-
-      return user ? (user.status || 'ACTIVE') : 'NOT_FOUND';
-    } catch {
-      return 'NOT_FOUND';
+  login: (username: string, password: string): User | null => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const user = users.find((u: any) => u.username === username && u.password === password);
+    if (user && user.status !== 'PENDING') {
+      const { password: _, ...safeUser } = user;
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(safeUser));
+      return safeUser;
     }
+    return null;
+  },
+
+  getUserStatus: (username: string): UserStatus | 'NOT_FOUND' => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const user = users.find((u: any) => u.username === username);
+    return user ? (user.status || 'ACTIVE') : 'NOT_FOUND';
+  },
+
+  getAllUsers: (): StoredUser[] => {
+    return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+  },
+
+  register: (username: string, password: string, role: UserRole, status: UserStatus): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    if (users.some((u: any) => u.username === username)) return false;
+    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false });
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    return true;
+  },
+
+  updatePassword: (username: string, newPassword: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const idx = users.findIndex((u: any) => u.username === username);
+    if (idx !== -1) {
+      users[idx].password = newPassword;
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      return true;
+    }
+    return false;
+  },
+
+  updateAiAccess: (username: string, enabled: boolean): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const idx = users.findIndex((u: any) => u.username === username);
+    if (idx !== -1) {
+      users[idx].aiEnabled = enabled;
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      return true;
+    }
+    return false;
+  },
+
+  verifyPassword: (username: string, password: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const user = users.find((u: any) => u.username === username);
+    return user?.password === password;
+  },
+
+  approveUser: (username: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const idx = users.findIndex((u: any) => u.username === username);
+    if (idx !== -1) {
+      users[idx].status = 'ACTIVE';
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      return true;
+    }
+    return false;
+  },
+
+  rejectUser: (username: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const newUsers = users.filter((u: any) => u.username !== username);
+    localStorage.setItem(USERS_KEY, JSON.stringify(newUsers));
+    return true;
+  }
+};
+
+// 初始化本地存储
+if (!isSupabaseConfigured) {
+  localAuth.init();
+}
+
+// ========== 导出的服务 ==========
+export const authService = {
+  login: async (username: string, password: string): Promise<User | null> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.login(username, password);
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .eq('password_hash', password)
+      .single();
+
+    if (error || !data) return null;
+
+    const user = dbUserToUser(data);
+    if (user.status === 'PENDING') return null;
+
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    return user;
+  },
+
+  getUserStatus: async (username: string): Promise<UserStatus | 'NOT_FOUND'> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.getUserStatus(username);
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('status')
+      .eq('username', username)
+      .single();
+
+    if (error || !data) return 'NOT_FOUND';
+    return data.status || 'ACTIVE';
   },
 
   logout: () => {
@@ -97,122 +166,114 @@ export const authService = {
   },
 
   register: async (username: string, password: string, role: UserRole = 'MEMBER', status: UserStatus = 'PENDING'): Promise<boolean> => {
-    try {
-      // Check if user exists
-      const { data: existing } = await supabase
-        .from('users')
-        .select('username')
-        .eq('username', username)
-        .single();
-
-      if (existing) {
-        return false;
-      }
-
-      const { error } = await supabase.from('users').insert({
-        username,
-        password,
-        role,
-        status,
-        ai_enabled: false
-      });
-
-      return !error;
-    } catch {
-      return false;
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.register(username, password, role, status);
     }
+
+    const { data: existing } = await supabase
+      .from('users')
+      .select('username')
+      .eq('username', username)
+      .single();
+
+    if (existing) return false;
+
+    const { error } = await supabase
+      .from('users')
+      .insert({ username, password_hash: password, role, status, ai_enabled: false });
+
+    return !error;
   },
 
   getAllUsers: async (): Promise<StoredUser[]> => {
-    try {
-      const { data: users } = await supabase.from('users').select('*');
-
-      return (users || []).map(u => ({
-        username: u.username,
-        password: u.password,
-        role: u.role,
-        status: u.status || 'ACTIVE',
-        aiEnabled: u.ai_enabled ?? false
-      }));
-    } catch {
-      return [];
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.getAllUsers();
     }
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+    return data.map(dbUserToUser);
   },
 
   updatePassword: async (username: string, newPassword: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ password: newPassword })
-        .eq('username', username);
-
-      return !error;
-    } catch {
-      return false;
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.updatePassword(username, newPassword);
     }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ password_hash: newPassword })
+      .eq('username', username);
+
+    return !error;
   },
 
   updateAiAccess: async (username: string, enabled: boolean): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ ai_enabled: enabled })
-        .eq('username', username);
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.updateAiAccess(username, enabled);
+    }
 
-      if (!error) {
-        const currentUserStr = localStorage.getItem(CURRENT_USER_KEY);
-        if (currentUserStr) {
-          const currentUser = JSON.parse(currentUserStr);
-          if (currentUser.username === username) {
-            currentUser.aiEnabled = enabled;
-            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
-          }
+    const { error } = await supabase
+      .from('users')
+      .update({ ai_enabled: enabled })
+      .eq('username', username);
+
+    if (!error) {
+      const currentUserStr = localStorage.getItem(CURRENT_USER_KEY);
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser.username === username) {
+          currentUser.aiEnabled = enabled;
+          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
         }
       }
-
-      return !error;
-    } catch {
-      return false;
     }
+
+    return !error;
   },
 
   verifyPassword: async (username: string, passwordToCheck: string): Promise<boolean> => {
-    try {
-      const { data: user } = await supabase
-        .from('users')
-        .select('password')
-        .eq('username', username)
-        .single();
-
-      return user ? user.password === passwordToCheck : false;
-    } catch {
-      return false;
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.verifyPassword(username, passwordToCheck);
     }
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('password_hash')
+      .eq('username', username)
+      .single();
+
+    if (error || !data) return false;
+    return data.password_hash === passwordToCheck;
   },
 
   approveUser: async (username: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ status: 'ACTIVE' })
-        .eq('username', username);
-
-      return !error;
-    } catch {
-      return false;
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.approveUser(username);
     }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ status: 'ACTIVE' })
+      .eq('username', username);
+
+    return !error;
   },
 
   rejectUser: async (username: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('username', username);
-
-      return !error;
-    } catch {
-      return false;
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.rejectUser(username);
     }
+
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('username', username);
+
+    return !error;
   }
 };

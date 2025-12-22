@@ -1,78 +1,132 @@
 import { ExamResult } from '../types';
-import { supabase } from './supabaseClient';
+import { supabase, DbExamHistory, isSupabaseConfigured } from './supabaseClient';
 
+const HISTORY_KEY_PREFIX = 'smart_exam_history_';
+
+// Convert database record to ExamResult
+const dbToExamResult = (record: DbExamHistory): ExamResult => ({
+  examId: record.exam_id,
+  score: record.score,
+  maxScore: record.max_score,
+  percentage: record.percentage,
+  correctCount: record.correct_count,
+  incorrectCount: record.incorrect_count,
+  unansweredCount: record.unanswered_count,
+  answers: record.answers,
+  completedAt: new Date(record.completed_at)
+});
+
+// ========== 本地存储模式 ==========
+const localHistory = {
+  saveResult: (userId: string, result: ExamResult): void => {
+    if (!userId) return;
+    const key = `${HISTORY_KEY_PREFIX}${userId}`;
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    history.unshift(result);
+    localStorage.setItem(key, JSON.stringify(history));
+  },
+
+  getHistory: (userId: string): ExamResult[] => {
+    if (!userId) return [];
+    const key = `${HISTORY_KEY_PREFIX}${userId}`;
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  },
+
+  clearHistory: (userId: string): void => {
+    if (!userId) return;
+    localStorage.removeItem(`${HISTORY_KEY_PREFIX}${userId}`);
+  },
+
+  getAllUserStats: (): Record<string, number> => {
+    const stats: Record<string, number> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(HISTORY_KEY_PREFIX)) {
+        const userId = key.replace(HISTORY_KEY_PREFIX, '');
+        if (userId) {
+          const history = JSON.parse(localStorage.getItem(key) || '[]');
+          stats[userId] = history.length;
+        }
+      }
+    }
+    return stats;
+  }
+};
+
+// ========== 导出的服务 ==========
 export const historyService = {
-  saveResult: async (username: string, result: ExamResult) => {
-    if (!username || username.trim() === '') return;
+  saveResult: async (userId: string, result: ExamResult): Promise<void> => {
+    if (!userId) return;
 
-    try {
-      await supabase.from('exam_history').insert({
-        username,
+    if (!isSupabaseConfigured || !supabase) {
+      localHistory.saveResult(userId, result);
+      return;
+    }
+
+    await supabase
+      .from('exam_history')
+      .insert({
+        user_id: userId,
         exam_id: result.examId,
-        exam_title: result.examTitle,
         score: result.score,
-        total_questions: result.totalQuestions,
-        correct_answers: result.correctAnswers,
-        time_spent: result.timeSpent,
-        completed_at: result.completedAt,
-        answers: result.answers
+        max_score: result.maxScore,
+        percentage: result.percentage,
+        correct_count: result.correctCount,
+        incorrect_count: result.incorrectCount,
+        unanswered_count: result.unansweredCount,
+        answers: result.answers,
+        completed_at: result.completedAt
       });
-    } catch (error) {
-      console.error('Error saving result:', error);
-    }
   },
 
-  getHistory: async (username: string): Promise<ExamResult[]> => {
-    if (!username || username.trim() === '') return [];
+  getHistory: async (userId: string): Promise<ExamResult[]> => {
+    if (!userId) return [];
 
-    try {
-      const { data } = await supabase
-        .from('exam_history')
-        .select('*')
-        .eq('username', username)
-        .order('completed_at', { ascending: false });
-
-      return (data || []).map(r => ({
-        examId: r.exam_id,
-        examTitle: r.exam_title,
-        score: r.score,
-        totalQuestions: r.total_questions,
-        correctAnswers: r.correct_answers,
-        timeSpent: r.time_spent,
-        completedAt: r.completed_at,
-        answers: r.answers
-      }));
-    } catch {
-      return [];
+    if (!isSupabaseConfigured || !supabase) {
+      return localHistory.getHistory(userId);
     }
+
+    const { data, error } = await supabase
+      .from('exam_history')
+      .select('*')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false });
+
+    if (error || !data) return [];
+    return data.map(dbToExamResult);
   },
 
-  clearHistory: async (username: string) => {
-    if (!username || username.trim() === '') return;
+  clearHistory: async (userId: string): Promise<void> => {
+    if (!userId) return;
 
-    try {
-      await supabase
-        .from('exam_history')
-        .delete()
-        .eq('username', username);
-    } catch (error) {
-      console.error('Error clearing history:', error);
+    if (!isSupabaseConfigured || !supabase) {
+      localHistory.clearHistory(userId);
+      return;
     }
+
+    await supabase
+      .from('exam_history')
+      .delete()
+      .eq('user_id', userId);
   },
 
   getAllUserStats: async (): Promise<Record<string, number>> => {
-    try {
-      const { data } = await supabase
-        .from('exam_history')
-        .select('username');
-
-      const stats: Record<string, number> = {};
-      (data || []).forEach(r => {
-        stats[r.username] = (stats[r.username] || 0) + 1;
-      });
-      return stats;
-    } catch {
-      return {};
+    if (!isSupabaseConfigured || !supabase) {
+      return localHistory.getAllUserStats();
     }
+
+    const { data, error } = await supabase
+      .from('exam_history')
+      .select('user_id');
+
+    if (error || !data) return {};
+
+    const stats: Record<string, number> = {};
+    data.forEach(record => {
+      const userId = record.user_id;
+      stats[userId] = (stats[userId] || 0) + 1;
+    });
+
+    return stats;
   }
 };
