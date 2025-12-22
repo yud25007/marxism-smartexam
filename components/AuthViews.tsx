@@ -220,14 +220,14 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
                   <p className="text-gray-700 text-sm">请扫描下方二维码付款，并将<span className="font-bold">付款截图</span>发送至微信公众号后台。</p>
                   <p className="text-gray-500 text-xs mt-1">如有问题，请微信公众号后台私信！</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div className="flex flex-col items-center space-y-2">
-                    <div className="bg-white p-2 rounded-lg shadow-sm"><img src="/wechat.jpg" alt="微信公众号" className="w-32 h-32 object-cover rounded" /></div>
-                    <span className="text-xs text-gray-600">① 关注公众号</span>
+                    <div className="bg-white p-2 rounded-lg shadow-sm"><img src="/wechat.jpg" alt="微信公众号" className="w-48 h-auto object-contain rounded" /></div>
+                    <span className="text-sm text-gray-600 font-medium">① 关注公众号发送截图</span>
                   </div>
                   <div className="flex flex-col items-center space-y-2">
-                    <div className="bg-white p-2 rounded-lg shadow-sm"><img src="/qrcode.jpg" alt="付款码" className="w-32 h-32 object-cover rounded" /></div>
-                    <span className="text-xs text-gray-600">② 扫码支付 6元</span>
+                    <div className="bg-white p-2 rounded-lg shadow-sm"><img src="/qrcode.jpg" alt="付款码" className="w-48 h-auto object-contain rounded" /></div>
+                    <span className="text-sm text-gray-600 font-medium">② 扫码支付 6元</span>
                   </div>
                 </div>
                 <Button onClick={onCancel} className="w-full bg-gray-800 hover:bg-gray-700">返回首页</Button>
