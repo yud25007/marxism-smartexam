@@ -40,7 +40,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onGoHome }) => {
                   <div className="bg-white p-2 rounded-xl shadow-sm rotate-1 hover:rotate-0 transition-transform duration-300">
                     {/* Placeholder for Image 1: WeChat Search Banner */}
                     <img 
-                      src="https://files.catbox.moe/kfv5m6.png" 
+                      src="/公众号.jpg" 
                       alt="微信搜一搜 清言观" 
                       className="w-full max-w-[300px] rounded-lg"
                     />
@@ -59,7 +59,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onGoHome }) => {
                   <div className="bg-white p-2 rounded-full shadow-sm -rotate-1 hover:rotate-0 transition-transform duration-300">
                      {/* Placeholder for Image 2: Support Code */}
                     <img 
-                      src="https://files.catbox.moe/607887.jpg" 
+                      src="/二维码.jpg" 
                       alt="感谢支持" 
                       className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover"
                     />
