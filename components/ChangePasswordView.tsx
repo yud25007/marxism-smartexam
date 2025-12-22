@@ -17,7 +17,7 @@ export const ChangePasswordView: React.FC<ChangePasswordViewProps> = ({ currentU
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -33,13 +33,13 @@ export const ChangePasswordView: React.FC<ChangePasswordViewProps> = ({ currentU
     }
 
     // Verify old password
-    if (!authService.verifyPassword(currentUser.username, currentPassword)) {
+    if (!(await authService.verifyPassword(currentUser.username, currentPassword))) {
       setError('当前密码错误');
       return;
     }
 
     // Update
-    const result = authService.updatePassword(currentUser.username, newPassword);
+    const result = await authService.updatePassword(currentUser.username, newPassword);
     if (result) {
       setSuccess('密码修改成功！');
       setTimeout(onSuccess, 1500);

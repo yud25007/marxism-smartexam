@@ -14,19 +14,19 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onCancel }
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     // First check status to provide better error messages
-    const status = authService.getUserStatus(username);
+    const status = await authService.getUserStatus(username);
     
     if (status === 'PENDING') {
       setError('您的账号正在审核中，请耐心等待管理员批准。');
       return;
     }
 
-    const user = authService.login(username, password);
+    const user = await authService.login(username, password);
     if (user) {
       onLoginSuccess(user);
     } else {
@@ -116,7 +116,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
   const [success, setSuccess] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -132,7 +132,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
     // Admin creates ACTIVE users immediately. Guests create PENDING users.
     const initialStatus = isAdminMode ? 'ACTIVE' : 'PENDING';
     
-    const isSuccess = authService.register(username, password, role, initialStatus);
+    const isSuccess = await authService.register(username, password, role, initialStatus);
     
     if (isSuccess) {
       if (isAdminMode) {

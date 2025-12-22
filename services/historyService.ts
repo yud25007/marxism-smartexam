@@ -1,55 +1,78 @@
 import { ExamResult } from '../types';
-
-const HISTORY_KEY_PREFIX = 'smart_exam_history_';
-
-// Helper to ensure we always get a valid user-scoped key
-const getUserKey = (username: string): string | null => {
-  if (!username || username.trim() === '') return null;
-  return `${HISTORY_KEY_PREFIX}${username}`;
-};
+import { supabase } from './supabaseClient';
 
 export const historyService = {
-  saveResult: (username: string, result: ExamResult) => {
-    const key = getUserKey(username);
-    if (!key) return; // Do not save if no valid username
+  saveResult: async (username: string, result: ExamResult) => {
+    if (!username || username.trim() === '') return;
 
-    const historyStr = localStorage.getItem(key);
-    const history: ExamResult[] = historyStr ? JSON.parse(historyStr) : [];
-    
-    // Add new result to the beginning
-    history.unshift(result);
-    
-    localStorage.setItem(key, JSON.stringify(history));
-  },
-
-  getHistory: (username: string): ExamResult[] => {
-    const key = getUserKey(username);
-    if (!key) return []; // Return empty if no valid username
-
-    const historyStr = localStorage.getItem(key);
-    return historyStr ? JSON.parse(historyStr) : [];
-  },
-
-  clearHistory: (username: string) => {
-    const key = getUserKey(username);
-    if (!key) return;
-    localStorage.removeItem(key);
-  },
-
-  // For Admin Dashboard: Iterates all keys to find stats.
-  // This is safe because it only reads metadata (count) and is only used by Admin.
-  getAllUserStats: (): Record<string, number> => {
-    const stats: Record<string, number> = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(HISTORY_KEY_PREFIX)) {
-        const username = key.replace(HISTORY_KEY_PREFIX, '');
-        if (username) {
-            const history = JSON.parse(localStorage.getItem(key) || '[]');
-            stats[username] = history.length;
-        }
-      }
+    try {
+      await supabase.from('exam_history').insert({
+        username,
+        exam_id: result.examId,
+        exam_title: result.examTitle,
+        score: result.score,
+        total_questions: result.totalQuestions,
+        correct_answers: result.correctAnswers,
+        time_spent: result.timeSpent,
+        completed_at: result.completedAt,
+        answers: result.answers
+      });
+    } catch (error) {
+      console.error('Error saving result:', error);
     }
-    return stats;
+  },
+
+  getHistory: async (username: string): Promise<ExamResult[]> => {
+    if (!username || username.trim() === '') return [];
+
+    try {
+      const { data } = await supabase
+        .from('exam_history')
+        .select('*')
+        .eq('username', username)
+        .order('completed_at', { ascending: false });
+
+      return (data || []).map(r => ({
+        examId: r.exam_id,
+        examTitle: r.exam_title,
+        score: r.score,
+        totalQuestions: r.total_questions,
+        correctAnswers: r.correct_answers,
+        timeSpent: r.time_spent,
+        completedAt: r.completed_at,
+        answers: r.answers
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  clearHistory: async (username: string) => {
+    if (!username || username.trim() === '') return;
+
+    try {
+      await supabase
+        .from('exam_history')
+        .delete()
+        .eq('username', username);
+    } catch (error) {
+      console.error('Error clearing history:', error);
+    }
+  },
+
+  getAllUserStats: async (): Promise<Record<string, number>> => {
+    try {
+      const { data } = await supabase
+        .from('exam_history')
+        .select('username');
+
+      const stats: Record<string, number> = {};
+      (data || []).forEach(r => {
+        stats[r.username] = (stats[r.username] || 0) + 1;
+      });
+      return stats;
+    } catch {
+      return {};
+    }
   }
 };

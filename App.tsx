@@ -40,9 +40,9 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleFinishExam = (result: ExamResult) => {
+  const handleFinishExam = async (result: ExamResult) => {
     if (currentUser) {
-      historyService.saveResult(currentUser.username, result);
+      await historyService.saveResult(currentUser.username, result);
     }
     setExamResult(result);
     setView('RESULT');
@@ -61,9 +61,9 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleHistoryClick = () => {
+  const handleHistoryClick = async () => {
     if (currentUser) {
-      const userHistory = historyService.getHistory(currentUser.username);
+      const userHistory = await historyService.getHistory(currentUser.username);
       setHistory(userHistory);
       setView('HISTORY');
       window.scrollTo(0, 0);

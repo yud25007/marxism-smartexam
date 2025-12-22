@@ -19,9 +19,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setUsers(authService.getAllUsers());
-    setExamCounts(historyService.getAllUserStats());
+  const loadData = async () => {
+    const [usersData, countsData] = await Promise.all([authService.getAllUsers(), historyService.getAllUserStats()]); setUsers(usersData);
+    setExamCounts(countsData);
   };
 
   const pendingUsers = users.filter(u => u.status === 'PENDING');
@@ -34,10 +34,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     }));
   };
 
-  const handleEditPassword = (user: StoredUser) => {
+  const handleEditPassword = async (user: StoredUser) => {
     const newPassword = window.prompt(`正在修改用户【${user.username}】的密码。\n请输入新密码:`);
     if (newPassword !== null && newPassword.trim() !== '') {
-      const success = authService.updatePassword(user.username, newPassword);
+      const success = await authService.updatePassword(user.username, newPassword);
       if (success) {
         alert('密码修改成功！');
         loadData();
@@ -47,24 +47,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     }
   };
 
-  const handleToggleAi = (user: StoredUser) => {
+  const handleToggleAi = async (user: StoredUser) => {
     const newStatus = !user.aiEnabled;
-    const success = authService.updateAiAccess(user.username, newStatus);
+    const success = await authService.updateAiAccess(user.username, newStatus);
     if (success) {
       loadData();
     }
   };
 
-  const handleApprove = (username: string) => {
+  const handleApprove = async (username: string) => {
     if (confirm(`确定批准用户 ${username} 的注册申请吗？`)) {
-      authService.approveUser(username);
+      await authService.approveUser(username);
       loadData();
     }
   };
 
-  const handleReject = (username: string) => {
+  const handleReject = async (username: string) => {
     if (confirm(`确定拒绝并删除用户 ${username} 的申请吗？`)) {
-      authService.rejectUser(username);
+      await authService.rejectUser(username);
       loadData();
     }
   };
