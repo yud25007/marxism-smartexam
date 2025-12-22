@@ -184,7 +184,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
                 <div className="flex flex-col items-center space-y-3">
                   <div className="bg-white p-2 rounded-lg shadow-sm w-full max-w-[240px]">
                     <img 
-                      src="/公众号.jpg" 
+                      src="/wechat.jpg" 
                       alt="微信搜一搜 清言观" 
                       className="w-full rounded"
                     />
@@ -196,7 +196,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
                 <div className="flex flex-col items-center space-y-3">
                   <div className="bg-white p-2 rounded-full shadow-sm">
                     <img 
-                      src="/二维码.jpg" 
+                      src="/qrcode.jpg" 
                       alt="付款码/赞赏码" 
                       className="w-40 h-40 rounded-full object-cover"
                     />
