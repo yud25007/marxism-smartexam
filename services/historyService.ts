@@ -18,23 +18,23 @@ const dbToExamResult = (record: DbExamHistory): ExamResult => ({
 
 // ========== 本地存储模式 ==========
 const localHistory = {
-  saveResult: (userId: string, result: ExamResult): void => {
-    if (!userId) return;
-    const key = `${HISTORY_KEY_PREFIX}${userId}`;
+  saveResult: (username: string, result: ExamResult): void => {
+    if (!username) return;
+    const key = `${HISTORY_KEY_PREFIX}${username}`;
     const history = JSON.parse(localStorage.getItem(key) || '[]');
     history.unshift(result);
     localStorage.setItem(key, JSON.stringify(history));
   },
 
-  getHistory: (userId: string): ExamResult[] => {
-    if (!userId) return [];
-    const key = `${HISTORY_KEY_PREFIX}${userId}`;
+  getHistory: (username: string): ExamResult[] => {
+    if (!username) return [];
+    const key = `${HISTORY_KEY_PREFIX}${username}`;
     return JSON.parse(localStorage.getItem(key) || '[]');
   },
 
-  clearHistory: (userId: string): void => {
-    if (!userId) return;
-    localStorage.removeItem(`${HISTORY_KEY_PREFIX}${userId}`);
+  clearHistory: (username: string): void => {
+    if (!username) return;
+    localStorage.removeItem(`${HISTORY_KEY_PREFIX}${username}`);
   },
 
   getAllUserStats: (): Record<string, number> => {
@@ -42,10 +42,10 @@ const localHistory = {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith(HISTORY_KEY_PREFIX)) {
-        const userId = key.replace(HISTORY_KEY_PREFIX, '');
-        if (userId) {
+        const username = key.replace(HISTORY_KEY_PREFIX, '');
+        if (username) {
           const history = JSON.parse(localStorage.getItem(key) || '[]');
-          stats[userId] = history.length;
+          stats[username] = history.length;
         }
       }
     }
@@ -55,18 +55,18 @@ const localHistory = {
 
 // ========== 导出的服务 ==========
 export const historyService = {
-  saveResult: async (userId: string, result: ExamResult): Promise<void> => {
-    if (!userId) return;
+  saveResult: async (username: string, result: ExamResult): Promise<void> => {
+    if (!username) return;
 
     if (!isSupabaseConfigured || !supabase) {
-      localHistory.saveResult(userId, result);
+      localHistory.saveResult(username, result);
       return;
     }
 
     await supabase
       .from('exam_history')
       .insert({
-        user_id: userId,
+        username: username,
         exam_id: result.examId,
         score: result.score,
         max_score: result.maxScore,
@@ -79,35 +79,35 @@ export const historyService = {
       });
   },
 
-  getHistory: async (userId: string): Promise<ExamResult[]> => {
-    if (!userId) return [];
+  getHistory: async (username: string): Promise<ExamResult[]> => {
+    if (!username) return [];
 
     if (!isSupabaseConfigured || !supabase) {
-      return localHistory.getHistory(userId);
+      return localHistory.getHistory(username);
     }
 
     const { data, error } = await supabase
       .from('exam_history')
       .select('*')
-      .eq('user_id', userId)
+      .eq('username', username)
       .order('completed_at', { ascending: false });
 
     if (error || !data) return [];
     return data.map(dbToExamResult);
   },
 
-  clearHistory: async (userId: string): Promise<void> => {
-    if (!userId) return;
+  clearHistory: async (username: string): Promise<void> => {
+    if (!username) return;
 
     if (!isSupabaseConfigured || !supabase) {
-      localHistory.clearHistory(userId);
+      localHistory.clearHistory(username);
       return;
     }
 
     await supabase
       .from('exam_history')
       .delete()
-      .eq('user_id', userId);
+      .eq('username', username);
   },
 
   getAllUserStats: async (): Promise<Record<string, number>> => {
@@ -117,14 +117,14 @@ export const historyService = {
 
     const { data, error } = await supabase
       .from('exam_history')
-      .select('user_id');
+      .select('username');
 
     if (error || !data) return {};
 
     const stats: Record<string, number> = {};
     data.forEach(record => {
-      const userId = record.user_id;
-      stats[userId] = (stats[userId] || 0) + 1;
+      const username = record.username;
+      stats[username] = (stats[username] || 0) + 1;
     });
 
     return stats;

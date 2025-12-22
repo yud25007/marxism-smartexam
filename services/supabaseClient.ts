@@ -31,7 +31,7 @@ export interface DbUser {
 
 export interface DbExamHistory {
   id: string;
-  user_id: string;
+  username: string;
   exam_id: string;
   score: number;
   max_score: number;
