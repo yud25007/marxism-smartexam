@@ -41,7 +41,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     setAiExplanation(null);
 
     const userSelected = result.answers[question.id] || [];
-    const explanation = await getQuestionExplanation(question, userSelected);
+    const explanation = await getAIExplanation(question, userSelected);
     
     setAiExplanation(explanation);
     setIsLoadingAi(false);
