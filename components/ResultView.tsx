@@ -15,6 +15,25 @@ interface ResultViewProps {
 
 const COLORS = ['#10B981', '#EF4444', '#9CA3AF']; // Green, Red, Gray
 
+// 新增 explanationQuestionId 状态
+const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
+const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+const [explanationQuestionId, setExplanationQuestionId] = useState<string | null>(null); // 新增
+const [isLoadingAi, setIsLoadingAi] = useState(false);
+
+const handleToggleExpand = (questionId: string) => {
+  if (expandedQuestionId === questionId) {
+    setExpandedQuestionId(null);
+  } else {
+    setExpandedQuestionId(questionId);
+    // 关键：如果展开的是新题目，且不是当前有解析的那道题，则清空旧解析
+    if (explanationQuestionId !== questionId) {
+      setAiExplanation(null);
+      setExplanationQuestionId(null);
+    }
+  }
+};
+
 export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRetry, onGoHome }) => {
   const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
