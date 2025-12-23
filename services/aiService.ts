@@ -1,4 +1,4 @@
-﻿import { Question } from "../types";
+import { Question } from "../types";
 
 const API_KEY = import.meta.env.GEMINI_API_KEY;
 const BASE_URL = import.meta.env.GEMINI_BASE_URL;
@@ -13,26 +13,26 @@ export const getAIExplanation = async (
   const userAnswers = userSelectedIndices.map(i => question.options[i]).join(', ') || "未作答";
   const correctAnswers = question.correctAnswers.map(i => question.options[i]).join(', ');
 
-  const prompt = 你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
+  const prompt = `你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
 
-    题目: ""
-    选项: \
+    题目: "${question.text}"
+    选项: ${JSON.stringify(question.options)}
 
-    用户的回答: ""
-    正确答案: ""
+    用户的回答: "${userAnswers}"
+    正确答案: "${correctAnswers}"
 
     请按以下格式回答：
     1. 解释正确答案的原因（结合马克思主义基本原理）。
     2. 如果用户答错了，指出其误区所在。
     3. 保持鼓励和具有教育意义的语气。
-    4. 字数控制在 200 字以内。;
+    4. 字数控制在 200 字以内。`;
 
   try {
-    const response = await fetch(\\/chat/completions\, {
+    const response = await fetch(`${BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': \Bearer \\
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
         model: MODEL,
@@ -43,7 +43,7 @@ export const getAIExplanation = async (
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || \HTTP error! status: \\);
+        throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
