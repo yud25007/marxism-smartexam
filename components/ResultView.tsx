@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Exam, ExamResult, Question, User } from '../types';
 import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { Button } from './Button';
@@ -15,28 +15,10 @@ interface ResultViewProps {
 
 const COLORS = ['#10B981', '#EF4444', '#9CA3AF']; // Green, Red, Gray
 
-// 新增 explanationQuestionId 状态
-const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
-const [aiExplanation, setAiExplanation] = useState<string | null>(null);
-const [explanationQuestionId, setExplanationQuestionId] = useState<string | null>(null); // 新增
-const [isLoadingAi, setIsLoadingAi] = useState(false);
-
-const handleToggleExpand = (questionId: string) => {
-  if (expandedQuestionId === questionId) {
-    setExpandedQuestionId(null);
-  } else {
-    setExpandedQuestionId(questionId);
-    // 关键：如果展开的是新题目，且不是当前有解析的那道题，则清空旧解析
-    if (explanationQuestionId !== questionId) {
-      setAiExplanation(null);
-      setExplanationQuestionId(null);
-    }
-  }
-};
-
 export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRetry, onGoHome }) => {
   const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [explanationQuestionId, setExplanationQuestionId] = useState<string | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
 
   const data = [
@@ -45,18 +27,31 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     { name: '未答', value: result.unansweredCount },
   ];
 
+  const handleToggleExpand = (questionId: string) => {
+    if (expandedQuestionId === questionId) {
+      setExpandedQuestionId(null);
+    } else {
+      setExpandedQuestionId(questionId);
+      // 如果切换到了另一道题，清空旧的解析内容
+      if (explanationQuestionId !== questionId) {
+        setAiExplanation(null);
+        setExplanationQuestionId(null);
+      }
+    }
+  };
+
   const handleAskAI = async (question: Question, e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLoadingAi) return;
     
-    if (expandedQuestionId === question.id && aiExplanation) {
-      setExpandedQuestionId(null);
+    if (explanationQuestionId === question.id && aiExplanation) {
       setAiExplanation(null);
+      setExplanationQuestionId(null);
       return;
     }
 
     setIsLoadingAi(true);
-    setExpandedQuestionId(question.id);
+    setExplanationQuestionId(question.id);
     setAiExplanation(null);
 
     const userSelected = result.answers[question.id] || [];
@@ -90,7 +85,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                        stroke="none"
                      >
                        {data.map((entry, index) => (
-                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                         <Cell key={cell-} fill={COLORS[index % COLORS.length]} />
                        ))}
                      </Pie>
                      <Tooltip />
@@ -147,7 +142,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
 
             return (
               <div key={question.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all">
-                <div className="p-5 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedQuestionId(isOpen ? null : question.id)}>
+                <div className="p-5 cursor-pointer hover:bg-gray-50" onClick={() => handleToggleExpand(question.id)}>
                   <div className="flex items-start gap-4">
                     <div className="mt-1 flex-shrink-0">
                       {isCorrect ? (
@@ -194,7 +189,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                     
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       {isAiEnabled ? (
-                        !aiExplanation && !isLoadingAi ? (
+                        (explanationQuestionId !== question.id || (!aiExplanation && !isLoadingAi)) ? (
                           <Button 
                              variant="ghost" 
                              size="sm" 
@@ -211,7 +206,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                              </div>
                              <div className="pl-9">
                                <h4 className="text-sm font-bold text-indigo-900 mb-1">AI 解析</h4>
-                               {isLoadingAi ? (
+                               {isLoadingAi && explanationQuestionId === question.id ? (
                                  <div className="space-y-2 animate-pulse">
                                    <div className="h-2 bg-indigo-200 rounded w-3/4"></div>
                                    <div className="h-2 bg-indigo-200 rounded w-full"></div>
