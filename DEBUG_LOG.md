@@ -278,7 +278,7 @@ git push
 ```
 SUPABASE_URL=https://gdxokmehgoijpyhqpyel.supabase.co
 SUPABASE_ANON_KEY=sb_publishable_QOJbH7EtrUZuGgPGum532A_TpKYeor2
-GEMINI_API_KEY=AIzaSyDDCK0U_GCNAw-R3tl1-hYL9VFNiIcHQaQ
+GEMINI_API_KEY=****
 ```
 
 ### Supabase 数据库表结构
