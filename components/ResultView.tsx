@@ -3,7 +3,7 @@ import { Exam, ExamResult, Question, User } from '../types';
 import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { getQuestionExplanation } from '../services/geminiService';
+import { getAIExplanation } from '../services/aiService';
 
 interface ResultViewProps {
   exam: Exam;
