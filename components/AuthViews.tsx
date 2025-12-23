@@ -217,7 +217,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                   <p className="text-lg font-bold text-red-700 mb-2">感谢支持！目前价格 6元/账号！</p>
-                  <p className="text-gray-700 text-sm">请扫描下方二维码付款，并将<span className="font-bold">付款截图</span>发送至微信公众号后台。（平台目前是人工客服，付款后两小时内会审核通过）</p>
+                  <p className="text-gray-700 text-sm">请扫描下方二维码付款，并将<span className="font-bold">付款截图和用户名</span>发送至微信公众号后台。</p>
+                  <p className="text-gray-500 text-xs mt-1">（平台目前是人工客服，付款后两小时内会审核通过）</p>
                   <p className="text-gray-500 text-xs mt-1">如有问题，请微信公众号后台私信！</p>
                 </div>
                 <div className="space-y-4">
