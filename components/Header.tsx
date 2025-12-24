@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, User, LogOut, UserPlus, Shield, Key, LayoutDashboard, Home, History } from 'lucide-react';
+import { BookOpen, User, LogOut, UserPlus, Shield, Key, LayoutDashboard, Home, History, Megaphone } from 'lucide-react';
 import { User as UserType } from '../types';
 
 interface HeaderProps {
@@ -11,6 +11,7 @@ interface HeaderProps {
   onHistoryClick: () => void;
   onChangePasswordClick: () => void;
   onAdminDashboardClick: () => void;
+  onAnnouncementClick: () => void;
   currentView?: string;
 }
 
@@ -23,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   onHistoryClick,
   onChangePasswordClick,
   onAdminDashboardClick,
+  onAnnouncementClick,
   currentView
 }) => {
   
@@ -80,6 +82,13 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            <button 
+              onClick={onAnnouncementClick}
+              className="p-2 text-gray-500 hover:text-red-600 transition-colors rounded-full hover:bg-red-50"
+              title="查看公告"
+            >
+              <Megaphone size={18} />
+            </button>
             {user ? (
               <>
                 {user.role === 'ADMIN' && (

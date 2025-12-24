@@ -2,21 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Megaphone, X, Bell, Info, Loader2 } from 'lucide-react';
 import { announcementService, Announcement } from '../services/announcementService';
 
-export const AnnouncementModal: React.FC = () => {
+interface AnnouncementModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ 
+  isOpen: propsIsOpen, 
+  onClose: propsOnClose 
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentAnnouncement, setCurrentAnnouncement] = useState<Announcement | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 内部控制逻辑
   useEffect(() => {
     const fetchAnnouncement = async () => {
       try {
         const latest = await announcementService.getLatestAnnouncement();
         if (latest) {
-          // 检查本地存储，如果这个公告还没看过，就显示
-          const lastSeenId = localStorage.getItem('last_seen_announcement_id');
-          if (lastSeenId !== latest.id) {
-            setCurrentAnnouncement(latest);
-            setIsOpen(true);
+          setCurrentAnnouncement(latest);
+          
+          // 如果外部没有传控制参数，则执行“自动弹出”逻辑
+          if (propsIsOpen === undefined) {
+            const lastSeenId = localStorage.getItem('last_seen_announcement_id');
+            if (lastSeenId !== latest.id) {
+              setIsOpen(true);
+            }
           }
         }
       } catch (err) {
@@ -27,16 +39,24 @@ export const AnnouncementModal: React.FC = () => {
     };
 
     fetchAnnouncement();
-  }, []);
+  }, [propsIsOpen]);
+
+  // 最终显示的判定：外部强制打开 OR 内部逻辑打开
+  const isVisible = propsIsOpen !== undefined ? propsIsOpen : isOpen;
 
   const handleClose = () => {
     if (currentAnnouncement) {
       localStorage.setItem('last_seen_announcement_id', currentAnnouncement.id);
     }
-    setIsOpen(false);
+    
+    if (propsOnClose) {
+      propsOnClose();
+    } else {
+      setIsOpen(false);
+    }
   };
 
-  if (loading || !isOpen || !currentAnnouncement) return null;
+  if (loading || !isVisible || !currentAnnouncement) return null;
 
   const getTypeStyles = (type: Announcement['type']) => {
     switch (type) {

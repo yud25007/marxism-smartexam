@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [examResult, setExamResult] = useState<ExamResult | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [history, setHistory] = useState<ExamResult[]>([]);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
 
   // Load user on mount
   useEffect(() => {
@@ -118,7 +119,10 @@ const App: React.FC = () => {
   if (view === 'CONTACT') {
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -128,6 +132,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <ContactView onGoHome={handleGoHome} />
@@ -138,7 +143,10 @@ const App: React.FC = () => {
   if (view === 'LOGIN') {
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -148,6 +156,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <LoginView 
@@ -168,7 +177,10 @@ const App: React.FC = () => {
 
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -178,6 +190,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <RegisterView 
@@ -192,7 +205,10 @@ const App: React.FC = () => {
   if (view === 'CHANGE_PASSWORD' && currentUser) {
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -202,6 +218,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <ChangePasswordView 
@@ -220,7 +237,10 @@ const App: React.FC = () => {
     }
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -230,6 +250,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <AdminDashboard onGoHome={handleGoHome} />
@@ -240,7 +261,10 @@ const App: React.FC = () => {
   if (view === 'HISTORY' && currentUser) {
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -250,6 +274,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <HistoryView 
@@ -274,7 +299,10 @@ const App: React.FC = () => {
   if (view === 'RESULT' && activeExam && examResult) {
     return (
       <>
-        <AnnouncementModal />
+        <AnnouncementModal 
+          isOpen={showAnnouncement} 
+          onClose={() => setShowAnnouncement(false)} 
+        />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -284,6 +312,7 @@ const App: React.FC = () => {
           onHistoryClick={handleHistoryClick}
           onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+          onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
         />
         <ResultView 
@@ -300,7 +329,10 @@ const App: React.FC = () => {
   // Home View
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
-      <AnnouncementModal />
+      <AnnouncementModal 
+        isOpen={showAnnouncement} 
+        onClose={() => setShowAnnouncement(false)} 
+      />
       <Header 
         onGoHome={handleGoHome} 
         user={currentUser} 
@@ -310,6 +342,7 @@ const App: React.FC = () => {
         onHistoryClick={handleHistoryClick}
         onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
         onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+        onAnnouncementClick={() => setShowAnnouncement(true)}
         currentView={view}
       />
 
