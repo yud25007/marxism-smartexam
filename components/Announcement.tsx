@@ -55,7 +55,8 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
     fetchAnnouncement();
   }, [propsIsOpen]);
 
-  const isVisible = propsIsOpen !== undefined ? propsIsOpen : isOpen;
+  // 最终显示的判定：外部强制打开 (propsIsOpen 为 true) OR 内部自动逻辑打开 (isOpen 为 true)
+  const isVisible = propsIsOpen === true || isOpen;
 
   const handleClose = () => {
     if (currentAnnouncement) {
@@ -68,10 +69,9 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
       }
     }
     
+    setIsOpen(false); // 无论如何都关闭内部状态
     if (propsOnClose) {
-      propsOnClose();
-    } else {
-      setIsOpen(false);
+      propsOnClose(); // 通知父组件更新状态
     }
   };
 
