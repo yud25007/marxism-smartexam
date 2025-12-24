@@ -82,7 +82,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   };
 
   const isAiEnabled = user?.aiEnabled;
-  const isAdmin = user?.role === 'ADMIN';
+  const isNannyModeEnabled = user?.role === 'ADMIN'; // Only ADMIN gets nanny mode and follow-up
+  const isVipOrAdmin = user?.role === 'ADMIN' || user?.role === 'VIP';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -232,7 +233,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                              }}
                           >
                             <Sparkles size={16} className="mr-2" />
-                            {isAdmin ? '保姆级考点解析' : 'AI 解析此题'}
+                            {isNannyModeEnabled ? '保姆级考点解析' : 'AI 解析此题'}
                           </Button>
                         ) : (
                           <div className="space-y-4">
@@ -242,7 +243,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                </div>
                                <div className="pl-9">
                                  <h4 className="text-sm font-bold text-indigo-900 mb-1">
-                                   {isAdmin ? '保姆级辅导' : 'AI 解析'}
+                                   {isNannyModeEnabled ? '保姆级辅导' : 'AI 解析'}
                                  </h4>
                                  {isLoading && !explanation ? (
                                    <div className="space-y-2 animate-pulse">
@@ -271,7 +272,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                             </div>
 
                             {/* Admin Follow-up UI */}
-                            {isAdmin && explanation && (
+                            {isNannyModeEnabled && explanation && (
                               <div className="flex gap-2">
                                 <div className="flex-1 relative">
                                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

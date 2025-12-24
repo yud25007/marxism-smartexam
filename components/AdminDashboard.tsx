@@ -115,6 +115,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     }
   };
 
+  const handleUpdateRole = async (username: string, role: any) => {
+    const success = await authService.updateRole(username, role);
+    if (success) {
+      loadData();
+    } else {
+      alert('更新角色失败');
+    }
+  };
+
   const handleApprove = async (username: string) => {
     if (confirm(`确定批准用户 ${username} 的注册申请吗？`)) {
       await authService.approveUser(username);
@@ -408,13 +417,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                       <div className="text-sm text-gray-500">{user.invitedBy || '-'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'ADMIN'
-                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                          : 'bg-green-100 text-green-800 border border-green-200'
-                      }`}>
-                        {user.role === 'ADMIN' ? '管理员' : '普通成员'}
-                      </span>
+                      <select 
+                        value={user.role}
+                        onChange={(e) => handleUpdateRole(user.username, e.target.value)}
+                        className={`inline-flex items-center px-2 py-1 rounded border text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-white ${
+                          user.role === 'ADMIN' ? 'text-blue-700 border-blue-200 bg-blue-50' : 
+                          user.role === 'VIP' ? 'text-purple-700 border-purple-200 bg-purple-50' : 
+                          'text-green-700 border-green-200 bg-green-50'
+                        }`}
+                      >
+                        <option value="ADMIN">管理员</option>
+                        <option value="VIP">高级用户</option>
+                        <option value="MEMBER">普通成员</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button

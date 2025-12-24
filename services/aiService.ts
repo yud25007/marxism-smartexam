@@ -13,8 +13,15 @@ export const getAIExplanation = async (
   if (!API_KEY) return "AI 秘钥未配置";
 
   const user = authService.getCurrentUser();
-  const selectedModel = user?.aiModel || DEFAULT_MODEL;
   const isAdmin = user?.role === 'ADMIN';
+  const isVip = user?.role === 'VIP';
+  
+  // Model selection: Admin defaults to Gemini 3 Pro, VIP defaults to Qwen, others to Default
+  let selectedModel = user?.aiModel || DEFAULT_MODEL;
+  if (!user?.aiModel) {
+    if (isAdmin) selectedModel = 'gemini-3-pro-preview';
+    else if (isVip) selectedModel = 'qwen3-coder-plus';
+  }
 
   let userAnswers = "";
   let correctAnswers = "";

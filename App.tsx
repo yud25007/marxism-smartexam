@@ -49,21 +49,23 @@ const App: React.FC = () => {
 
     // Dynamic Permission Check
     const perm = permissions[exam.id];
+    const isHighLevelUser = currentUser.role === 'ADMIN' || currentUser.role === 'VIP';
+
     if (perm) {
-      // If min_role is ADMIN, block non-admins
-      if (perm.min_role === 'ADMIN' && currentUser.role !== 'ADMIN') {
-        alert('该题库目前仅限管理员访问。');
+      // If min_role is ADMIN, block non-high-level users
+      if (perm.min_role === 'ADMIN' && !isHighLevelUser) {
+        alert('该题库目前仅限高级用户及管理员访问。');
         return;
       }
-      // If not public, block anyone except admin
-      if (!perm.is_public && currentUser.role !== 'ADMIN') {
+      // If not public, block anyone except high-level users
+      if (!perm.is_public && !isHighLevelUser) {
         alert('该题库尚未公开。');
         return;
       }
     } else {
-      // Default fallback for new IDs not in DB: only ADMIN can access
-      if (currentUser.role !== 'ADMIN') {
-        alert('此新增章节正在维护，仅限管理员访问。');
+      // Default fallback for new IDs not in DB: only ADMIN/VIP can access
+      if (!isHighLevelUser) {
+        alert('此新增章节正在维护，仅限高级用户及管理员访问。');
         return;
       }
     }
@@ -440,13 +442,14 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {EXAMS.map(exam => {
             const perm = permissions[exam.id];
+            const isHighLevelUser = currentUser?.role === 'ADMIN' || currentUser?.role === 'VIP';
             let isLockedByPerm = false;
             
             if (perm) {
-              isLockedByPerm = (perm.min_role === 'ADMIN' && currentUser?.role !== 'ADMIN') || (!perm.is_public && currentUser?.role !== 'ADMIN');
+              isLockedByPerm = (perm.min_role === 'ADMIN' && !isHighLevelUser) || (!perm.is_public && !isHighLevelUser);
             } else {
-              // Default for new unconfigured chapters: Lock for non-admins
-              isLockedByPerm = currentUser?.role !== 'ADMIN';
+              // Default for new unconfigured chapters: Lock for non-high-level users
+              isLockedByPerm = !isHighLevelUser;
             }
 
             return (

@@ -274,6 +274,26 @@ export const authService = {
     return !error;
   },
 
+  updateRole: async (username: string, role: UserRole): Promise<boolean> => {
+    if (!isSupabaseConfigured || !supabase) {
+      const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+      const idx = users.findIndex((u: any) => u.username === username);
+      if (idx !== -1) {
+        users[idx].role = role;
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        return true;
+      }
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ role })
+      .eq('username', username);
+
+    return !error;
+  },
+
   verifyPassword: async (username: string, passwordToCheck: string): Promise<boolean> => {
     if (!isSupabaseConfigured || !supabase) {
       return localAuth.verifyPassword(username, passwordToCheck);

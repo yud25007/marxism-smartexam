@@ -44,7 +44,7 @@ export interface ExamResult {
   completedAt: Date;
 }
 
-export type UserRole = 'ADMIN' | 'MEMBER';
+export type UserRole = 'ADMIN' | 'VIP' | 'MEMBER';
 
 export type UserStatus = 'ACTIVE' | 'PENDING';
 
