@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Exam, ExamResult, Question, User } from '../types';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen } from 'lucide-react';
+import { Exam, ExamResult, Question, User, QuestionType } from '../types';
+import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Save, Share } from 'lucide-react';
 import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';
@@ -27,6 +27,10 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   const [notes, setNotes] = useState(result.notes || "");
   const [followUpQuery, setFollowUpText] = useState("");
   
+  // Local notes for each question
+  const [localNotesMap, setLocalNotesMap] = useState<Record<string, string>>({});
+  const [isSaPreview, setIsSaPreview] = useState<Record<string, boolean>>({});
+
   // Ref to track scroll positions for bounce-back effect
   const scrollPosRef = useRef<Record<string, number>>({});
 
@@ -50,13 +54,57 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
       // Opening: Record current position
       scrollPosRef.current[questionId] = window.scrollY;
       setExpandedQuestionId(questionId);
+      
+      // Auto-scroll to the top of the expanded question after a short delay
+      setTimeout(() => {
+        const element = document.getElementById(`q-card-${questionId}`);
+        if (element) {
+          const top = element.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }, 100);
     }
   };
 
   const handleAddToNotes = (question: Question, explanation: string) => {
-    const formattedNote = `${notes}\n\n### 题目：${question.text}\n> **AI 解析：**\n${explanation}\n\n---`;
-    setNotes(formattedNote);
+    const personalNote = localNotesMap[question.id] || "_未填写心得_";
+    const optionsText = question.options.length > 0 
+      ? question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')
+      : "（简答/填空题）";
+    
+    const correctAns = question.correctAnswers.length > 0
+      ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
+      : (question.answerText || "见详细解析");
+
+    const formattedNote = `
+<details>
+<summary><b>📚 [${question.type}] 题目记录：${question.text.substring(0, 40)}${question.text.length > 40 ? '...' : ''}</b></summary>
+
+---
+
+#### 📥 题目原文
+> ${question.text}
+
+**选项参考：**
+\`\`\`text
+${optionsText}
+\`\`\`
+
+**正确答案：** \\`${correctAns}\
+
+#### 🤖 AI 深度解析
+${explanation}
+
+#### 💡 我的心得体会
+${personalNote}
+
+</details>
+`;
+    
+    const newNotes = notes + formattedNote;
+    setNotes(newNotes);
     setShowNotebook(true);
+    alert('已成功将题目及心得整理至全卷笔记！');
   };
 
   const handleAskAI = async (question: Question, followUp?: string) => {
@@ -155,9 +203,11 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
             const isOpen = expandedQuestionId === question.id;
             const explanation = aiExplanations[question.id];
             const isLoading = loadingMap[question.id];
+            const localNote = localNotesMap[question.id] || "";
+            const showSaPreview = isSaPreview[question.id];
 
             return (
-              <div key={question.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all">
+              <div key={question.id} id={`q-card-${question.id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all">
                 <div className="p-5 cursor-pointer hover:bg-gray-50" onClick={() => handleToggleExpand(question.id)}>
                   <div className="flex items-start gap-4">
                     <div className="mt-1 flex-shrink-0">
@@ -200,7 +250,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                       })}
                     </div>
                     
-                    <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
                       {isAiEnabled ? (
                         !explanation && !isLoading ? (
                           <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50" onClick={(e) => { e.stopPropagation(); handleAskAI(question); }}>
@@ -232,13 +282,42 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                        {isLoading && <span className="inline-block ml-2 animate-bounce">...</span>}
                                    </div>
                                    )}
-                                   {!isLoading && (
-                                     <button onClick={() => handleAddToNotes(question, explanation)} className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-indigo-500 hover:text-indigo-700 bg-white px-2 py-1 rounded border border-indigo-100 transition-colors">
-                                       <BookOpen size={12} /> 记入全卷笔记
-                                     </button>
-                                   )}
                                </div>
                             </div>
+
+                            {/* Question Local Note Area */}
+                            {explanation && !isLoading && (
+                              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                                <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
+                                    <Edit3 size={14} /> 个人心得笔记
+                                  </div>
+                                  <button onClick={() => setIsSaPreview(prev => ({...prev, [question.id]: !prev[question.id]}))} className="text-[10px] font-bold text-indigo-600 hover:underline">
+                                    {showSaPreview ? "返回编辑" : "Markdown 预览"}
+                                  </button>
+                                </div>
+                                <div className="p-3">
+                                  {showSaPreview ? (
+                                    <div className="min-h-[80px] text-sm text-gray-700 prose prose-sm max-w-none">
+                                      <ReactMarkdown>{localNote || "*暂未填写笔记内容*"}</ReactMarkdown>
+                                    </div>
+                                  ) : (
+                                    <textarea 
+                                      className="w-full text-sm focus:outline-none min-h-[80px] resize-none"
+                                      placeholder="在这里记录你的理解、口诀或易错点..."
+                                      value={localNote}
+                                      onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))}
+                                    />
+                                  )}
+                                  <div className="mt-3 flex justify-end">
+                                    <Button onClick={() => handleAddToNotes(question, explanation)} className="bg-indigo-600 text-white h-8 text-[10px] font-bold">
+                                      <Share size={12} className="mr-1" /> 整理并存入全卷笔记
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
                             {isNannyModeEnabled && explanation && (
                               <div className="flex gap-2">
                                 <div className="flex-1 relative">
