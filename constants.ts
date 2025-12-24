@@ -454,10 +454,26 @@ export const EXAMS: Exam[] = RAW_DATA.chapters.map((chapter) => {
     });
   });
 
+  // Process Short Answer
+  if (chapter.short_answer) {
+    chapter.short_answer.forEach((q: any) => {
+      questions.push({
+        id: `ch${chapter.id}_sa_${q.id}`,
+        type: QuestionType.SHORT_ANSWER,
+        text: q.question,
+        options: [],
+        correctAnswers: [],
+        answerText: q.answer,
+        points: 5
+      });
+    });
+  }
+
   // Calculate difficulty/stats
   const totalQuestions = questions.length;
-  // Simple estimation for duration: 1 min per single/tf, 2 min per multiple
-  const duration = Math.ceil((chapter.single_choice.length * 1 + chapter.true_false.length * 1 + chapter.multiple_choice.length * 2)); 
+  // Simple estimation for duration
+  const saCount = chapter.short_answer ? chapter.short_answer.length : 0;
+  const duration = Math.ceil((chapter.single_choice.length * 1 + chapter.true_false.length * 1 + chapter.multiple_choice.length * 2 + saCount * 3)); 
 
   return {
     id: `chapter_${chapter.id}`,

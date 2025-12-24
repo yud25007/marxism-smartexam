@@ -1,7 +1,8 @@
 export enum QuestionType {
   SINGLE_CHOICE = 'SINGLE_CHOICE',
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  TRUE_FALSE = 'TRUE_FALSE'
+  TRUE_FALSE = 'TRUE_FALSE',
+  SHORT_ANSWER = 'SHORT_ANSWER'
 }
 
 export interface Question {
@@ -11,6 +12,7 @@ export interface Question {
   options: string[];
   correctAnswers: number[]; // Indices of correct options
   points: number;
+  answerText?: string; // For Short Answer / Fill in the blank
 }
 
 export interface Exam {

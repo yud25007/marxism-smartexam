@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Question, QuestionType } from '../types';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 interface QuestionRendererProps {
   question: Question;
@@ -15,6 +15,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   onSelectOption,
   isReadOnly = false
 }) => {
+  const [showAnswer, setShowAnswer] = useState(false);
   
   const handleToggle = (index: number) => {
     if (isReadOnly) return;
@@ -36,6 +37,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       case QuestionType.SINGLE_CHOICE: return '单选题';
       case QuestionType.MULTIPLE_CHOICE: return '多选题';
       case QuestionType.TRUE_FALSE: return '判断题';
+      case QuestionType.SHORT_ANSWER: return '简答/填空';
       default: return '未知';
     }
   };
@@ -55,6 +57,58 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     
     return base;
   };
+
+  if (question.type === QuestionType.SHORT_ANSWER) {
+    return (
+      <div className="animate-fade-in">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+             <span className="text-xs font-bold tracking-wider text-red-700 bg-red-100 px-2 py-0.5 rounded">
+              {getTypeName(question.type)}
+             </span>
+             <span className="text-xs font-semibold text-gray-500">
+              {question.points} 分
+             </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+            {question.text}
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          <textarea 
+            className="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-red-500 focus:outline-none min-h-[150px] text-gray-700 font-medium transition-colors"
+            placeholder="请在此输入您的答案进行练习..."
+            disabled={isReadOnly}
+            onChange={(e) => {
+              // Mark as answered if user types anything
+              if (e.target.value.length > 0 && selectedIndices.length === 0) {
+                onSelectOption([0]); // Dummy index to indicate answered
+              } else if (e.target.value.length === 0 && selectedIndices.length > 0) {
+                onSelectOption([]);
+              }
+            }}
+          />
+
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <button 
+              onClick={() => setShowAnswer(!showAnswer)}
+              className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-red-600 transition-colors mb-2"
+            >
+              {showAnswer ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showAnswer ? '隐藏参考答案' : '显示参考答案'}
+            </button>
+            
+            {showAnswer && (
+              <div className="p-3 bg-white rounded-lg border border-red-100 text-red-900 font-semibold animate-in fade-in slide-in-from-top-1 duration-200">
+                {question.answerText}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">

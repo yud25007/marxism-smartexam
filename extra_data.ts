@@ -2204,17 +2204,6 @@ export const EXTRA_CHAPTERS = [
         "answer": "A"
       },
       {
-        "id": 203,
-        "question": "马克思主义哲学区别于以往哲学的根本区别是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "实践性"
-        },
-        "answer": "A"
-      },
-      {
         "id": 205,
         "question": "“沉舟侧畔千帆过，病树前头万木春”体现的哲学原理是：",
         "options": {
@@ -2735,6 +2724,13 @@ export const EXTRA_CHAPTERS = [
         "question": "共产主义社会将实行按劳分配。",
         "answer": false
       }
+    ],
+    "short_answer": [
+      {
+        "id": 203,
+        "question": "马克思主义哲学区别于以往哲学的根本区别是______。",
+        "answer": "实践性"
+      }
     ]
   },
   {
@@ -2848,116 +2844,6 @@ export const EXTRA_CHAPTERS = [
           "D": "Option D",
           "B": "Option B",
           "A": "A. 社会制度的和谐"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 301,
-        "question": "马克思主义的革命性集中体现在它的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "彻底的批判精神"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 302,
-        "question": "______是马克思主义哲学创立之后，开始把唯物主义原则贯穿于社会历史领域，从而创立了历史唯物主义。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "唯物史观"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 303,
-        "question": "唯物辩证法认为，______是事物发展的根本规律。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 304,
-        "question": "辩证唯物主义认为，时间是物质运动的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "持续性和顺序性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 305,
-        "question": "认识的本质是主体对客体的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "能动反映"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 306,
-        "question": "检验真理的唯一标准是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "实践"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 307,
-        "question": "社会基本矛盾是生产力和生产关系的矛盾、______的矛盾。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "经济基础和上层建筑"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 308,
-        "question": "商品的二因素是使用价值和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 309,
-        "question": "剩余价值的源泉是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "雇佣工人的剩余劳动"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 310,
-        "question": "资本主义经济危机的根本原因是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "资本主义基本矛盾"
         },
         "answer": "A"
       },
@@ -3314,61 +3200,6 @@ export const EXTRA_CHAPTERS = [
         "answer": "A"
       },
       {
-        "id": 381,
-        "question": "______是马克思主义最鲜明的品格。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "人民性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 382,
-        "question": "唯物辩证法的实质和核心是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 383,
-        "question": "认识的辩证过程是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "实践-认识-再实践-再认识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 384,
-        "question": "唯物史观认为，______是社会发展的决定力量。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "物质资料生产方式"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 385,
-        "question": "资本主义基本矛盾是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产社会化和生产资料资本主义私人占有之间的矛盾"
-        },
-        "answer": "A"
-      },
-      {
         "id": 386,
         "question": "马克思主义中国化的最新成果是：",
         "options": {
@@ -3530,226 +3361,6 @@ export const EXTRA_CHAPTERS = [
           "D": "Option D",
           "B": "Option B",
           "A": "A. 无产阶级专政和社会主义民主"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 471,
-        "question": "马克思主义是关于______、______和______发展一般规律的科学。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "自然、社会、人类思维"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 472,
-        "question": "哲学的基本问题是______和______的关系问题。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "思维、存在"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 473,
-        "question": "物质的唯一特性是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观实在性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 474,
-        "question": "意识是人脑对______的反映。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观存在"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 475,
-        "question": "唯物辩证法的总特征是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "联系、发展"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 476,
-        "question": "矛盾的两个基本属性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "同一性、斗争性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 477,
-        "question": "实践是认识的______、______、______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "来源、动力、目的、检验标准"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 478,
-        "question": "真理是人们对______及其______的正确反映。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观事物、规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 479,
-        "question": "社会存在决定______，______反作用于社会存在。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会意识、社会意识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 480,
-        "question": "生产力决定______，______反作用于生产力。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产关系、生产关系"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 481,
-        "question": "经济基础决定______，______反作用于经济基础。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "上层建筑、上层建筑"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 482,
-        "question": "______是历史的创造者。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "人民群众"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 483,
-        "question": "商品的二因素是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "使用价值、价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 484,
-        "question": "劳动的二重性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "具体劳动、抽象劳动"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 485,
-        "question": "剩余价值是由______创造的被______无偿占有的超过______的那部分价值。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "雇佣工人、资本家、劳动力价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 486,
-        "question": "资本积累是______的源泉。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "扩大再生产"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 487,
-        "question": "资本主义基本矛盾是______和______之间的矛盾。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产社会化、生产资料资本主义私人占有"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 488,
-        "question": "垄断是帝国主义的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "经济实质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 489,
-        "question": "经济全球化是______发展的客观要求和必然结果。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产力"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 490,
-        "question": "共产主义社会实行______分配原则。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "按需"
         },
         "answer": "A"
       }
@@ -5091,6 +4702,183 @@ export const EXTRA_CHAPTERS = [
         "question": "量变是质变的必要准备，质变是量变的必然结果。",
         "answer": true
       }
+    ],
+    "short_answer": [
+      {
+        "id": 301,
+        "question": "马克思主义的革命性集中体现在它的______。",
+        "answer": "彻底的批判精神"
+      },
+      {
+        "id": 302,
+        "question": "______是马克思主义哲学创立之后，开始把唯物主义原则贯穿于社会历史领域，从而创立了历史唯物主义。",
+        "answer": "唯物史观"
+      },
+      {
+        "id": 303,
+        "question": "唯物辩证法认为，______是事物发展的根本规律。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 304,
+        "question": "辩证唯物主义认为，时间是物质运动的______。",
+        "answer": "持续性和顺序性"
+      },
+      {
+        "id": 305,
+        "question": "认识的本质是主体对客体的______。",
+        "answer": "能动反映"
+      },
+      {
+        "id": 306,
+        "question": "检验真理的唯一标准是______。",
+        "answer": "实践"
+      },
+      {
+        "id": 307,
+        "question": "社会基本矛盾是生产力和生产关系的矛盾、______的矛盾。",
+        "answer": "经济基础和上层建筑"
+      },
+      {
+        "id": 308,
+        "question": "商品的二因素是使用价值和______。",
+        "answer": "价值"
+      },
+      {
+        "id": 309,
+        "question": "剩余价值的源泉是______。",
+        "answer": "雇佣工人的剩余劳动"
+      },
+      {
+        "id": 310,
+        "question": "资本主义经济危机的根本原因是______。",
+        "answer": "资本主义基本矛盾"
+      },
+      {
+        "id": 381,
+        "question": "______是马克思主义最鲜明的品格。",
+        "answer": "人民性"
+      },
+      {
+        "id": 382,
+        "question": "唯物辩证法的实质和核心是______。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 383,
+        "question": "认识的辩证过程是______。",
+        "answer": "实践-认识-再实践-再认识"
+      },
+      {
+        "id": 384,
+        "question": "唯物史观认为，______是社会发展的决定力量。",
+        "answer": "物质资料生产方式"
+      },
+      {
+        "id": 385,
+        "question": "资本主义基本矛盾是______。",
+        "answer": "生产社会化和生产资料资本主义私人占有之间的矛盾"
+      },
+      {
+        "id": 471,
+        "question": "马克思主义是关于______、______和______发展一般规律的科学。",
+        "answer": "自然、社会、人类思维"
+      },
+      {
+        "id": 472,
+        "question": "哲学的基本问题是______和______的关系问题。",
+        "answer": "思维、存在"
+      },
+      {
+        "id": 473,
+        "question": "物质的唯一特性是______。",
+        "answer": "客观实在性"
+      },
+      {
+        "id": 474,
+        "question": "意识是人脑对______的反映。",
+        "answer": "客观存在"
+      },
+      {
+        "id": 475,
+        "question": "唯物辩证法的总特征是______和______。",
+        "answer": "联系、发展"
+      },
+      {
+        "id": 476,
+        "question": "矛盾的两个基本属性是______和______。",
+        "answer": "同一性、斗争性"
+      },
+      {
+        "id": 477,
+        "question": "实践是认识的______、______、______和______。",
+        "answer": "来源、动力、目的、检验标准"
+      },
+      {
+        "id": 478,
+        "question": "真理是人们对______及其______的正确反映。",
+        "answer": "客观事物、规律"
+      },
+      {
+        "id": 479,
+        "question": "社会存在决定______，______反作用于社会存在。",
+        "answer": "社会意识、社会意识"
+      },
+      {
+        "id": 480,
+        "question": "生产力决定______，______反作用于生产力。",
+        "answer": "生产关系、生产关系"
+      },
+      {
+        "id": 481,
+        "question": "经济基础决定______，______反作用于经济基础。",
+        "answer": "上层建筑、上层建筑"
+      },
+      {
+        "id": 482,
+        "question": "______是历史的创造者。",
+        "answer": "人民群众"
+      },
+      {
+        "id": 483,
+        "question": "商品的二因素是______和______。",
+        "answer": "使用价值、价值"
+      },
+      {
+        "id": 484,
+        "question": "劳动的二重性是______和______。",
+        "answer": "具体劳动、抽象劳动"
+      },
+      {
+        "id": 485,
+        "question": "剩余价值是由______创造的被______无偿占有的超过______的那部分价值。",
+        "answer": "雇佣工人、资本家、劳动力价值"
+      },
+      {
+        "id": 486,
+        "question": "资本积累是______的源泉。",
+        "answer": "扩大再生产"
+      },
+      {
+        "id": 487,
+        "question": "资本主义基本矛盾是______和______之间的矛盾。",
+        "answer": "生产社会化、生产资料资本主义私人占有"
+      },
+      {
+        "id": 488,
+        "question": "垄断是帝国主义的______。",
+        "answer": "经济实质"
+      },
+      {
+        "id": 489,
+        "question": "经济全球化是______发展的客观要求和必然结果。",
+        "answer": "生产力"
+      },
+      {
+        "id": 490,
+        "question": "共产主义社会实行______分配原则。",
+        "answer": "按需"
+      }
     ]
   },
   {
@@ -5428,116 +5216,6 @@ export const EXTRA_CHAPTERS = [
         "answer": "A"
       },
       {
-        "id": 591,
-        "question": "马克思主义的理论品质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "与时俱进"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 592,
-        "question": "世界观是人们对______的根本看法和根本观点。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "整个世界"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 593,
-        "question": "方法论是指导人们认识世界和改造世界的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "根本方法"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 594,
-        "question": "唯物主义认为，物质是本原，意识是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "派生"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 595,
-        "question": "意识对物质具有______作用。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "能动"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 596,
-        "question": "唯物辩证法的总特征是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "联系、发展"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 597,
-        "question": "矛盾的同一性和______是矛盾的两个基本属性。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "斗争性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 598,
-        "question": "认识的辩证过程是：实践、______、再实践、再认识。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "认识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 599,
-        "question": "真理的______是指真理的内容是客观的。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 600,
-        "question": "社会存在决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会意识"
-        },
-        "answer": "A"
-      },
-      {
         "id": 601,
         "question": "马克思主义哲学区别于旧哲学的最显著特征是：",
         "options": {
@@ -5754,116 +5432,6 @@ export const EXTRA_CHAPTERS = [
           "D": "Option D",
           "B": "Option B",
           "A": "A. 物质财富极大丰富"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 661,
-        "question": "马克思主义的政治立场是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "致力于实现最广大人民的根本利益"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 662,
-        "question": "唯物辩证法的根本规律是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 663,
-        "question": "认识的根本任务是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "透过现象看本质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 664,
-        "question": "社会发展的根本动力是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会基本矛盾"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 665,
-        "question": "商品经济的基本规律是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "价值规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 666,
-        "question": "剩余价值率反映了______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "资本家对工人的剥削程度"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 667,
-        "question": "资本积累是______的源泉。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "扩大再生产"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 668,
-        "question": "垄断资本主义的实质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "垄断"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 669,
-        "question": "经济全球化的本质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "资源配置的国际化"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 670,
-        "question": "共产主义社会的根本特征是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "实现人的自由而全面的发展"
         },
         "answer": "A"
       },
@@ -7491,232 +7059,114 @@ export const EXTRA_CHAPTERS = [
         "question": "共产主义是人类的未来。",
         "answer": true
       }
+    ],
+    "short_answer": [
+      {
+        "id": 591,
+        "question": "马克思主义的理论品质是______。",
+        "answer": "与时俱进"
+      },
+      {
+        "id": 592,
+        "question": "世界观是人们对______的根本看法和根本观点。",
+        "answer": "整个世界"
+      },
+      {
+        "id": 593,
+        "question": "方法论是指导人们认识世界和改造世界的______。",
+        "answer": "根本方法"
+      },
+      {
+        "id": 594,
+        "question": "唯物主义认为，物质是本原，意识是______。",
+        "answer": "派生"
+      },
+      {
+        "id": 595,
+        "question": "意识对物质具有______作用。",
+        "answer": "能动"
+      },
+      {
+        "id": 596,
+        "question": "唯物辩证法的总特征是______和______。",
+        "answer": "联系、发展"
+      },
+      {
+        "id": 597,
+        "question": "矛盾的同一性和______是矛盾的两个基本属性。",
+        "answer": "斗争性"
+      },
+      {
+        "id": 598,
+        "question": "认识的辩证过程是：实践、______、再实践、再认识。",
+        "answer": "认识"
+      },
+      {
+        "id": 599,
+        "question": "真理的______是指真理的内容是客观的。",
+        "answer": "客观性"
+      },
+      {
+        "id": 600,
+        "question": "社会存在决定______。",
+        "answer": "社会意识"
+      },
+      {
+        "id": 661,
+        "question": "马克思主义的政治立场是______。",
+        "answer": "致力于实现最广大人民的根本利益"
+      },
+      {
+        "id": 662,
+        "question": "唯物辩证法的根本规律是______。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 663,
+        "question": "认识的根本任务是______。",
+        "answer": "透过现象看本质"
+      },
+      {
+        "id": 664,
+        "question": "社会发展的根本动力是______。",
+        "answer": "社会基本矛盾"
+      },
+      {
+        "id": 665,
+        "question": "商品经济的基本规律是______。",
+        "answer": "价值规律"
+      },
+      {
+        "id": 666,
+        "question": "剩余价值率反映了______。",
+        "answer": "资本家对工人的剥削程度"
+      },
+      {
+        "id": 667,
+        "question": "资本积累是______的源泉。",
+        "answer": "扩大再生产"
+      },
+      {
+        "id": 668,
+        "question": "垄断资本主义的实质是______。",
+        "answer": "垄断"
+      },
+      {
+        "id": 669,
+        "question": "经济全球化的本质是______。",
+        "answer": "资源配置的国际化"
+      },
+      {
+        "id": 670,
+        "question": "共产主义社会的根本特征是______。",
+        "answer": "实现人的自由而全面的发展"
+      }
     ]
   },
   {
     "id": 11,
     "name": "新增：科学社会主义与共产主义",
     "single_choice": [
-      {
-        "id": 771,
-        "question": "______是马克思主义的根本理论特征。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "科学性、人民性、实践性、发展性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 772,
-        "question": "世界统一于______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "物质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 773,
-        "question": "运动是物质的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "根本属性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 774,
-        "question": "意识是______的主观映象。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观世界"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 775,
-        "question": "唯物辩证法的核心是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 776,
-        "question": "矛盾的两个属性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "同一性、斗争性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 777,
-        "question": "实践是认识的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "基础"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 778,
-        "question": "真理是______的。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 779,
-        "question": "社会存在决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会意识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 780,
-        "question": "生产力决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产关系"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 781,
-        "question": "经济基础决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "上层建筑"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 782,
-        "question": "______是历史的创造者。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "人民群众"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 783,
-        "question": "商品的二因素是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "使用价值、价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 784,
-        "question": "劳动的二重性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "具体劳动、抽象劳动"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 785,
-        "question": "货币的本质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "一般等价物"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 786,
-        "question": "剩余价值率反映了______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "剥削程度"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 787,
-        "question": "资本积累的源泉是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "剩余价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 788,
-        "question": "垄断的实质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "获取垄断利润"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 789,
-        "question": "经济全球化的本质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "资源配置国际化"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 790,
-        "question": "共产主义社会的分配原则是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "按需分配"
-        },
-        "answer": "A"
-      },
       {
         "id": 791,
         "question": "马克思主义哲学的研究对象是：",
@@ -7916,226 +7366,6 @@ export const EXTRA_CHAPTERS = [
         "answer": "A"
       },
       {
-        "id": 839,
-        "question": "______是马克思主义的根本理论特征。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "科学性、人民性、实践性、发展性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 840,
-        "question": "世界统一于______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "物质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 841,
-        "question": "运动是物质的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "根本属性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 842,
-        "question": "意识是______的主观映象。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观世界"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 843,
-        "question": "唯物辩证法的核心是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 844,
-        "question": "矛盾的两个属性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "同一性、斗争性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 845,
-        "question": "实践是认识的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "基础"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 846,
-        "question": "真理是______的。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 847,
-        "question": "社会存在决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会意识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 848,
-        "question": "生产力决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产关系"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 849,
-        "question": "经济基础决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "上层建筑"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 850,
-        "question": "______是历史的创造者。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "人民群众"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 851,
-        "question": "商品的二因素是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "使用价值、价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 852,
-        "question": "劳动的二重性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "具体劳动、抽象劳动"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 853,
-        "question": "货币的本质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "一般等价物"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 854,
-        "question": "剩余价值率反映了______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "剥削程度"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 855,
-        "question": "资本积累的源泉是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "剩余价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 856,
-        "question": "垄断的实质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "获取垄断利润"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 857,
-        "question": "经济全球化的本质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "资源配置国际化"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 858,
-        "question": "共产主义社会的分配原则是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "按需分配"
-        },
-        "answer": "A"
-      },
-      {
         "id": 859,
         "question": "马克思主义中国化的第一个重大理论成果是：",
         "options": {
@@ -8257,116 +7487,6 @@ export const EXTRA_CHAPTERS = [
         "answer": "A"
       },
       {
-        "id": 891,
-        "question": "______是马克思主义的根本理论特征。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "科学性、人民性、实践性、发展性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 892,
-        "question": "世界统一于______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "物质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 893,
-        "question": "运动是物质的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "根本属性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 894,
-        "question": "意识是______的主观映象。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观世界"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 895,
-        "question": "唯物辩证法的核心是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 896,
-        "question": "矛盾的两个属性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "同一性、斗争性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 897,
-        "question": "实践是认识的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "基础"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 898,
-        "question": "真理是______的。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 899,
-        "question": "社会存在决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会意识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 900,
-        "question": "生产力决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产关系"
-        },
-        "answer": "A"
-      },
-      {
         "id": 901,
         "question": "马克思主义的创立标志是：",
         "options": {
@@ -8473,303 +7593,6 @@ export const EXTRA_CHAPTERS = [
           "D": "Option D",
           "B": "Option B",
           "A": "A. 人的自由而全面发展"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 933,
-        "question": "______是马克思主义的根本理论特征。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "科学性、人民性、实践性、发展性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 934,
-        "question": "世界统一于______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "物质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 935,
-        "question": "运动是物质的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "根本属性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 936,
-        "question": "意识是______的主观映象。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观世界"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 937,
-        "question": "唯物辩证法的核心是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "对立统一规律"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 938,
-        "question": "矛盾的两个属性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "同一性、斗争性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 939,
-        "question": "实践是认识的______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "基础"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 940,
-        "question": "真理是______的。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "客观"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 941,
-        "question": "社会存在决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会意识"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 942,
-        "question": "生产力决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产关系"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 943,
-        "question": "经济基础决定______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "上层建筑"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 944,
-        "question": "______是历史的创造者。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "人民群众"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 945,
-        "question": "商品的二因素是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "使用价值、价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 946,
-        "question": "劳动的二重性是______和______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "具体劳动、抽象劳动"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 947,
-        "question": "货币的本质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "一般等价物"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 948,
-        "question": "剩余价值率反映了______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "剥削程度"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 949,
-        "question": "资本积累的源泉是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "剩余价值"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 969,
-        "question": "马克思主义的根本理论特征是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "科学性、人民性、实践性、发展性"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 970,
-        "question": "唯物辩证法的总特征是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "联系和发展"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 971,
-        "question": "认识的根本任务是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "透过现象看本质"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 972,
-        "question": "社会发展的根本动力是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "社会基本矛盾"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 973,
-        "question": "资本主义基本矛盾是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产社会化和生产资料资本主义私人占有之间的矛盾"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 974,
-        "question": "剩余价值率反映了______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "资本家对工人的剥削程度"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 975,
-        "question": "资本主义经济危机的实质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "生产相对过剩"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 976,
-        "question": "垄断资本主义的实质是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "垄断资本家凭借垄断地位获取高额垄断利润"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 977,
-        "question": "科学社会主义的直接理论来源是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "英法空想社会主义"
-        },
-        "answer": "A"
-      },
-      {
-        "id": 978,
-        "question": "共产主义社会的基本特征之一是______。",
-        "options": {
-          "C": "Option C",
-          "D": "Option D",
-          "B": "Option B",
-          "A": "物质财富极大丰富，消费资料按需分配"
         },
         "answer": "A"
       },
@@ -9750,6 +8573,393 @@ export const EXTRA_CHAPTERS = [
         "id": 1000,
         "question": "共产主义是人类社会发展的必然趋势。",
         "answer": true
+      }
+    ],
+    "short_answer": [
+      {
+        "id": 771,
+        "question": "______是马克思主义的根本理论特征。",
+        "answer": "科学性、人民性、实践性、发展性"
+      },
+      {
+        "id": 772,
+        "question": "世界统一于______。",
+        "answer": "物质"
+      },
+      {
+        "id": 773,
+        "question": "运动是物质的______。",
+        "answer": "根本属性"
+      },
+      {
+        "id": 774,
+        "question": "意识是______的主观映象。",
+        "answer": "客观世界"
+      },
+      {
+        "id": 775,
+        "question": "唯物辩证法的核心是______。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 776,
+        "question": "矛盾的两个属性是______和______。",
+        "answer": "同一性、斗争性"
+      },
+      {
+        "id": 777,
+        "question": "实践是认识的______。",
+        "answer": "基础"
+      },
+      {
+        "id": 778,
+        "question": "真理是______的。",
+        "answer": "客观"
+      },
+      {
+        "id": 779,
+        "question": "社会存在决定______。",
+        "answer": "社会意识"
+      },
+      {
+        "id": 780,
+        "question": "生产力决定______。",
+        "answer": "生产关系"
+      },
+      {
+        "id": 781,
+        "question": "经济基础决定______。",
+        "answer": "上层建筑"
+      },
+      {
+        "id": 782,
+        "question": "______是历史的创造者。",
+        "answer": "人民群众"
+      },
+      {
+        "id": 783,
+        "question": "商品的二因素是______和______。",
+        "answer": "使用价值、价值"
+      },
+      {
+        "id": 784,
+        "question": "劳动的二重性是______和______。",
+        "answer": "具体劳动、抽象劳动"
+      },
+      {
+        "id": 785,
+        "question": "货币的本质是______。",
+        "answer": "一般等价物"
+      },
+      {
+        "id": 786,
+        "question": "剩余价值率反映了______。",
+        "answer": "剥削程度"
+      },
+      {
+        "id": 787,
+        "question": "资本积累的源泉是______。",
+        "answer": "剩余价值"
+      },
+      {
+        "id": 788,
+        "question": "垄断的实质是______。",
+        "answer": "获取垄断利润"
+      },
+      {
+        "id": 789,
+        "question": "经济全球化的本质是______。",
+        "answer": "资源配置国际化"
+      },
+      {
+        "id": 790,
+        "question": "共产主义社会的分配原则是______。",
+        "answer": "按需分配"
+      },
+      {
+        "id": 839,
+        "question": "______是马克思主义的根本理论特征。",
+        "answer": "科学性、人民性、实践性、发展性"
+      },
+      {
+        "id": 840,
+        "question": "世界统一于______。",
+        "answer": "物质"
+      },
+      {
+        "id": 841,
+        "question": "运动是物质的______。",
+        "answer": "根本属性"
+      },
+      {
+        "id": 842,
+        "question": "意识是______的主观映象。",
+        "answer": "客观世界"
+      },
+      {
+        "id": 843,
+        "question": "唯物辩证法的核心是______。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 844,
+        "question": "矛盾的两个属性是______和______。",
+        "answer": "同一性、斗争性"
+      },
+      {
+        "id": 845,
+        "question": "实践是认识的______。",
+        "answer": "基础"
+      },
+      {
+        "id": 846,
+        "question": "真理是______的。",
+        "answer": "客观"
+      },
+      {
+        "id": 847,
+        "question": "社会存在决定______。",
+        "answer": "社会意识"
+      },
+      {
+        "id": 848,
+        "question": "生产力决定______。",
+        "answer": "生产关系"
+      },
+      {
+        "id": 849,
+        "question": "经济基础决定______。",
+        "answer": "上层建筑"
+      },
+      {
+        "id": 850,
+        "question": "______是历史的创造者。",
+        "answer": "人民群众"
+      },
+      {
+        "id": 851,
+        "question": "商品的二因素是______和______。",
+        "answer": "使用价值、价值"
+      },
+      {
+        "id": 852,
+        "question": "劳动的二重性是______和______。",
+        "answer": "具体劳动、抽象劳动"
+      },
+      {
+        "id": 853,
+        "question": "货币的本质是______。",
+        "answer": "一般等价物"
+      },
+      {
+        "id": 854,
+        "question": "剩余价值率反映了______。",
+        "answer": "剥削程度"
+      },
+      {
+        "id": 855,
+        "question": "资本积累的源泉是______。",
+        "answer": "剩余价值"
+      },
+      {
+        "id": 856,
+        "question": "垄断的实质是______。",
+        "answer": "获取垄断利润"
+      },
+      {
+        "id": 857,
+        "question": "经济全球化的本质是______。",
+        "answer": "资源配置国际化"
+      },
+      {
+        "id": 858,
+        "question": "共产主义社会的分配原则是______。",
+        "answer": "按需分配"
+      },
+      {
+        "id": 891,
+        "question": "______是马克思主义的根本理论特征。",
+        "answer": "科学性、人民性、实践性、发展性"
+      },
+      {
+        "id": 892,
+        "question": "世界统一于______。",
+        "answer": "物质"
+      },
+      {
+        "id": 893,
+        "question": "运动是物质的______。",
+        "answer": "根本属性"
+      },
+      {
+        "id": 894,
+        "question": "意识是______的主观映象。",
+        "answer": "客观世界"
+      },
+      {
+        "id": 895,
+        "question": "唯物辩证法的核心是______。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 896,
+        "question": "矛盾的两个属性是______和______。",
+        "answer": "同一性、斗争性"
+      },
+      {
+        "id": 897,
+        "question": "实践是认识的______。",
+        "answer": "基础"
+      },
+      {
+        "id": 898,
+        "question": "真理是______的。",
+        "answer": "客观"
+      },
+      {
+        "id": 899,
+        "question": "社会存在决定______。",
+        "answer": "社会意识"
+      },
+      {
+        "id": 900,
+        "question": "生产力决定______。",
+        "answer": "生产关系"
+      },
+      {
+        "id": 933,
+        "question": "______是马克思主义的根本理论特征。",
+        "answer": "科学性、人民性、实践性、发展性"
+      },
+      {
+        "id": 934,
+        "question": "世界统一于______。",
+        "answer": "物质"
+      },
+      {
+        "id": 935,
+        "question": "运动是物质的______。",
+        "answer": "根本属性"
+      },
+      {
+        "id": 936,
+        "question": "意识是______的主观映象。",
+        "answer": "客观世界"
+      },
+      {
+        "id": 937,
+        "question": "唯物辩证法的核心是______。",
+        "answer": "对立统一规律"
+      },
+      {
+        "id": 938,
+        "question": "矛盾的两个属性是______和______。",
+        "answer": "同一性、斗争性"
+      },
+      {
+        "id": 939,
+        "question": "实践是认识的______。",
+        "answer": "基础"
+      },
+      {
+        "id": 940,
+        "question": "真理是______的。",
+        "answer": "客观"
+      },
+      {
+        "id": 941,
+        "question": "社会存在决定______。",
+        "answer": "社会意识"
+      },
+      {
+        "id": 942,
+        "question": "生产力决定______。",
+        "answer": "生产关系"
+      },
+      {
+        "id": 943,
+        "question": "经济基础决定______。",
+        "answer": "上层建筑"
+      },
+      {
+        "id": 944,
+        "question": "______是历史的创造者。",
+        "answer": "人民群众"
+      },
+      {
+        "id": 945,
+        "question": "商品的二因素是______和______。",
+        "answer": "使用价值、价值"
+      },
+      {
+        "id": 946,
+        "question": "劳动的二重性是______和______。",
+        "answer": "具体劳动、抽象劳动"
+      },
+      {
+        "id": 947,
+        "question": "货币的本质是______。",
+        "answer": "一般等价物"
+      },
+      {
+        "id": 948,
+        "question": "剩余价值率反映了______。",
+        "answer": "剥削程度"
+      },
+      {
+        "id": 949,
+        "question": "资本积累的源泉是______。",
+        "answer": "剩余价值"
+      },
+      {
+        "id": 969,
+        "question": "马克思主义的根本理论特征是______。",
+        "answer": "科学性、人民性、实践性、发展性"
+      },
+      {
+        "id": 970,
+        "question": "唯物辩证法的总特征是______。",
+        "answer": "联系和发展"
+      },
+      {
+        "id": 971,
+        "question": "认识的根本任务是______。",
+        "answer": "透过现象看本质"
+      },
+      {
+        "id": 972,
+        "question": "社会发展的根本动力是______。",
+        "answer": "社会基本矛盾"
+      },
+      {
+        "id": 973,
+        "question": "资本主义基本矛盾是______。",
+        "answer": "生产社会化和生产资料资本主义私人占有之间的矛盾"
+      },
+      {
+        "id": 974,
+        "question": "剩余价值率反映了______。",
+        "answer": "资本家对工人的剥削程度"
+      },
+      {
+        "id": 975,
+        "question": "资本主义经济危机的实质是______。",
+        "answer": "生产相对过剩"
+      },
+      {
+        "id": 976,
+        "question": "垄断资本主义的实质是______。",
+        "answer": "垄断资本家凭借垄断地位获取高额垄断利润"
+      },
+      {
+        "id": 977,
+        "question": "科学社会主义的直接理论来源是______。",
+        "answer": "英法空想社会主义"
+      },
+      {
+        "id": 978,
+        "question": "共产主义社会的基本特征之一是______。",
+        "answer": "物质财富极大丰富，消费资料按需分配"
       }
     ]
   }
