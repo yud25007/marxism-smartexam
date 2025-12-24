@@ -32,7 +32,11 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         
         <div className="p-6 overflow-y-auto flex-1 text-gray-600 leading-relaxed whitespace-pre-wrap">
           <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4">
-            <ReactMarkdown>{currentAnnouncement.content}</ReactMarkdown>
+            {ReactMarkdown ? (
+              <ReactMarkdown>{currentAnnouncement.content}</ReactMarkdown>
+            ) : (
+              <p>{currentAnnouncement.content}</p>
+            )}
           </div>
         </div>
         
