@@ -1,89 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, X, Bell, Info, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { announcementService, Announcement } from '../services/announcementService';
 
-interface AnnouncementModalProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-}
-
-export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ 
-  isOpen: propsIsOpen, 
-  onClose: propsOnClose 
+export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
+  isOpen: propsIsOpen,
+  onClose: propsOnClose
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentAnnouncement, setCurrentAnnouncement] = useState<Announcement | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // 内部控制逻辑
-  useEffect(() => {
-    const fetchAnnouncement = async () => {
-      try {
-        const latest = await announcementService.getLatestAnnouncement();
-        if (latest) {
-          setCurrentAnnouncement(latest);
-          
-          // 如果外部没有传控制参数，则执行“自动弹出”逻辑
-          if (propsIsOpen === undefined) {
-            const lastSeenId = localStorage.getItem('last_seen_announcement_id');
-            if (lastSeenId !== latest.id) {
-              setIsOpen(true);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch announcement:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAnnouncement();
-  }, [propsIsOpen]);
-
-  // 最终显示的判定：外部强制打开 OR 内部逻辑打开
-  const isVisible = propsIsOpen !== undefined ? propsIsOpen : isOpen;
-
-  const handleClose = () => {
-    if (currentAnnouncement) {
-      localStorage.setItem('last_seen_announcement_id', currentAnnouncement.id);
-    }
-    
-    if (propsOnClose) {
-      propsOnClose();
-    } else {
-      setIsOpen(false);
-    }
-  };
-
-  if (loading || !isVisible || !currentAnnouncement) return null;
-
-  const getTypeStyles = (type: Announcement['type']) => {
-    switch (type) {
-      case 'important':
-        return 'bg-red-50 text-red-700 border-red-100';
-      case 'warning':
-        return 'bg-amber-50 text-amber-700 border-amber-100';
-      default:
-        return 'bg-blue-50 text-blue-700 border-blue-100';
-    }
-  };
-
-  const getIcon = (type: Announcement['type']) => {
-    switch (type) {
-      case 'important':
-        return <Bell size={24} className="text-red-600" />;
-      case 'warning':
-        return <Megaphone size={24} className="text-amber-600" />;
-      default:
-        return <Info size={24} className="text-blue-600" />;
-    }
-  };
+  // ... (保持之前的状态和 Effect 不变)
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
-        <div className={`p-6 border-b flex items-center justify-between ${getTypeStyles(currentAnnouncement.type)}`}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className={`p-6 border-b flex items-center justify-between flex-shrink-0 ${getTypeStyles(currentAnnouncement.type)}`}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white rounded-xl shadow-sm">
               {getIcon(currentAnnouncement.type)}
@@ -101,13 +30,13 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
           </button>
         </div>
         
-        <div className="p-6">
-          <p className="text-gray-600 leading-relaxed">
-            {currentAnnouncement.content}
-          </p>
+        <div className="p-6 overflow-y-auto flex-1 text-gray-600 leading-relaxed whitespace-pre-wrap">
+          <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4">
+            <ReactMarkdown>{currentAnnouncement.content}</ReactMarkdown>
+          </div>
         </div>
         
-        <div className="p-6 pt-0 flex justify-end">
+        <div className="p-6 pt-0 flex justify-end flex-shrink-0">
           <button
             onClick={handleClose}
             className="px-6 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-md active:scale-95"

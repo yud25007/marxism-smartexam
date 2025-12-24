@@ -4,7 +4,8 @@ import { authService, StoredUser } from '../services/authService';
 import { historyService } from '../services/historyService';
 import { announcementService, Announcement } from '../services/announcementService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
-import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2 } from 'lucide-react';
 
 interface AdminDashboardProps {
   onGoHome: () => void;
@@ -19,6 +20,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   // Announcement states
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
+  const [isEditorExpanded, setIsEditorExpanded] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: '',
     content: '',
@@ -234,42 +237,84 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
           </div>
 
           {showAddAnnouncement && (
-            <div className="p-6 bg-blue-50/50 border-b border-gray-100 space-y-4">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">公告标题</label>
-                    <input 
-                      type="text" 
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                      placeholder="例如：2025期末更新"
-                      value={newAnnouncement.title}
-                      onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">公告类型</label>
-                    <select 
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                      value={newAnnouncement.type}
-                      onChange={e => setNewAnnouncement({...newAnnouncement, type: e.target.value as any})}
+            <div className={`p-6 bg-blue-50/50 border-b border-gray-100 space-y-4 ${isEditorExpanded ? 'fixed inset-0 z-[60] bg-white overflow-y-auto' : ''}`}>
+               <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-bold text-blue-800">
+                    {isEditorExpanded ? '全屏编辑模式' : '发布新公告'}
+                  </h4>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setIsPreviewMode(!isPreviewMode)}
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${isPreviewMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-200'}`}
                     >
-                      <option value="info">普通信息 (蓝色)</option>
-                      <option value="warning">重要警告 (橙色)</option>
-                      <option value="important">紧急通知 (红色)</option>
-                    </select>
+                      {isPreviewMode ? '返回编辑' : '实时预览'}
+                    </button>
+                    <button 
+                      onClick={() => setIsEditorExpanded(!isEditorExpanded)}
+                      className="p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600"
+                      title={isEditorExpanded ? "退出全屏" : "全屏编辑"}
+                    >
+                      {isEditorExpanded ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                    </button>
+                    {isEditorExpanded && (
+                      <button onClick={() => setIsEditorExpanded(false)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><X size={20} /></button>
+                    )}
                   </div>
                </div>
-               <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">详细内容</label>
-                  <textarea 
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px]"
-                    placeholder="请输入公告的具体内容..."
-                    value={newAnnouncement.content}
-                    onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
-                  ></textarea>
-               </div>
-               <div className="flex justify-end">
-                  <Button onClick={handleAddAnnouncement}>确认发布</Button>
+
+               {!isPreviewMode ? (
+                 <>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">公告标题</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="例如：2025期末更新"
+                          value={newAnnouncement.title}
+                          onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">公告类型</label>
+                        <select 
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                          value={newAnnouncement.type}
+                          onChange={e => setNewAnnouncement({...newAnnouncement, type: e.target.value as any})}
+                        >
+                          <option value="info">普通信息 (蓝色)</option>
+                          <option value="warning">重要警告 (橙色)</option>
+                          <option value="important">紧急通知 (红色)</option>
+                        </select>
+                      </div>
+                   </div>
+                   <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1 flex justify-between">
+                        详细内容 (支持 Markdown)
+                        <span className="text-[10px] text-gray-400">换行请按回车</span>
+                      </label>
+                      <textarea 
+                        className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isEditorExpanded ? 'min-h-[500px]' : 'min-h-[200px]'}`}
+                        placeholder="请输入公告的具体内容...可以使用 # 标题，**加粗** 等 Markdown 语法。"
+                        value={newAnnouncement.content}
+                        onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
+                      ></textarea>
+                   </div>
+                 </>
+               ) : (
+                 <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-lg border border-gray-200 min-h-[300px]">
+                       <h2 className="text-2xl font-bold mb-4">{newAnnouncement.title || '（暂无标题）'}</h2>
+                       <div className="prose prose-blue max-w-none">
+                          <ReactMarkdown>{newAnnouncement.content || '（暂无内容）'}</ReactMarkdown>
+                       </div>
+                    </div>
+                 </div>
+               )}
+
+               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                  {isEditorExpanded && <Button variant="outline" onClick={() => setIsEditorExpanded(false)}>关闭全屏</Button>}
+                  <Button onClick={handleAddAnnouncement}>确认发布公告</Button>
                </div>
             </div>
           )}
