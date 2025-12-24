@@ -3,11 +3,78 @@ import { Megaphone, X, Bell, Info, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { announcementService, Announcement } from '../services/announcementService';
 
-export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
-  isOpen: propsIsOpen,
-  onClose: propsOnClose
+interface AnnouncementModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ 
+  isOpen: propsIsOpen, 
+  onClose: propsOnClose 
 }) => {
-  // ... (保持之前的状态和 Effect 不变)
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentAnnouncement, setCurrentAnnouncement] = useState<Announcement | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnnouncement = async () => {
+      try {
+        const latest = await announcementService.getLatestAnnouncement();
+        if (latest) {
+          setCurrentAnnouncement(latest);
+          if (propsIsOpen === undefined) {
+            const lastSeenId = localStorage.getItem('last_seen_announcement_id');
+            if (lastSeenId !== latest.id) {
+              setIsOpen(true);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch announcement:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncement();
+  }, [propsIsOpen]);
+
+  const isVisible = propsIsOpen !== undefined ? propsIsOpen : isOpen;
+
+  const handleClose = () => {
+    if (currentAnnouncement) {
+      localStorage.setItem('last_seen_announcement_id', currentAnnouncement.id);
+    }
+    if (propsOnClose) {
+      propsOnClose();
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  const getTypeStyles = (type: Announcement['type']) => {
+    switch (type) {
+      case 'important':
+        return 'bg-red-50 text-red-700 border-red-100';
+      case 'warning':
+        return 'bg-amber-50 text-amber-700 border-amber-100';
+      default:
+        return 'bg-blue-50 text-blue-700 border-blue-100';
+    }
+  };
+
+  const getIcon = (type: Announcement['type']) => {
+    switch (type) {
+      case 'important':
+        return <Bell size={24} className="text-red-600" />;
+      case 'warning':
+        return <Megaphone size={24} className="text-amber-600" />;
+      default:
+        return <Info size={24} className="text-blue-600" />;
+    }
+  };
+
+  if (loading || !isVisible || !currentAnnouncement) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
@@ -32,11 +99,7 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         
         <div className="p-6 overflow-y-auto flex-1 text-gray-600 leading-relaxed whitespace-pre-wrap">
           <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4">
-            {ReactMarkdown ? (
-              <ReactMarkdown>{currentAnnouncement.content}</ReactMarkdown>
-            ) : (
-              <p>{currentAnnouncement.content}</p>
-            )}
+            <ReactMarkdown>{currentAnnouncement.content}</ReactMarkdown>
           </div>
         </div>
         
