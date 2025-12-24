@@ -483,7 +483,7 @@ export const EXAMS: Exam[] = RAW_DATA.chapters.map((chapter) => {
     durationMinutes: duration > 0 ? duration : 30, // Default to 30 if calc is 0
     questionCount: totalQuestions,
     difficulty: 'Medium', // Defaulting to medium
-    coverImage: `https://picsum.photos/seed/${chapter.id + 100}/800/600`,
+    coverImage: `https://picsum.photos/seed/${chapter.id * 123 + 456}/800/600`,
     questions: questions
   };
 });
