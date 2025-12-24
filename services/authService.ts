@@ -16,6 +16,7 @@ const dbUserToUser = (dbUser: DbUser): StoredUser => ({
   role: dbUser.role,
   status: dbUser.status,
   aiEnabled: dbUser.ai_enabled,
+  aiModel: dbUser.ai_model as any || 'gemini-2.5-pro',
   invitedBy: dbUser.invited_by
 });
 
@@ -30,7 +31,8 @@ const localAuth = {
         password: '123456',
         role: 'ADMIN' as UserRole,
         status: 'ACTIVE' as UserStatus,
-        aiEnabled: true
+        aiEnabled: true,
+        aiModel: 'gemini-2.5-pro'
       };
       localStorage.setItem(USERS_KEY, JSON.stringify([defaultAdmin]));
     }
@@ -60,9 +62,20 @@ const localAuth = {
   register: (username: string, password: string, role: UserRole, status: UserStatus, invitedBy?: string): boolean => {
     const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     if (users.some((u: any) => u.username === username)) return false;
-    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false, invitedBy });
+    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false, aiModel: 'gemini-2.5-pro', invitedBy });
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     return true;
+  },
+
+  updateAiModel: (username: string, model: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const idx = users.findIndex((u: any) => u.username === username);
+    if (idx !== -1) {
+      users[idx].aiModel = model;
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      return true;
+    }
+    return false;
   },
 
   updatePassword: (username: string, newPassword: string): boolean => {
@@ -229,6 +242,30 @@ export const authService = {
         const currentUser = JSON.parse(currentUserStr);
         if (currentUser.username === username) {
           currentUser.aiEnabled = enabled;
+          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+        }
+      }
+    }
+
+    return !error;
+  },
+
+  updateAiModel: async (username: string, model: string): Promise<boolean> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.updateAiModel(username, model);
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ ai_model: model })
+      .eq('username', username);
+
+    if (!error) {
+      const currentUserStr = localStorage.getItem(CURRENT_USER_KEY);
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser.username === username) {
+          currentUser.aiModel = model;
           localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
         }
       }

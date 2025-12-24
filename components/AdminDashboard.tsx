@@ -106,6 +106,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     }
   };
 
+  const handleUpdateAiModel = async (username: string, model: string) => {
+    const success = await authService.updateAiModel(username, model);
+    if (success) {
+      loadData();
+    } else {
+      alert('更新模型失败');
+    }
+  };
+
   const handleApprove = async (username: string) => {
     if (confirm(`确定批准用户 ${username} 的注册申请吗？`)) {
       await authService.approveUser(username);
@@ -384,6 +393,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                   <th className="px-6 py-4 font-medium">邀请人</th>
                   <th className="px-6 py-4 font-medium">身份权限</th>
                   <th className="px-6 py-4 font-medium text-center">AI 解析权限</th>
+                  <th className="px-6 py-4 font-medium text-center">AI 模型配置</th>
                   <th className="px-6 py-4 font-medium text-center">累计答题 (次)</th>
                   <th className="px-6 py-4 font-medium text-right">操作管理</th>
                 </tr>
@@ -420,6 +430,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                          {user.aiEnabled ? '已开启' : '已关闭'}
                          {user.aiEnabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                       </button>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <select 
+                        value={user.aiModel || 'gemini-2.5-pro'}
+                        disabled={!user.aiEnabled}
+                        onChange={(e) => handleUpdateAiModel(user.username, e.target.value)}
+                        className={`px-2 py-1 rounded border text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none bg-white ${!user.aiEnabled ? 'opacity-50 grayscale' : ''}`}
+                      >
+                        <option value="gemini-3-pro-preview">Gemini 3 Pro</option>
+                        <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                        <option value="qwen3-coder-plus">Qwen 3 Coder</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="font-bold text-gray-700">

@@ -1,8 +1,9 @@
-import { Question } from "../types";
+import { Question, QuestionType } from "../types";
+import { authService } from "./authService";
 
 const API_KEY = import.meta.env.GEMINI_API_KEY;
 const BASE_URL = import.meta.env.GEMINI_BASE_URL;
-const MODEL = import.meta.env.GEMINI_MODEL;
+const DEFAULT_MODEL = import.meta.env.GEMINI_MODEL;
 
 export const getAIExplanation = async (
   question: Question,
@@ -10,13 +11,24 @@ export const getAIExplanation = async (
 ): Promise<string> => {
   if (!API_KEY) return "AI 秘钥未配置";
 
-  const userAnswers = userSelectedIndices.map(i => question.options[i]).join(', ') || "未作答";
-  const correctAnswers = question.correctAnswers.map(i => question.options[i]).join(', ');
+  const user = authService.getCurrentUser();
+  const selectedModel = user?.aiModel || DEFAULT_MODEL;
+
+  let userAnswers = "";
+  let correctAnswers = "";
+
+  if (question.type === QuestionType.SHORT_ANSWER) {
+    userAnswers = "用户已阅读题目并进行了自主思考。"; // For short answer, we don't capture input in result yet
+    correctAnswers = question.answerText || "";
+  } else {
+    userAnswers = userSelectedIndices.map(i => question.options[i]).join(', ') || "未作答";
+    correctAnswers = question.correctAnswers.map(i => question.options[i]).join(', ');
+  }
 
   const prompt = `你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
 
     题目: "${question.text}"
-    选项: ${JSON.stringify(question.options)}
+    ${question.type !== QuestionType.SHORT_ANSWER ? `选项: ${JSON.stringify(question.options)}` : ''}
 
     用户的回答: "${userAnswers}"
     正确答案: "${correctAnswers}"
@@ -25,7 +37,7 @@ export const getAIExplanation = async (
     1. 解释正确答案的原因（结合马克思主义基本原理）。
     2. 如果用户答错了，指出其误区所在。
     3. 保持鼓励和具有教育意义的语气。
-    4. 字数控制在 100 字以内。
+    4. 字数控制在 150 字以内。
     5. 不要出现提示词，每一条结束后进行分行`;
 
   try {
@@ -36,7 +48,7 @@ export const getAIExplanation = async (
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: selectedModel,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7
       })

@@ -26,6 +26,7 @@ export interface DbUser {
   role: 'ADMIN' | 'MEMBER';
   status: 'ACTIVE' | 'PENDING';
   ai_enabled: boolean;
+  ai_model?: string;
   invited_by?: string;
   created_at: string;
 }

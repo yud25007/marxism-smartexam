@@ -49,9 +49,17 @@ export type UserRole = 'ADMIN' | 'MEMBER';
 export type UserStatus = 'ACTIVE' | 'PENDING';
 
 export interface User {
+
   username: string;
+
   role: UserRole;
+
   status: UserStatus; // New field for approval workflow
+
   aiEnabled?: boolean; 
+
+  aiModel?: 'gemini-3-pro-preview' | 'gemini-2.5-pro' | 'qwen3-coder-plus';
+
   invitedBy?: string;
+
 }
