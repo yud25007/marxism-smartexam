@@ -1,4 +1,5 @@
 import { Exam, QuestionType, Question } from './types';
+import { EXTRA_CHAPTER } from './extra_data';
 
 // The raw JSON data provided by the user
 const RAW_DATA = {
@@ -392,7 +393,8 @@ const RAW_DATA = {
         {"id": 4, "question": "树立和追求共产主义远大理想，应该积极投身中国特色社会主义建设事业，从我做起，从现在做起。", "answer": true},
         {"id": 5, "question": "在共产主义社会，人们可以实现自由而全面的发展。", "answer": true}
       ]
-    }
+    },
+    EXTRA_CHAPTER
   ]
 };
 
