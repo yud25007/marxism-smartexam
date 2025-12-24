@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Exam, ExamResult, Question, User, QuestionType } from '../types';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Save, Share } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Share } from 'lucide-react';
 import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';
@@ -26,12 +26,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   const [showNotebook, setShowNotebook] = useState(false);
   const [notes, setNotes] = useState(result.notes || "");
   const [followUpQuery, setFollowUpText] = useState("");
-  
-  // Local notes for each question
   const [localNotesMap, setLocalNotesMap] = useState<Record<string, string>>({});
   const [isSaPreview, setIsSaPreview] = useState<Record<string, boolean>>({});
-
-  // Ref to track scroll positions for bounce-back effect
   const scrollPosRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
@@ -42,7 +38,6 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
 
   const handleToggleExpand = (questionId: string) => {
     if (expandedQuestionId === questionId) {
-      // Closing: Restore scroll position
       const prevPos = scrollPosRef.current[questionId];
       setExpandedQuestionId(null);
       if (prevPos !== undefined) {
@@ -51,11 +46,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
         }, 50);
       }
     } else {
-      // Opening: Record current position
       scrollPosRef.current[questionId] = window.scrollY;
       setExpandedQuestionId(questionId);
-      
-      // Auto-scroll to the top of the expanded question after a short delay
       setTimeout(() => {
         const element = document.getElementById(`q-card-${questionId}`);
         if (element) {
@@ -71,38 +63,22 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     const optionsText = question.options.length > 0 
       ? question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')
       : "（简答/填空题）";
-    
     const correctAns = question.correctAnswers.length > 0
       ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
       : (question.answerText || "见详细解析");
 
-    const formattedNote = `
-<details>
-<summary><b>📚 [${question.type}] 题目记录：${question.text.substring(0, 40)}${question.text.length > 40 ? '...' : ''}</b></summary>
-
----
-
-#### 📥 题目原文
-> ${question.text}
-
-**选项参考：**
-\`\`\`text
-${optionsText}
-\`\`\`
-
-**正确答案：** \\`${correctAns}\
-
-#### 🤖 AI 深度解析
-${explanation}
-
-#### 💡 我的心得体会
-${personalNote}
-
-</details>
-`;
+    // Construct Markdown carefully
+    let formattedNote = "\n<details>\n";
+    formattedNote += `<summary><b>📚 [${question.type}] 题目记录：${question.text.substring(0, 40)}...</b></summary>\n\n`;
+    formattedNote += "---\n\n#### 📥 题目原文\n";
+    formattedNote += `> ${question.text}\n\n`;
+    formattedNote += "**选项参考：**\n```text\n" + optionsText + "\n```\n\n";
+    formattedNote += "**正确答案：** `" + correctAns + "`\n\n";
+    formattedNote += "#### 🤖 AI 深度解析\n" + explanation + "\n\n";
+    formattedNote += "#### 💡 我的心得体会\n" + personalNote + "\n\n";
+    formattedNote += "</details>\n";
     
-    const newNotes = notes + formattedNote;
-    setNotes(newNotes);
+    setNotes(prev => prev + formattedNote);
     setShowNotebook(true);
     alert('已成功将题目及心得整理至全卷笔记！');
   };
@@ -138,7 +114,6 @@ ${personalNote}
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Score Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 text-center border-b bg-gradient-to-b from-white to-red-50/30">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">考试结果</h2>
@@ -182,15 +157,11 @@ ${personalNote}
           </div>
         </div>
 
-        {/* Detailed Review */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xl font-bold text-gray-800">详细解析</h3>
             {isVipOrAdmin && (
-              <button 
-                onClick={() => setShowNotebook(true)}
-                className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm"
-              >
+              <button onClick={() => setShowNotebook(true)} className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm">
                 <BookOpen size={16} /> 全卷学习笔记
               </button>
             )}
@@ -240,11 +211,7 @@ ${personalNote}
                          else style += "bg-white border-gray-200 text-gray-600";
                          return (
                            <div key={i} className={style}>
-                             <div className="flex items-center justify-between">
-                               <span>{opt}</span>
-                               {isRight && <CheckCircle2 size={16} />}
-                               {isSelected && !isRight && <XCircle size={16} />}
-                             </div>
+                             <div className="flex items-center justify-between"><span>{opt}</span>{isRight && <CheckCircle2 size={16} />}{isSelected && !isRight && <XCircle size={16} />}</div>
                            </div>
                          )
                       })}
@@ -254,8 +221,7 @@ ${personalNote}
                       {isAiEnabled ? (
                         !explanation && !isLoading ? (
                           <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50" onClick={(e) => { e.stopPropagation(); handleAskAI(question); }}>
-                            <Sparkles size={16} className="mr-2" />
-                            {isNannyModeEnabled ? '保姆级考点解析' : 'AI 解析此题'}
+                            <Sparkles size={16} className="mr-2" />{isNannyModeEnabled ? '保姆级考点解析' : 'AI 解析此题'}
                           </Button>
                         ) : (
                           <div className="space-y-4">
@@ -264,20 +230,10 @@ ${personalNote}
                                <div className="pl-9">
                                  <h4 className="text-sm font-bold text-indigo-900 mb-1">{isNannyModeEnabled ? '保姆级辅导' : 'AI 解析'}</h4>
                                  {isLoading && !explanation ? (
-                                   <div className="space-y-2 animate-pulse">
-                                     <div className="h-2 bg-indigo-200 rounded w-3/4"></div>
-                                     <div className="h-2 bg-indigo-200 rounded w-full"></div>
-                                     <div className="h-2 bg-indigo-200 rounded w-5/6"></div>
-                                   </div>
+                                   <div className="space-y-2 animate-pulse"><div className="h-2 bg-indigo-200 rounded w-3/4"></div><div className="h-2 bg-indigo-200 rounded w-full"></div></div>
                                  ) : (
                                   <div className="text-sm text-indigo-800 leading-relaxed prose prose-sm prose-indigo max-w-none">
-                                       <style>{`
-                                         .markdown-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
-                                         .markdown-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
-                                         .markdown-content li { margin-bottom: 0.5rem; }
-                                         .markdown-content strong { font-weight: 800; color: #312e81; }
-                                         .markdown-content p { margin-bottom: 0.75rem; }
-                                       `}</style>
+                                       <style>{`.markdown-content ul { list-style-type: disc; margin-left: 1.5rem; } .markdown-content strong { font-weight: 800; color: #312e81; }`}</style>
                                        <div className="markdown-content"><ReactMarkdown>{explanation}</ReactMarkdown></div>
                                        {isLoading && <span className="inline-block ml-2 animate-bounce">...</span>}
                                    </div>
@@ -285,34 +241,20 @@ ${personalNote}
                                </div>
                             </div>
 
-                            {/* Question Local Note Area */}
                             {explanation && !isLoading && (
                               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
-                                  <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-                                    <Edit3 size={14} /> 个人心得笔记
-                                  </div>
-                                  <button onClick={() => setIsSaPreview(prev => ({...prev, [question.id]: !prev[question.id]}))} className="text-[10px] font-bold text-indigo-600 hover:underline">
-                                    {showSaPreview ? "返回编辑" : "Markdown 预览"}
-                                  </button>
+                                  <div className="flex items-center gap-2 text-xs font-bold text-gray-600"><Edit3 size={14} /> 个人心得笔记</div>
+                                  <button onClick={() => setIsSaPreview(prev => ({...prev, [question.id]: !prev[question.id]}))} className="text-[10px] font-bold text-indigo-600 hover:underline">{showSaPreview ? "返回编辑" : "Markdown 预览"}</button>
                                 </div>
                                 <div className="p-3">
                                   {showSaPreview ? (
-                                    <div className="min-h-[80px] text-sm text-gray-700 prose prose-sm max-w-none">
-                                      <ReactMarkdown>{localNote || "*暂未填写笔记内容*"}</ReactMarkdown>
-                                    </div>
+                                    <div className="min-h-[80px] text-sm text-gray-700 prose prose-sm max-w-none"><ReactMarkdown>{localNote || "*暂未填写笔记内容*"}</ReactMarkdown></div>
                                   ) : (
-                                    <textarea 
-                                      className="w-full text-sm focus:outline-none min-h-[80px] resize-none"
-                                      placeholder="在这里记录你的理解、口诀或易错点..."
-                                      value={localNote}
-                                      onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))}
-                                    />
+                                    <textarea className="w-full text-sm focus:outline-none min-h-[80px] resize-none" placeholder="记录心得..." value={localNote} onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))} />
                                   )}
                                   <div className="mt-3 flex justify-end">
-                                    <Button onClick={() => handleAddToNotes(question, explanation)} className="bg-indigo-600 text-white h-8 text-[10px] font-bold">
-                                      <Share size={12} className="mr-1" /> 整理并存入全卷笔记
-                                    </Button>
+                                    <Button onClick={() => handleAddToNotes(question, explanation)} className="bg-indigo-600 text-white h-8 text-[10px] font-bold"><Share size={12} className="mr-1" /> 整理并存入全卷笔记</Button>
                                   </div>
                                 </div>
                               </div>
@@ -322,7 +264,7 @@ ${personalNote}
                               <div className="flex gap-2">
                                 <div className="flex-1 relative">
                                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><MessageSquareText className="h-4 w-4 text-gray-400" /></div>
-                                  <input type="text" className="block w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="追问老师，彻底吃透..." value={followUpQuery} onChange={(e) => setFollowUpText(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter' && followUpQuery.trim()) { handleAskAI(question, followUpQuery); } }} />
+                                  <input type="text" className="block w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="追问..." value={followUpQuery} onChange={(e) => setFollowUpText(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter' && followUpQuery.trim()) { handleAskAI(question, followUpQuery); } }} />
                                 </div>
                                 <Button size="sm" disabled={isLoading || !followUpQuery.trim()} onClick={() => handleAskAI(question, followUpQuery)} className="bg-indigo-600 text-white"><Send size={14} /></Button>
                               </div>
@@ -331,7 +273,7 @@ ${personalNote}
                         )
                       ) : (
                         <div className="flex items-center gap-2 text-sm text-gray-400 bg-gray-100 p-3 rounded-lg border border-gray-200">
-                          <Lock size={14} /><span>AI 解析功能未开启，请联系管理员开通。</span>
+                          <Lock size={14} /><span>AI 解析未开启。</span>
                         </div>
                       )}
                     </div>
@@ -349,8 +291,7 @@ ${personalNote}
 
       {!showNotebook && isVipOrAdmin && (
         <button onClick={() => setShowNotebook(true)} className="fixed bottom-6 right-6 h-14 w-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all z-40 group">
-          <BookOpen size={24} />
-          <span className="absolute right-full mr-3 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">打开全卷笔记</span>
+          <BookOpen size={24} /><span className="absolute right-full mr-3 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">全卷笔记</span>
         </button>
       )}
     </div>
