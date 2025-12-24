@@ -86,14 +86,30 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
 
   const handleAskAI = async (question: Question, followUp?: string) => {
     if (loadingMap[question.id]) return;
+    
     setLoadingMap(prev => ({ ...prev, [question.id]: true }));
+    // If it's initial ask, clear previous (if any)
+    if (!followUp) {
+      setAiExplanations(prev => ({ ...prev, [question.id]: "" }));
+    }
+
     try {
       const userSelected = result.answers[question.id] || [];
-      const explanation = await getAIExplanation(question, userSelected, followUp);
-      setAiExplanations(prev => ({
-        ...prev, 
-        [question.id]: followUp ? `${prev[question.id]}\n\n--- 追问解答 ---\n${explanation}` : explanation 
-      }));
+      const currentExplanation = aiExplanations[question.id] || "";
+
+      await getAIExplanation(
+        question, 
+        userSelected, 
+        (content) => {
+          // Stream callback
+          setAiExplanations(prev => ({
+            ...prev,
+            [question.id]: followUp ? `${currentExplanation}\n\n--- 追问解答 ---\n${content}` : content
+          }));
+        },
+        followUp
+      );
+      
       if (followUp) setFollowUpText("");
     } catch (err) {
       console.error(err);

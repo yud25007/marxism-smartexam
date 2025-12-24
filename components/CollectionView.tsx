@@ -72,10 +72,13 @@ export const CollectionView: React.FC<CollectionViewProps> = ({ user, onGoHome }
     if (isLoadingAi[currentQ.id]) return;
 
     setIsLoadingAi(prev => ({ ...prev, [currentQ.id]: true }));
+    setAiExplanations(prev => ({ ...prev, [currentQ.id]: "" }));
+
     try {
       const selected = userAnswers[currentQ.id] || [];
-      const explanation = await getAIExplanation(currentQ, selected);
-      setAiExplanations(prev => ({ ...prev, [currentQ.id]: explanation }));
+      await getAIExplanation(currentQ, selected, (content) => {
+        setAiExplanations(prev => ({ ...prev, [currentQ.id]: content }));
+      });
     } catch (err) {
       console.error(err);
     } finally {
