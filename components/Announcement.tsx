@@ -30,19 +30,19 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
             return;
           }
 
-          // 自动弹出逻辑判定
-          if (propsIsOpen === undefined) {
-            const lastSeenId = localStorage.getItem('last_seen_announcement_id');
-            const dontShowUntil = localStorage.getItem('announcement_dont_show_until');
-            const now = Date.now();
+          // 自动弹出逻辑判定：当没有手动指定打开时，检查本地存储
+          const lastSeenId = localStorage.getItem('last_seen_announcement_id');
+          const dontShowUntil = localStorage.getItem('announcement_dont_show_until');
+          const now = Date.now();
 
-            // 只有当公告ID变了，或者当前时间超过了“不再提示”的有效期，才弹出
-            const isNewAnnouncement = lastSeenId !== latest.id;
-            const isQuietPeriodOver = !dontShowUntil || now > parseInt(dontShowUntil);
+          // 判定条件：
+          // 1. 公告 ID 变了（发布了新公告）
+          // 2. 或者 没有设置过“不再提示”，或者“不再提示”的有效期已过
+          const isNewAnnouncement = lastSeenId !== latest.id;
+          const isQuietPeriodOver = !dontShowUntil || now > parseInt(dontShowUntil);
 
-            if (isNewAnnouncement || isQuietPeriodOver) {
-              setIsOpen(true);
-            }
+          if (isNewAnnouncement || isQuietPeriodOver) {
+            setIsOpen(true);
           }
         }
       } catch (err) {
