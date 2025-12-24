@@ -213,9 +213,9 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                    <div className="h-2 bg-indigo-200 rounded w-5/6"></div>
                                  </div>
                                ) : (
-                                 <p className="text-sm text-indigo-800 leading-relaxed">
-                                   {aiExplanation}
-                                 </p>
+                                <div className="text-sm text-indigo-800 leading-relaxed whitespace-pre-wrap">
+                                     {aiExplanation}
+                                 </div>
                                )}
                              </div>
                           </div>
