@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
+import { AnnouncementModal } from './components/Announcement';
 import { ExamCard } from './components/ExamCard';
 import { ExamPlayer } from './components/ExamPlayer';
 import { ResultView } from './components/ResultView';
@@ -117,6 +118,7 @@ const App: React.FC = () => {
   if (view === 'CONTACT') {
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -136,6 +138,7 @@ const App: React.FC = () => {
   if (view === 'LOGIN') {
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -165,6 +168,7 @@ const App: React.FC = () => {
 
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -188,6 +192,7 @@ const App: React.FC = () => {
   if (view === 'CHANGE_PASSWORD' && currentUser) {
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -215,6 +220,7 @@ const App: React.FC = () => {
     }
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -234,6 +240,7 @@ const App: React.FC = () => {
   if (view === 'HISTORY' && currentUser) {
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -267,6 +274,7 @@ const App: React.FC = () => {
   if (view === 'RESULT' && activeExam && examResult) {
     return (
       <>
+        <AnnouncementModal />
         <Header 
           onGoHome={handleGoHome} 
           user={currentUser} 
@@ -292,6 +300,7 @@ const App: React.FC = () => {
   // Home View
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+      <AnnouncementModal />
       <Header 
         onGoHome={handleGoHome} 
         user={currentUser} 
