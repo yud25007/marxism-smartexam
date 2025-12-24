@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Exam, ExamResult, Question, User } from '../types';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star } from 'lucide-react';
 import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';
+import { favoriteService } from '../services/favoriteService';
+import ReactMarkdown from 'react-markdown';
 
 interface ResultViewProps {
   exam: Exam;
@@ -20,9 +22,28 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   // Persistent storage for explanations: questionId -> text
   const [aiExplanations, setAiExplanations] = useState<Record<string, string>>({});
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
+  const [favorites, setFavorites] = useState<string[]>([]);
   
   // Follow-up state
   const [followUpQuery, setFollowUpText] = useState("");
+
+  // Load favorites on mount
+  React.useEffect(() => {
+    if (user) {
+      favoriteService.getFavorites(user.username).then(setFavorites);
+    }
+  }, [user]);
+
+  const handleToggleFavorite = async (questionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    const success = await favoriteService.toggleFavorite(user.username, questionId);
+    if (success) {
+      setFavorites(prev => 
+        prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+      );
+    }
+  };
 
   const data = [
     { name: '正确', value: result.correctCount },
@@ -157,7 +178,16 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
-                         <span className="text-sm font-semibold text-gray-500 mb-1">第 {index + 1} 题</span>
+                         <div className="flex items-center gap-2 mb-1">
+                           <span className="text-sm font-semibold text-gray-500">第 {index + 1} 题</span>
+                           <button 
+                             onClick={(e) => handleToggleFavorite(question.id, e)}
+                             className={`p-1 rounded-full transition-colors ${favorites.includes(question.id) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`}
+                             title={favorites.includes(question.id) ? "取消收藏" : "加入错题本"}
+                           >
+                             <Star size={16} fill={favorites.includes(question.id) ? "currentColor" : "none"} />
+                           </button>
+                         </div>
                          {isOpen ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
                       </div>
                       <p className="font-medium text-gray-900">{question.text}</p>
@@ -221,8 +251,17 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                      <div className="h-2 bg-indigo-200 rounded w-5/6"></div>
                                    </div>
                                  ) : (
-                                  <div className="text-sm text-indigo-800 leading-relaxed whitespace-pre-wrap">
-                                       {explanation}
+                                  <div className="text-sm text-indigo-800 leading-relaxed prose prose-sm prose-indigo max-w-none">
+                                       <style>{`
+                                         .markdown-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+                                         .markdown-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
+                                         .markdown-content li { margin-bottom: 0.5rem; }
+                                         .markdown-content strong { font-weight: 800; color: #312e81; }
+                                         .markdown-content p { margin-bottom: 0.75rem; }
+                                       `}</style>
+                                       <div className="markdown-content">
+                                         <ReactMarkdown>{explanation}</ReactMarkdown>
+                                       </div>
                                        {isLoading && (
                                          <span className="inline-block ml-2 animate-bounce">...</span>
                                        )}

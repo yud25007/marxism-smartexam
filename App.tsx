@@ -9,14 +9,15 @@ import { HistoryView } from './components/HistoryView';
 import { ChangePasswordView } from './components/ChangePasswordView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ContactView } from './components/ContactView';
+import { MistakeView } from './components/MistakeView';
 import { EXAMS } from './constants';
 import { Exam, ExamResult, User } from './types';
 import { authService } from './services/authService';
 import { historyService } from './services/historyService';
 import { permissionService, ExamPermission } from './services/permissionService';
-import { GraduationCap, Search, TrendingUp, Lock } from 'lucide-react';
+import { GraduationCap, Search, TrendingUp, Lock, Star } from 'lucide-react';
 
-type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT';
+type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT' | 'MISTAKE';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
@@ -356,6 +357,10 @@ const App: React.FC = () => {
     );
   }
 
+  if (view === 'MISTAKE' && currentUser) {
+    return <MistakeView user={currentUser} onGoHome={handleGoHome} />;
+  }
+
   // Home View
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
@@ -411,10 +416,20 @@ const App: React.FC = () => {
       {/* Dashboard Content */}
       <main className="container mx-auto px-4 py-12 flex-1">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <TrendingUp className="text-red-600" />
-            热门练习章节
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <TrendingUp className="text-red-600" />
+              热门练习章节
+            </h2>
+            {currentUser && (
+              <button 
+                onClick={() => setView('MISTAKE')}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-yellow-50 text-yellow-700 rounded-full text-sm font-bold border border-yellow-200 hover:bg-yellow-100 transition-colors shadow-sm"
+              >
+                <Star size={14} fill="currentColor" /> 我的错题本
+              </button>
+            )}
+          </div>
           {!currentUser && (
              <span className="text-sm text-gray-500 flex items-center gap-1">
                <Lock size={14} /> 登录后解锁答题
