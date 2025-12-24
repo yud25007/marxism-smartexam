@@ -71,20 +71,17 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
       ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
       : (question.answerText || "详见解析");
 
-    // Construct Markdown without AI explanation
-    let block = "\n\n---\n\n";
-    block += "<details>\n";
-    block += `<summary><b>📝 笔记记录：${question.text.substring(0, 35)}...</b></summary>\n\n`;
-    block += "#### 📥 题目原文\n";
-    block += "> " + question.text + "\n\n";
-    block += "**备选项：**\n```text\n" + optionsText + "\n```\n\n";
-    block += "**标准答案：** `" + correctAns + "`\n\n";
-    block += "#### 💡 我的心得体会\n" + personalNote + "\n\n";
-    block += "</details>\n";
+    // Construct Clean & Foldable HTML/Markdown Mix
+    let block = `\n<details>\n<summary>📝 考点记录：${question.text.substring(0, 35)}...</summary>\n\n`;
+    block += `#### 📥 题目原文\n> ${question.text}\n\n`;
+    block += `**选项参考：**\n\`\`\`text\n${optionsText}\n\`\`\`\n\n`;
+    block += `**标准答案：** \`${correctAns}\`\n\n`;
+    block += `#### 💡 我的心得体会\n${personalNote}\n\n`;
+    block += `</details>\n<hr />\n`;
     
     setNotes(prev => prev + block);
     setShowNotebook(true);
-    alert('题目和心得已存入全卷笔记！');
+    // Notification handled by UI transition
   };
 
   const handleAskAI = async (question: Question, followUp?: string) => {

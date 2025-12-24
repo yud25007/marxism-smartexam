@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { BookOpen, X, Maximize2, Minimize2, Save, FileEdit, Eye, Sparkles } from 'lucide-react';
 import { Button } from './Button';
 import ReactMarkdown from 'react-markdown';
+import React, { useState, useEffect } from 'react';
+import { BookOpen, X, Maximize2, Minimize2, Save, FileEdit, Eye } from 'lucide-react';
+import { Button } from './Button';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { historyService } from '../services/historyService';
 
 interface NotebookProps {
@@ -18,13 +23,15 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  // Sync with external updates (like handleAddToNotes)
+  // Sync with external updates & Auto-preview on major content add
   useEffect(() => {
+    if (initialContent.length > content.length + 50) {
+      setIsPreview(true); // Switch to preview when a big block is added
+    }
     setContent(initialContent);
   }, [initialContent]);
 
   useEffect(() => {
-    // Auto-save logic (debounced)
     const timer = setTimeout(() => {
       if (content !== initialContent) {
         handleSave();
@@ -47,7 +54,6 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
         ? 'inset-4 md:inset-10 rounded-2xl' 
         : 'bottom-4 right-4 w-[90vw] md:w-[400px] h-[500px] rounded-xl'}`}
     >
-      {/* Header */}
       <div className="bg-indigo-600 p-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">
           <BookOpen size={20} />
@@ -71,32 +77,34 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
         </div>
       </div>
 
-      {/* Toolbar / Tips */}
       {!isPreview && (
         <div className="bg-indigo-50 px-4 py-2 border-b border-indigo-100 flex items-center justify-between">
            <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Markdown Editor</span>
-           <span className="text-[10px] text-indigo-400">点击解析下方的“记入笔记”自动抓取</span>
+           <span className="text-[10px] text-indigo-400">折叠列表已激活</span>
         </div>
       )}
 
-      {/* Content Area */}
       <div className="flex-1 overflow-hidden relative flex flex-col">
         {isPreview ? (
           <div className="flex-1 overflow-y-auto p-6 prose prose-sm prose-indigo max-w-none bg-gray-50/30">
             <style>{`
-              .notebook-preview h1 { border-bottom: 2px solid #e0e7ff; padding-bottom: 0.5rem; margin-top: 1.5rem; }
-              .notebook-preview blockquote { border-left: 4px solid #6366f1; background: #f8fafc; padding: 1rem; border-radius: 0 8px 8px 0; }
-              .notebook-preview strong { color: #1e1b4b; font-weight: 800; }
-              .notebook-preview ul { list-style-type: disc; margin-left: 1.2rem; }
+              .notebook-preview details { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem; background: white; overflow: hidden; }
+              .notebook-preview summary { padding: 12px 16px; cursor: pointer; font-weight: bold; background: #f8fafc; border-bottom: 1px solid transparent; transition: all 0.2s; list-style: none; }
+              .notebook-preview summary::-webkit-details-marker { display: none; }
+              .notebook-preview details[open] summary { border-bottom-color: #e2e8f0; background: #eff6ff; color: #1e40af; }
+              .notebook-preview blockquote { border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+              .notebook-preview pre { background: #1e293b; color: #f8fafc; padding: 12px; border-radius: 6px; font-size: 0.8rem; overflow-x: auto; }
             `}</style>
             <div className="notebook-preview">
-              <ReactMarkdown>{content || "*笔记内容为空，开始记录吧...*"}</ReactMarkdown>
+              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                {content}
+              </ReactMarkdown>
             </div>
           </div>
         ) : (
           <textarea
             className="flex-1 w-full p-4 focus:outline-none resize-none font-mono text-sm leading-relaxed"
-            placeholder="在这里记录你的思考，或者点击题目下的按钮自动添加..."
+            placeholder="在这里记录你的思考..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
             id="notebook-textarea"
@@ -104,7 +112,6 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
         )}
       </div>
 
-      {/* Footer */}
       <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center">
          <div className="flex gap-2">
             <span className="text-[10px] text-gray-400">字符: {content.length}</span>
