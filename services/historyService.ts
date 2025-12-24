@@ -5,6 +5,7 @@ const HISTORY_KEY_PREFIX = 'smart_exam_history_';
 
 // Convert database record to ExamResult
 const dbToExamResult = (record: DbExamHistory): ExamResult => ({
+  id: record.id,
   examId: record.exam_id,
   score: record.score,
   maxScore: record.max_score,
@@ -13,6 +14,7 @@ const dbToExamResult = (record: DbExamHistory): ExamResult => ({
   incorrectCount: record.incorrect_count,
   unansweredCount: record.unanswered_count,
   answers: record.answers,
+  notes: record.notes || '',
   completedAt: new Date(record.completed_at)
 });
 
@@ -63,7 +65,7 @@ export const historyService = {
       return;
     }
 
-    await supabase
+    const { data, error } = await supabase
       .from('exam_history')
       .insert({
         username: username,
@@ -75,8 +77,29 @@ export const historyService = {
         incorrect_count: result.incorrectCount,
         unanswered_count: result.unansweredCount,
         answers: result.answers,
+        notes: result.notes || '',
         completed_at: result.completedAt
-      });
+      })
+      .select('id')
+      .single();
+    
+    if (data) result.id = data.id;
+  },
+
+  updateNotes: async (recordId: string, notes: string): Promise<boolean> => {
+    if (!recordId) return false;
+
+    if (!isSupabaseConfigured || !supabase) {
+      // Local mode update would be complex without ID, but we try based on latest
+      return false; 
+    }
+
+    const { error } = await supabase
+      .from('exam_history')
+      .update({ notes })
+      .eq('id', recordId);
+
+    return !error;
   },
 
   getHistory: async (username: string): Promise<ExamResult[]> => {

@@ -33,6 +33,7 @@ export interface UserAnswer {
 }
 
 export interface ExamResult {
+  id?: string; // Database record ID
   examId: string;
   score: number;
   maxScore: number;
@@ -41,6 +42,7 @@ export interface ExamResult {
   incorrectCount: number;
   unansweredCount: number;
   answers: Record<string, number[]>; // questionId -> selectedIndices
+  notes?: string;
   completedAt: Date;
 }
 

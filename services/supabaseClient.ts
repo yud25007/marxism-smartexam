@@ -42,5 +42,6 @@ export interface DbExamHistory {
   incorrect_count: number;
   unanswered_count: number;
   answers: Record<string, number[]>;
+  notes?: string;
   completed_at: string;
 }

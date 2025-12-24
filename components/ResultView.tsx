@@ -5,6 +5,7 @@ import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';
 import { favoriteService } from '../services/favoriteService';
+import { Notebook } from './Notebook';
 import ReactMarkdown from 'react-markdown';
 
 interface ResultViewProps {
@@ -23,9 +24,19 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   const [aiExplanations, setAiExplanations] = useState<Record<string, string>>({});
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [showNotebook, setShowNotebook] = useState(false);
+  const [notes, setNotes] = useState(result.notes || "");
   
   // Follow-up state
   const [followUpQuery, setFollowUpText] = useState("");
+
+  const handleAddToNotes = (question: Question, explanation: string) => {
+    const formattedNote = `\n\n### 题目：${question.text}\n> **AI 解析：**\n${explanation}\n\n---`;
+    const newNotes = notes + formattedNote;
+    setNotes(newNotes);
+    setShowNotebook(true);
+    // Focus or scroll to notebook is handled by opening it
+  };
 
   // Load favorites on mount
   React.useEffect(() => {
@@ -267,7 +278,14 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                          <span className="inline-block ml-2 animate-bounce">...</span>
                                        )}
                                    </div>
-                                 )}
+                                   {!isLoading && (
+                                     <button 
+                                       onClick={() => handleAddToNotes(question, explanation)}
+                                       className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-indigo-500 hover:text-indigo-700 bg-white px-2 py-1 rounded border border-indigo-100 transition-colors"
+                                     >
+                                       <BookOpen size={12} /> 记入笔记
+                                     </button>
+                                   )}
                                </div>
                             </div>
 
@@ -315,8 +333,29 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
               </div>
             );
           })}
-        </div>
-      </div>
-    </div>
-  );
-};
+                </div>
+              </div>
+        
+              {/* Notebook Floating Component */}
+              {showNotebook && (
+                <Notebook 
+                  recordId={result.id}
+                  initialContent={notes}
+                  onClose={() => setShowNotebook(false)}
+                />
+              )}
+        
+              {/* Persistent Floating Button to open notebook */}
+              {!showNotebook && (
+                <button 
+                  onClick={() => setShowNotebook(true)}
+                  className="fixed bottom-6 right-6 h-14 w-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all z-40 group"
+                >
+                  <BookOpen size={24} />
+                  <span className="absolute right-full mr-3 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">打开答题笔记</span>
+                </button>
+              )}
+            </div>
+          );
+        };
+        
