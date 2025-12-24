@@ -18,6 +18,11 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
+  // Sync with external updates (like handleAddToNotes)
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent]);
+
   useEffect(() => {
     // Auto-save logic (debounced)
     const timer = setTimeout(() => {
