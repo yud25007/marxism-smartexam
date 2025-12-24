@@ -1,44 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Megaphone, X, Bell, Info } from 'lucide-react';
-
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-  type: 'info' | 'warning' | 'important';
-}
-
-const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
-  {
-    id: '1',
-    title: '系统更新公告',
-    content: '欢迎使用马克思主义基本原理在线智能刷题系统！我们最近更新了题库内容，增加了第七章的模拟试题，并优化了答题界面的加载速度。',
-    date: '2025-12-24',
-    type: 'important'
-  },
-  {
-    id: '2',
-    title: '期末复习指南',
-    content: '期末考试临近，建议各位同学重点练习“唯物辩证法”和“价值规律”相关章节，这部分内容在往年真题中占比约30%。',
-    date: '2025-12-20',
-    type: 'info'
-  }
-];
+import { Megaphone, X, Bell, Info, Loader2 } from 'lucide-react';
+import { announcementService, Announcement } from '../services/announcementService';
 
 export const AnnouncementModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentAnnouncement, setCurrentAnnouncement] = useState<Announcement | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 检查本地存储，如果这个公告还没看过，就显示
-    const lastSeenId = localStorage.getItem('last_seen_announcement_id');
-    const latestAnnouncement = DEFAULT_ANNOUNCEMENTS[0];
-    
-    if (lastSeenId !== latestAnnouncement.id) {
-      setCurrentAnnouncement(latestAnnouncement);
-      setIsOpen(true);
-    }
+    const fetchAnnouncement = async () => {
+      try {
+        const latest = await announcementService.getLatestAnnouncement();
+        if (latest) {
+          // 检查本地存储，如果这个公告还没看过，就显示
+          const lastSeenId = localStorage.getItem('last_seen_announcement_id');
+          if (lastSeenId !== latest.id) {
+            setCurrentAnnouncement(latest);
+            setIsOpen(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch announcement:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncement();
   }, []);
 
   const handleClose = () => {
@@ -48,7 +36,7 @@ export const AnnouncementModal: React.FC = () => {
     setIsOpen(false);
   };
 
-  if (!isOpen || !currentAnnouncement) return null;
+  if (loading || !isOpen || !currentAnnouncement) return null;
 
   const getTypeStyles = (type: Announcement['type']) => {
     switch (type) {

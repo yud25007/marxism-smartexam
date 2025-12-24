@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { authService, StoredUser } from '../services/authService';
 import { historyService } from '../services/historyService';
+import { announcementService, Announcement } from '../services/announcementService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
-import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff } from 'lucide-react';
+import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2 } from 'lucide-react';
 
 interface AdminDashboardProps {
   onGoHome: () => void;
@@ -14,6 +15,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const [examCounts, setExamCounts] = useState<Record<string, number>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  
+  // Announcement states
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
+  const [newAnnouncement, setNewAnnouncement] = useState({
+    title: '',
+    content: '',
+    type: 'info' as Announcement['type']
+  });
 
   useEffect(() => {
     loadData();
@@ -22,16 +32,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [usersData, statsData] = await Promise.all([
+      const [usersData, statsData, announcementData] = await Promise.all([
         authService.getAllUsers(),
-        historyService.getAllUserStats()
+        historyService.getAllUserStats(),
+        announcementService.getAllAnnouncements()
       ]);
       setUsers(usersData);
       setExamCounts(statsData);
+      setAnnouncements(announcementData);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddAnnouncement = async () => {
+    if (!newAnnouncement.title || !newAnnouncement.content) {
+      alert('请填写标题和内容');
+      return;
+    }
+    const success = await announcementService.saveAnnouncement(newAnnouncement);
+    if (success) {
+      alert('发布成功！');
+      setShowAddAnnouncement(false);
+      setNewAnnouncement({ title: '', content: '', type: 'info' });
+      loadData();
+    } else {
+      alert('发布失败，请检查数据库配置');
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (confirm('确定要删除这条公告吗？')) {
+      const success = await announcementService.deleteAnnouncement(id);
+      if (success) {
+        loadData();
+      }
     }
   };
 
@@ -174,6 +211,110 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
              </div>
           </div>
         )}
+
+        {/* Announcements Management Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Megaphone className="text-gray-400" size={20} />
+              <h3 className="font-bold text-gray-800">系统公告管理</h3>
+            </div>
+            <Button size="sm" onClick={() => setShowAddAnnouncement(!showAddAnnouncement)}>
+              {showAddAnnouncement ? <X size={16} className="mr-1" /> : <Plus size={16} className="mr-1" />}
+              {showAddAnnouncement ? '取消发布' : '发布新公告'}
+            </Button>
+          </div>
+
+          {showAddAnnouncement && (
+            <div className="p-6 bg-blue-50/50 border-b border-gray-100 space-y-4">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">公告标题</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="例如：2025期末更新"
+                      value={newAnnouncement.title}
+                      onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">公告类型</label>
+                    <select 
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      value={newAnnouncement.type}
+                      onChange={e => setNewAnnouncement({...newAnnouncement, type: e.target.value as any})}
+                    >
+                      <option value="info">普通信息 (蓝色)</option>
+                      <option value="warning">重要警告 (橙色)</option>
+                      <option value="important">紧急通知 (红色)</option>
+                    </select>
+                  </div>
+               </div>
+               <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">详细内容</label>
+                  <textarea 
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px]"
+                    placeholder="请输入公告的具体内容..."
+                    value={newAnnouncement.content}
+                    onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
+                  ></textarea>
+               </div>
+               <div className="flex justify-end">
+                  <Button onClick={handleAddAnnouncement}>确认发布</Button>
+               </div>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 text-sm border-b border-gray-200">
+                  <th className="px-6 py-4 font-medium">标题</th>
+                  <th className="px-6 py-4 font-medium">类型</th>
+                  <th className="px-6 py-4 font-medium">内容摘要</th>
+                  <th className="px-6 py-4 font-medium">日期</th>
+                  <th className="px-6 py-4 font-medium text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {announcements.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-gray-400 italic">
+                      暂无公告，点击右上角发布您的第一条公告。
+                    </td>
+                  </tr>
+                ) : (
+                  announcements.map((ann) => (
+                    <tr key={ann.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-semibold text-gray-900">{ann.title}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                          ann.type === 'important' ? 'bg-red-100 text-red-700' :
+                          ann.type === 'warning' ? 'bg-orange-100 text-orange-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {ann.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{ann.content}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">{ann.date}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => handleDeleteAnnouncement(ann.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                          title="删除公告"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         {/* Active Users List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
