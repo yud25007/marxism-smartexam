@@ -38,8 +38,9 @@ const App: React.FC = () => {
       return;
     }
 
-    // Lock new exam for non-admins
-    if (exam.id === 'chapter_8' && currentUser.role !== 'ADMIN') {
+    // Lock new exams for non-admins (Chapters 8, 9, 10, 11)
+    const newChapterIds = ['chapter_8', 'chapter_9', 'chapter_10', 'chapter_11'];
+    if (newChapterIds.includes(exam.id) && currentUser.role !== 'ADMIN') {
       alert('该题库目前仅限管理员访问练习。');
       return;
     }
@@ -401,13 +402,14 @@ const App: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {EXAMS.map(exam => {
-            const isChapter8Locked = exam.id === 'chapter_8' && currentUser?.role !== 'ADMIN';
+            const newChapterIds = ['chapter_8', 'chapter_9', 'chapter_10', 'chapter_11'];
+            const isNewChapterLocked = newChapterIds.includes(exam.id) && currentUser?.role !== 'ADMIN';
             return (
               <ExamCard 
                 key={exam.id} 
                 exam={exam} 
                 onStart={handleStartExam}
-                isLocked={!currentUser || isChapter8Locked}
+                isLocked={!currentUser || isNewChapterLocked}
               />
             );
           })}
