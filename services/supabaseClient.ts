@@ -23,7 +23,7 @@ export interface DbUser {
   id: string;
   username: string;
   password_hash: string;
-  role: 'ADMIN' | 'MEMBER';
+  role: 'ADMIN' | 'VIP' | 'MEMBER';
   status: 'ACTIVE' | 'PENDING';
   ai_enabled: boolean;
   ai_model?: string;
