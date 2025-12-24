@@ -181,6 +181,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                   <thead className="bg-orange-50/50">
                     <tr className="text-orange-900 text-sm">
                       <th className="px-6 py-3 font-medium">申请用户名</th>
+                      <th className="px-6 py-3 font-medium">邀请人</th>
                       <th className="px-6 py-3 font-medium text-right">审核操作</th>
                     </tr>
                   </thead>
@@ -188,6 +189,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                     {pendingUsers.map(user => (
                       <tr key={user.username} className="hover:bg-orange-50/30">
                         <td className="px-6 py-4 font-semibold text-gray-900">{user.username}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {user.invitedBy ? (
+                            <span className="inline-flex items-center gap-1 bg-white px-2 py-1 rounded border border-orange-200">
+                              <Users size={12} /> {user.invitedBy}
+                            </span>
+                          ) : '-'}
+                        </td>
                         <td className="px-6 py-4 text-right flex justify-end gap-2">
                           <Button
                             size="sm"
@@ -328,6 +336,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-sm border-b border-gray-200">
                   <th className="px-6 py-4 font-medium">用户名</th>
+                  <th className="px-6 py-4 font-medium">邀请人</th>
                   <th className="px-6 py-4 font-medium">身份权限</th>
                   <th className="px-6 py-4 font-medium text-center">AI 解析权限</th>
                   <th className="px-6 py-4 font-medium text-center">累计答题 (次)</th>
@@ -339,6 +348,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                   <tr key={user.username} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-semibold text-gray-900">{user.username}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">{user.invitedBy || '-'}</div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

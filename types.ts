@@ -51,4 +51,5 @@ export interface User {
   role: UserRole;
   status: UserStatus; // New field for approval workflow
   aiEnabled?: boolean; 
+  invitedBy?: string;
 }

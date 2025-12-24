@@ -15,7 +15,8 @@ const dbUserToUser = (dbUser: DbUser): StoredUser => ({
   username: dbUser.username,
   role: dbUser.role,
   status: dbUser.status,
-  aiEnabled: dbUser.ai_enabled
+  aiEnabled: dbUser.ai_enabled,
+  invitedBy: dbUser.invited_by
 });
 
 // ========== 本地存储模式 ==========
@@ -56,10 +57,10 @@ const localAuth = {
     return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
   },
 
-  register: (username: string, password: string, role: UserRole, status: UserStatus): boolean => {
+  register: (username: string, password: string, role: UserRole, status: UserStatus, invitedBy?: string): boolean => {
     const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     if (users.some((u: any) => u.username === username)) return false;
-    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false });
+    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false, invitedBy });
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     return true;
   },
@@ -165,9 +166,9 @@ export const authService = {
     return { ...user, aiEnabled: user.aiEnabled ?? false, status: user.status || 'ACTIVE' };
   },
 
-  register: async (username: string, password: string, role: UserRole = 'MEMBER', status: UserStatus = 'PENDING'): Promise<boolean> => {
+  register: async (username: string, password: string, role: UserRole = 'MEMBER', status: UserStatus = 'PENDING', invitedBy?: string): Promise<boolean> => {
     if (!isSupabaseConfigured || !supabase) {
-      return localAuth.register(username, password, role, status);
+      return localAuth.register(username, password, role, status, invitedBy);
     }
 
     const { data: existing } = await supabase
@@ -180,7 +181,7 @@ export const authService = {
 
     const { error } = await supabase
       .from('users')
-      .insert({ username, password_hash: password, role, status, ai_enabled: false });
+      .insert({ username, password_hash: password, role, status, ai_enabled: false, invited_by: invitedBy });
 
     return !error;
   },

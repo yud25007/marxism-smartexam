@@ -108,6 +108,7 @@ interface RegisterViewProps {
 export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, onCancel, isAdminMode = false }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [invitedBy, setInvitedBy] = useState('');
   const [role, setRole] = useState<UserRole>('MEMBER');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -125,7 +126,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
 
     try {
       const initialStatus = isAdminMode ? 'ACTIVE' : 'PENDING';
-      const isSuccess = await authService.register(username, password, role, initialStatus);
+      const isSuccess = await authService.register(username, password, role, initialStatus, invitedBy);
 
       if (isSuccess) {
         if (isAdminMode) {
@@ -136,6 +137,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
         }
         setUsername('');
         setPassword('');
+        setInvitedBy('');
       } else {
         setError('用户名已存在');
       }
@@ -168,6 +170,12 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
                 <label className="block text-sm font-medium text-gray-700 mb-1">设置密码</label>
                 <input type="text" required className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="请输入密码" disabled={loading} />
               </div>
+              {!isAdminMode && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">邀请人用户名 (可选)</label>
+                  <input type="text" className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" value={invitedBy} onChange={(e) => setInvitedBy(e.target.value)} placeholder="输入推荐您的用户名" disabled={loading} />
+                </div>
+              )}
               {isAdminMode && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">角色权限</label>
