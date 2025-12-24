@@ -15,6 +15,7 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentAnnouncement, setCurrentAnnouncement] = useState<Announcement | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dontShowToday, setDontShowToday] = useState(false);
 
   useEffect(() => {
     const fetchAnnouncement = async () => {
@@ -22,9 +23,24 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         const latest = await announcementService.getLatestAnnouncement();
         if (latest) {
           setCurrentAnnouncement(latest);
+          
+          // 如果是外部强制打开（点击小喇叭），则直接显示
+          if (propsIsOpen === true) {
+            setIsOpen(true);
+            return;
+          }
+
+          // 自动弹出逻辑判定
           if (propsIsOpen === undefined) {
             const lastSeenId = localStorage.getItem('last_seen_announcement_id');
-            if (lastSeenId !== latest.id) {
+            const dontShowUntil = localStorage.getItem('announcement_dont_show_until');
+            const now = Date.now();
+
+            // 只有当公告ID变了，或者当前时间超过了“不再提示”的有效期，才弹出
+            const isNewAnnouncement = lastSeenId !== latest.id;
+            const isQuietPeriodOver = !dontShowUntil || now > parseInt(dontShowUntil);
+
+            if (isNewAnnouncement || isQuietPeriodOver) {
               setIsOpen(true);
             }
           }
@@ -44,7 +60,14 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const handleClose = () => {
     if (currentAnnouncement) {
       localStorage.setItem('last_seen_announcement_id', currentAnnouncement.id);
+      
+      // 如果勾选了“今日不再提示”，设置有效期为 24 小时
+      if (dontShowToday) {
+        const tomorrow = Date.now() + 24 * 60 * 60 * 1000;
+        localStorage.setItem('announcement_dont_show_until', tomorrow.toString());
+      }
     }
+    
     if (propsOnClose) {
       propsOnClose();
     } else {
@@ -103,10 +126,19 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
           </div>
         </div>
         
-        <div className="p-6 pt-0 flex justify-end flex-shrink-0">
+        <div className="p-4 border-t border-gray-50 flex items-center justify-between bg-gray-50/50 flex-shrink-0">
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer"
+              checked={dontShowToday}
+              onChange={(e) => setDontShowToday(e.target.checked)}
+            />
+            <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">今日不再提示</span>
+          </label>
           <button
             onClick={handleClose}
-            className="px-6 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-md active:scale-95"
+            className="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-md active:scale-95"
           >
             知道了
           </button>
