@@ -37,6 +37,13 @@ const App: React.FC = () => {
       window.scrollTo(0, 0);
       return;
     }
+
+    // Lock new exam for non-admins
+    if (exam.id === 'chapter_8' && currentUser.role !== 'ADMIN') {
+      alert('该题库目前仅限管理员访问练习。');
+      return;
+    }
+
     setActiveExam(exam);
     setView('EXAM');
     window.scrollTo(0, 0);
@@ -393,14 +400,17 @@ const App: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {EXAMS.map(exam => (
-            <ExamCard 
-              key={exam.id} 
-              exam={exam} 
-              onStart={handleStartExam}
-              isLocked={!currentUser}
-            />
-          ))}
+          {EXAMS.map(exam => {
+            const isChapter8Locked = exam.id === 'chapter_8' && currentUser?.role !== 'ADMIN';
+            return (
+              <ExamCard 
+                key={exam.id} 
+                exam={exam} 
+                onStart={handleStartExam}
+                isLocked={!currentUser || isChapter8Locked}
+              />
+            );
+          })}
           
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 min-h-[340px] text-center hover:border-gray-300 transition-colors cursor-pointer group">
              <div className="h-14 w-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
