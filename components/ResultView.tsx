@@ -183,7 +183,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                            <button 
                              onClick={(e) => handleToggleFavorite(question.id, e)}
                              className={`p-1 rounded-full transition-colors ${favorites.includes(question.id) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`}
-                             title={favorites.includes(question.id) ? "取消收藏" : "加入错题本"}
+                             title={favorites.includes(question.id) ? "取消收藏" : "加入收藏"}
                            >
                              <Star size={16} fill={favorites.includes(question.id) ? "currentColor" : "none"} />
                            </button>

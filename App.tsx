@@ -9,7 +9,7 @@ import { HistoryView } from './components/HistoryView';
 import { ChangePasswordView } from './components/ChangePasswordView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ContactView } from './components/ContactView';
-import { MistakeView } from './components/MistakeView';
+import { CollectionView } from './components/CollectionView';
 import { EXAMS } from './constants';
 import { Exam, ExamResult, User } from './types';
 import { authService } from './services/authService';
@@ -17,7 +17,7 @@ import { historyService } from './services/historyService';
 import { permissionService, ExamPermission } from './services/permissionService';
 import { GraduationCap, Search, TrendingUp, Lock, Star } from 'lucide-react';
 
-type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT' | 'MISTAKE';
+type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT' | 'COLLECTION';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
@@ -357,8 +357,8 @@ const App: React.FC = () => {
     );
   }
 
-  if (view === 'MISTAKE' && currentUser) {
-    return <MistakeView user={currentUser} onGoHome={handleGoHome} />;
+  if (view === 'COLLECTION' && currentUser) {
+    return <CollectionView user={currentUser} onGoHome={handleGoHome} />;
   }
 
   // Home View
@@ -423,10 +423,10 @@ const App: React.FC = () => {
             </h2>
             {currentUser && (
               <button 
-                onClick={() => setView('MISTAKE')}
+                onClick={() => setView('COLLECTION')}
                 className="flex items-center gap-1.5 px-4 py-1.5 bg-yellow-50 text-yellow-700 rounded-full text-sm font-bold border border-yellow-200 hover:bg-yellow-100 transition-colors shadow-sm"
               >
-                <Star size={14} fill="currentColor" /> 我的错题本
+                <Star size={14} fill="currentColor" /> 题目收藏
               </button>
             )}
           </div>
