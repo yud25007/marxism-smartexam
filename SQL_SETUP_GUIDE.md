@@ -1,47 +1,38 @@
-# Supabase 数据库配置指南
+-- 运行以下 SQL 语句来初始化章节权限控制
+-- 位置：Supabase -> SQL Editor -> New Query
 
-为了使“公告系统”和“邀请人功能”正常工作，请按照以下步骤在 Supabase 后台执行 SQL。
-
-## 第一步：执行基础结构 SQL
-请在 Supabase 的 **SQL Editor** 中粘贴并运行以下代码：
-
-```sql
--- 创建公告表
-CREATE TABLE IF NOT EXISTS announcements (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  date TEXT NOT NULL,
-  type TEXT CHECK (type IN ('info', 'warning', 'important')) DEFAULT 'info',
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- 1. 创建章节权限表
+CREATE TABLE IF NOT EXISTS exam_permissions (
+  exam_id TEXT PRIMARY KEY, -- 对应代码中的 chapter_id (如 chapter_8)
+  is_public BOOLEAN DEFAULT FALSE, -- 是否对普通用户公开
+  min_role TEXT DEFAULT 'ADMIN', -- 最低访问权限 (ADMIN 或 MEMBER)
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 为用户表增加邀请人字段
-ALTER TABLE users ADD COLUMN IF NOT EXISTS invited_by TEXT;
-```
+-- 2. 启用行级安全（可选，根据您的 Supabase 设置）
+ALTER TABLE exam_permissions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "所有人可读权限配置" ON exam_permissions FOR SELECT USING (true);
 
-## 第二步：配置安全策略 (RLS)
-为了确保前端可以正常读取数据，请执行以下权限设置：
+-- 3. 为已有的 0-7 章初始化权限（设为公开）
+INSERT INTO exam_permissions (exam_id, is_public, min_role)
+VALUES 
+  ('chapter_0', TRUE, 'MEMBER'),
+  ('chapter_1', TRUE, 'MEMBER'),
+  ('chapter_2', TRUE, 'MEMBER'),
+  ('chapter_3', TRUE, 'MEMBER'),
+  ('chapter_4', TRUE, 'MEMBER'),
+  ('chapter_5', TRUE, 'MEMBER'),
+  ('chapter_6', TRUE, 'MEMBER'),
+  ('chapter_7', TRUE, 'MEMBER')
+ON CONFLICT (exam_id) DO UPDATE 
+SET is_public = EXCLUDED.is_public, min_role = EXCLUDED.min_role;
 
-```sql
--- 开启公告表的行级安全
-ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-
--- 允许所有人查看公告
-DROP POLICY IF EXISTS "Allow public read" ON announcements;
-CREATE POLICY "Allow public read" ON announcements FOR SELECT USING (true);
-
--- 允许所有操作（简单模式）
--- 在生产环境中，建议根据 role='ADMIN' 进行更严格的限制
-DROP POLICY IF EXISTS "Allow all access" ON announcements;
-CREATE POLICY "Allow all access" ON announcements FOR ALL USING (true);
-```
-
-## 常见问题排查
-1. **报错：column "invited_by" already exists**
-   - 说明您之前已经成功执行过该命令，可以忽略，不影响使用。
-2. **公告发了但不显示**
-   - 请检查 `announcements` 表的 RLS 是否已关闭，或者是否已添加 `Allow public read` 策略。
-3. **后台保存公告失败**
-   - 请确保您的 Supabase 账号有权限操作该表，或者直接关闭该表的 RLS（不推荐）。
+-- 4. 为新增的 8-11 章初始化权限（默认仅限管理员）
+INSERT INTO exam_permissions (exam_id, is_public, min_role)
+VALUES 
+  ('chapter_8', FALSE, 'ADMIN'),
+  ('chapter_9', FALSE, 'ADMIN'),
+  ('chapter_10', FALSE, 'ADMIN'),
+  ('chapter_11', FALSE, 'ADMIN')
+ON CONFLICT (exam_id) DO UPDATE 
+SET is_public = EXCLUDED.is_public, min_role = EXCLUDED.min_role;

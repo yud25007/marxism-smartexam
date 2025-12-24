@@ -13,6 +13,7 @@ import { EXAMS } from './constants';
 import { Exam, ExamResult, User } from './types';
 import { authService } from './services/authService';
 import { historyService } from './services/historyService';
+import { permissionService, ExamPermission } from './services/permissionService';
 import { GraduationCap, Search, TrendingUp, Lock } from 'lucide-react';
 
 type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT';
@@ -24,11 +25,18 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [history, setHistory] = useState<ExamResult[]>([]);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [permissions, setPermissions] = useState<Record<string, ExamPermission>>({});
 
-  // Load user on mount
+  // Load user and permissions on mount
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    setCurrentUser(user);
+    const init = async () => {
+      const user = authService.getCurrentUser();
+      setCurrentUser(user);
+      
+      const perms = await permissionService.getAllPermissions();
+      setPermissions(perms);
+    };
+    init();
   }, []);
 
   const handleStartExam = (exam: Exam) => {
@@ -38,11 +46,25 @@ const App: React.FC = () => {
       return;
     }
 
-    // Lock new exams for non-admins (Chapters 8, 9, 10, 11)
-    const newChapterIds = ['chapter_8', 'chapter_9', 'chapter_10', 'chapter_11'];
-    if (newChapterIds.includes(exam.id) && currentUser.role !== 'ADMIN') {
-      alert('该题库目前仅限管理员访问练习。');
-      return;
+    // Dynamic Permission Check
+    const perm = permissions[exam.id];
+    if (perm) {
+      // If min_role is ADMIN, block non-admins
+      if (perm.min_role === 'ADMIN' && currentUser.role !== 'ADMIN') {
+        alert('该题库目前仅限管理员访问。');
+        return;
+      }
+      // If not public, block anyone except admin
+      if (!perm.is_public && currentUser.role !== 'ADMIN') {
+        alert('该题库尚未公开。');
+        return;
+      }
+    } else {
+      // Default fallback for new IDs not in DB: only ADMIN can access
+      if (currentUser.role !== 'ADMIN') {
+        alert('此新增章节正在维护，仅限管理员访问。');
+        return;
+      }
     }
 
     setActiveExam(exam);
@@ -402,14 +424,22 @@ const App: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {EXAMS.map(exam => {
-            const newChapterIds = ['chapter_8', 'chapter_9', 'chapter_10', 'chapter_11'];
-            const isNewChapterLocked = newChapterIds.includes(exam.id) && currentUser?.role !== 'ADMIN';
+            const perm = permissions[exam.id];
+            let isLockedByPerm = false;
+            
+            if (perm) {
+              isLockedByPerm = (perm.min_role === 'ADMIN' && currentUser?.role !== 'ADMIN') || (!perm.is_public && currentUser?.role !== 'ADMIN');
+            } else {
+              // Default for new unconfigured chapters: Lock for non-admins
+              isLockedByPerm = currentUser?.role !== 'ADMIN';
+            }
+
             return (
               <ExamCard 
                 key={exam.id} 
                 exam={exam} 
                 onStart={handleStartExam}
-                isLocked={!currentUser || isNewChapterLocked}
+                isLocked={!currentUser || isLockedByPerm}
               />
             );
           })}
