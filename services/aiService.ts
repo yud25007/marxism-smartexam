@@ -25,7 +25,8 @@ export const getAIExplanation = async (
     1. 解释正确答案的原因（结合马克思主义基本原理）。
     2. 如果用户答错了，指出其误区所在。
     3. 保持鼓励和具有教育意义的语气。
-    4. 字数控制在 200 字以内。`;
+    4. 字数控制在 100 字以内。
+    5. 不要出现提示词，每一条结束后进行分行`;
 
   try {
     const response = await fetch(`${BASE_URL}/chat/completions`, {
