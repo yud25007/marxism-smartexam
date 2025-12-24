@@ -7,38 +7,59 @@ const DEFAULT_MODEL = import.meta.env.GEMINI_MODEL;
 
 export const getAIExplanation = async (
   question: Question,
-  userSelectedIndices: number[]
+  userSelectedIndices: number[],
+  followUpQuestion?: string
 ): Promise<string> => {
   if (!API_KEY) return "AI 秘钥未配置";
 
   const user = authService.getCurrentUser();
   const selectedModel = user?.aiModel || DEFAULT_MODEL;
+  const isAdmin = user?.role === 'ADMIN';
 
   let userAnswers = "";
   let correctAnswers = "";
 
   if (question.type === QuestionType.SHORT_ANSWER) {
-    userAnswers = "用户已阅读题目并进行了自主思考。"; // For short answer, we don't capture input in result yet
+    userAnswers = "用户已阅读题目并进行了自主思考。";
     correctAnswers = question.answerText || "";
   } else {
     userAnswers = userSelectedIndices.map(i => question.options[i]).join(', ') || "未作答";
     correctAnswers = question.correctAnswers.map(i => question.options[i]).join(', ');
   }
 
-  const prompt = `你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
-
+  // Base prompt for normal users
+  let prompt = `你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
     题目: "${question.text}"
     ${question.type !== QuestionType.SHORT_ANSWER ? `选项: ${JSON.stringify(question.options)}` : ''}
-
     用户的回答: "${userAnswers}"
     正确答案: "${correctAnswers}"
-
     请按以下格式回答：
     1. 解释正确答案的原因（结合马克思主义基本原理）。
     2. 如果用户答错了，指出其误区所在。
-    3. 保持鼓励和具有教育意义的语气。
-    4. 字数控制在 150 字以内。
-    5. 不要出现提示词，每一条结束后进行分行`;
+    3. 字数控制在 150 字以内。`;
+
+  // Admin "Nanny Mode" Prompt
+  if (isAdmin) {
+    prompt = `你现在是一位针对期末考试冲刺的“保姆级”马原辅导老师。
+    当前题目: "${question.text}"
+    正确答案: "${correctAnswers}"
+    
+    你的任务是帮助管理员（准考生）彻底理解并背诵该知识点。请：
+    1. 【白话拆解】：用最通俗易懂、接地气的例子解释这个原理，不要说官话。
+    2. 【考点避坑】：指出考试中这道题最容易在哪挖坑（比如混淆概念）。
+    3. 【记忆口诀】：提供一个朗朗上口的口诀或关键词联想法，帮助快速记忆。
+    4. 【核心得分点】：总结出如果遇到简答题，必须写出的几个关键词。
+    
+    保持极度亲和、幽默、像是在耳边划重点的语气。`;
+  }
+
+  // If it's a follow-up session
+  if (followUpQuestion) {
+    prompt = `作为马原辅导老师，用户（管理员）在理解完题目【${question.text}】的解析后，提出了一个深入问题：
+    追问内容: "${followUpQuestion}"
+    
+    请继续以“保姆级”保过班老师的身份，耐心解答这个疑惑。解释要深入浅出，确保用户能应对期末考试的变化题型。`;
+  }
 
   try {
     const response = await fetch(`${BASE_URL}/chat/completions`, {
@@ -50,7 +71,7 @@ export const getAIExplanation = async (
       body: JSON.stringify({
         model: selectedModel,
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.7
+        temperature: 0.8 // Slightly higher for admin nanny mode
       })
     });
 
