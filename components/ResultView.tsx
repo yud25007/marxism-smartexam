@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Exam, ExamResult, Question, User, QuestionType } from '../types';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Share } from 'lucide-react';
+import { Exam, ExamResult, Question, User } from '../types';
+import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Share, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';
@@ -26,8 +26,12 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   const [showNotebook, setShowNotebook] = useState(false);
   const [notes, setNotes] = useState(result.notes || "");
   const [followUpQuery, setFollowUpText] = useState("");
+  
+  // Note states
   const [localNotesMap, setLocalNotesMap] = useState<Record<string, string>>({});
   const [isSaPreview, setIsSaPreview] = useState<Record<string, boolean>>({});
+  const [fullScreenNoteId, setFullScreenNoteId] = useState<string | null>(null);
+
   const scrollPosRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
@@ -58,29 +62,29 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     }
   };
 
-  const handleAddToNotes = (question: Question, explanation: string) => {
-    const personalNote = localNotesMap[question.id] || "_未填写心得_";
+  const handleAddToNotes = (question: Question) => {
+    const personalNote = localNotesMap[question.id] || "_（暂无个人心得）_";
     const optionsText = question.options.length > 0 
       ? question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')
       : "（简答/填空题）";
     const correctAns = question.correctAnswers.length > 0
       ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
-      : (question.answerText || "见详细解析");
+      : (question.answerText || "详见解析");
 
-    // Construct Markdown carefully
-    let formattedNote = "\n<details>\n";
-    formattedNote += `<summary><b>📚 [${question.type}] 题目记录：${question.text.substring(0, 40)}...</b></summary>\n\n`;
-    formattedNote += "---\n\n#### 📥 题目原文\n";
-    formattedNote += `> ${question.text}\n\n`;
-    formattedNote += "**选项参考：**\n```text\n" + optionsText + "\n```\n\n";
-    formattedNote += "**正确答案：** `" + correctAns + "`\n\n";
-    formattedNote += "#### 🤖 AI 深度解析\n" + explanation + "\n\n";
-    formattedNote += "#### 💡 我的心得体会\n" + personalNote + "\n\n";
-    formattedNote += "</details>\n";
+    // Construct Markdown without AI explanation
+    let block = "\n\n---\n\n";
+    block += "<details>\n";
+    block += `<summary><b>📝 笔记记录：${question.text.substring(0, 35)}...</b></summary>\n\n`;
+    block += "#### 📥 题目原文\n";
+    block += "> " + question.text + "\n\n";
+    block += "**备选项：**\n```text\n" + optionsText + "\n```\n\n";
+    block += "**标准答案：** `" + correctAns + "`\n\n";
+    block += "#### 💡 我的心得体会\n" + personalNote + "\n\n";
+    block += "</details>\n";
     
-    setNotes(prev => prev + formattedNote);
+    setNotes(prev => prev + block);
     setShowNotebook(true);
-    alert('已成功将题目及心得整理至全卷笔记！');
+    alert('题目和心得已存入全卷笔记！');
   };
 
   const handleAskAI = async (question: Question, followUp?: string) => {
@@ -188,7 +192,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                       <div className="flex justify-between items-start">
                          <div className="flex items-center gap-2 mb-1">
                            <span className="text-sm font-semibold text-gray-500">第 {index + 1} 题</span>
-                           <button onClick={(e) => handleToggleFavorite(question.id, e)} className={`p-1 rounded-full transition-colors ${favorites.includes(question.id) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`} title={favorites.includes(question.id) ? "取消收藏" : "加入收藏"}>
+                           <button onClick={(e) => handleToggleFavorite(question.id, e)} className={`p-1 rounded-full transition-colors ${favorites.includes(question.id) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`} title="收藏题目">
                              <Star size={16} fill={favorites.includes(question.id) ? "currentColor" : "none"} />
                            </button>
                          </div>
@@ -241,20 +245,24 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                </div>
                             </div>
 
+                            {/* Question Local Note Area */} 
                             {explanation && !isLoading && (
                               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
                                   <div className="flex items-center gap-2 text-xs font-bold text-gray-600"><Edit3 size={14} /> 个人心得笔记</div>
-                                  <button onClick={() => setIsSaPreview(prev => ({...prev, [question.id]: !prev[question.id]}))} className="text-[10px] font-bold text-indigo-600 hover:underline">{showSaPreview ? "返回编辑" : "Markdown 预览"}</button>
+                                  <div className="flex gap-3">
+                                    <button onClick={() => setFullScreenNoteId(question.id)} className="text-[10px] font-bold text-gray-500 hover:text-indigo-600 flex items-center gap-1"><Maximize2 size={12} /> 全屏编辑</button>
+                                    <button onClick={() => setIsSaPreview(prev => ({...prev, [question.id]: !prev[question.id]}))} className="text-[10px] font-bold text-indigo-600 hover:underline">{showSaPreview ? "返回编辑" : "Markdown 预览"}</button>
+                                  </div>
                                 </div>
                                 <div className="p-3">
                                   {showSaPreview ? (
-                                    <div className="min-h-[80px] text-sm text-gray-700 prose prose-sm max-w-none"><ReactMarkdown>{localNote || "*暂未填写笔记内容*"}</ReactMarkdown></div>
+                                    <div className="min-h-[120px] text-sm text-gray-700 prose prose-sm max-w-none"><ReactMarkdown>{localNote || "*暂未填写笔记内容*"}</ReactMarkdown></div>
                                   ) : (
-                                    <textarea className="w-full text-sm focus:outline-none min-h-[80px] resize-none" placeholder="记录心得..." value={localNote} onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))} />
+                                    <textarea className="w-full text-sm focus:outline-none min-h-[120px] resize-none leading-relaxed" placeholder="记录您的心得..." value={localNote} onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))} />
                                   )}
                                   <div className="mt-3 flex justify-end">
-                                    <Button onClick={() => handleAddToNotes(question, explanation)} className="bg-indigo-600 text-white h-8 text-[10px] font-bold"><Share size={12} className="mr-1" /> 整理并存入全卷笔记</Button>
+                                    <Button onClick={() => handleAddToNotes(question)} className="bg-indigo-600 text-white h-8 text-[10px] font-bold"><Share size={12} className="mr-1" /> 整理并存入全卷笔记</Button>
                                   </div>
                                 </div>
                               </div>
@@ -264,7 +272,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                               <div className="flex gap-2">
                                 <div className="flex-1 relative">
                                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><MessageSquareText className="h-4 w-4 text-gray-400" /></div>
-                                  <input type="text" className="block w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="追问..." value={followUpQuery} onChange={(e) => setFollowUpText(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter' && followUpQuery.trim()) { handleAskAI(question, followUpQuery); } }} />
+                                  <input type="text" className="block w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="追问老师..." value={followUpQuery} onChange={(e) => setFollowUpText(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter' && followUpQuery.trim()) { handleAskAI(question, followUpQuery); } }} />
                                 </div>
                                 <Button size="sm" disabled={isLoading || !followUpQuery.trim()} onClick={() => handleAskAI(question, followUpQuery)} className="bg-indigo-600 text-white"><Send size={14} /></Button>
                               </div>
@@ -284,6 +292,26 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
           })}
         </div>
       </div>
+
+      {/* Fullscreen Modal */} 
+      {fullScreenNoteId && (
+        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-4xl h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-indigo-600 p-4 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold"><Edit3 size={20} /> 深度记录心得</div>
+              <button onClick={() => setFullScreenNoteId(null)} className="p-1 hover:bg-white/20 rounded"><Minimize2 size={24} /></button>
+            </div>
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+              <textarea className="flex-1 p-6 focus:outline-none resize-none text-base border-r border-gray-100 leading-relaxed" placeholder="支持 Markdown 语法..." value={localNotesMap[fullScreenNoteId] || ""} autoFocus onChange={(e) => setLocalNotesMap(prev => ({...prev, [fullScreenNoteId!]: e.target.value}))} />
+              <div className="flex-1 p-6 overflow-y-auto bg-gray-50/50 prose prose-indigo max-w-none">
+                <h4 className="text-xs font-bold text-gray-400 uppercase mb-4">实时预览</h4>
+                <ReactMarkdown>{localNotesMap[fullScreenNoteId] || "*预览内容将在此显示*"}</ReactMarkdown>
+              </div>
+            </div>
+            <div className="p-4 border-t bg-gray-50 flex justify-end"><Button onClick={() => setFullScreenNoteId(null)} className="bg-indigo-600 text-white px-8">保存并返回</Button></div>
+          </div>
+        </div>
+      )}
 
       {showNotebook && (
         <Notebook recordId={result.id} initialContent={notes} onClose={() => setShowNotebook(false)} />
