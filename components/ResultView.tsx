@@ -89,10 +89,10 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     console.log(`[QuickEdit] Committing new answer for ${questionId}:`, next);
 
     // Save to DB
-    const success = await examService.updateQuestionAnswer(questionId, next);
-    if (success) {
+    const res = await examService.updateQuestionAnswer(questionId, next);
+    if (res.success) {
       console.log(`[QuickEdit] Successfully saved to cloud. Refreshing state...`);
-      alert('✅ 标准答案已成功同步至云端！');
+      alert('✅ ' + res.message);
       
       // OPTIMIZATION: Force re-fetch chapter questions to be absolutely sure
       try {
@@ -113,8 +113,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
         return newer;
       });
     } else {
-      console.error(`[QuickEdit] Database update failed.`);
-      alert('❌ 同步至云端失败，请检查数据库权限 (RLS)。');
+      console.error(`[QuickEdit] Database update failed:`, res.message);
+      alert('❌ 同步失败: ' + res.message);
     }
   };
 

@@ -52,13 +52,29 @@ export const examService = {
   },
 
   // 更新题目的标准答案
-  async updateQuestionAnswer(questionId: string, correctAnswers: number[]): Promise<boolean> {
-    if (!supabase) return false;
-    const { error } = await supabase
-      .from('questions')
-      .update({ correct_answers: correctAnswers })
-      .eq('id', questionId);
+  async updateQuestionAnswer(questionId: string, correctAnswers: number[]): Promise<{success: boolean, message: string}> {
+    if (!supabase) return { success: false, message: "数据库未连接" };
     
-    return !error;
+    try {
+      const { data, error, count } = await supabase
+        .from('questions')
+        .update({ correct_answers: correctAnswers })
+        .eq('id', questionId)
+        .select(); // Select to verify update
+
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        return { 
+          success: false, 
+          message: `未在云端找到 ID 为 [${questionId}] 的题目。请先执行“同步本地题库”操作。` 
+        };
+      }
+
+      return { success: true, message: "标准答案已同步至云端" };
+    } catch (err: any) {
+      console.error("Update failed:", err);
+      return { success: false, message: err.message };
+    }
   }
 };
