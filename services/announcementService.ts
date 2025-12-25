@@ -4,7 +4,7 @@ import { Announcement } from '../types';
 const LOCAL_STORAGE_KEY = 'marxism_local_announcements';
 
 export const announcementService = {
-  async getLatestAnnouncement(userGroup?: string): Promise<Announcement | null> {
+  async getLatestAnnouncement(userRole?: string): Promise<Announcement | null> {
     if (!supabase) {
       // 如果没有 Supabase，使用本地默认公告
       return this.getLocalAnnouncement();
@@ -17,11 +17,11 @@ export const announcementService = {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (userGroup) {
-        // If user has a group, show announcements targeted at their group OR public announcements
-        query = query.or(`target_group.is.null,target_group.eq."${userGroup}"`);
+      if (userRole) {
+        // If user has a role, show announcements targeted at their role OR public announcements
+        query = query.or(`target_group.is.null,target_group.eq."${userRole}"`);
       } else {
-        // If user has no group, only show public announcements
+        // Fallback for unexpected cases
         query = query.is('target_group', null);
       }
 

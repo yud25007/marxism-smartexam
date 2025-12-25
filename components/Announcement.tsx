@@ -23,15 +23,15 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   useEffect(() => {
     const fetchAnnouncement = async () => {
       try {
-        // Try to get user info for group filtering
+        // Try to get user info for role-based filtering
         const userStr = localStorage.getItem('marxism_user');
-        let userGroup: string | undefined;
+        let userRole: string | undefined;
         if (userStr) {
           const user = JSON.parse(userStr) as User;
-          userGroup = user.group;
+          userRole = user.role;
         }
 
-        const latest = await announcementService.getLatestAnnouncement(userGroup);
+        const latest = await announcementService.getLatestAnnouncement(userRole);
         if (latest) {
           setCurrentAnnouncement(latest);
           

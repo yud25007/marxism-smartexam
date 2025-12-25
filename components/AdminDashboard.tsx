@@ -16,7 +16,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const [users, setUsers] = useState<StoredUser[]>([]);
   const [examCounts, setExamCounts] = useState<Record<string, number>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
-  const [editingGroups, setEditingGroups] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   
   // Announcement states
@@ -156,21 +155,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
       loadData();
     } else {
       alert('更新角色失败');
-    }
-  };
-
-  const handleUpdateGroup = async (username: string) => {
-    const group = editingGroups[username];
-    if (group === undefined) return;
-    
-    const success = await authService.updateGroup(username, group);
-    if (success) {
-      const newEditingGroups = { ...editingGroups };
-      delete newEditingGroups[username];
-      setEditingGroups(newEditingGroups);
-      loadData();
-    } else {
-      alert('更新分组失败');
     }
   };
 
@@ -393,14 +377,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">目标用户分组 (可选, 留空则全员可见)</label>
-                        <input 
-                          type="text" 
-                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                          placeholder="例如：2025届3班"
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">目标用户身份 (可选, 留空则全员可见)</label>
+                        <select 
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                           value={newAnnouncement.target_group}
                           onChange={e => setNewAnnouncement({...newAnnouncement, target_group: e.target.value})}
-                        />
+                        >
+                          <option value="">全员可见</option>
+                          <option value="MEMBER">普通成员 (MEMBER)</option>
+                          <option value="VIP">高级用户 (VIP)</option>
+                          <option value="ADMIN">管理员 (ADMIN)</option>
+                        </select>
                       </div>
                    </div>
                    <div>
@@ -516,7 +503,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                   <th className="px-6 py-4 font-medium">用户名</th>
                   <th className="px-6 py-4 font-medium">邀请人</th>
                   <th className="px-6 py-4 font-medium">身份权限</th>
-                  <th className="px-6 py-4 font-medium text-center">所属分组</th>
                   <th className="px-6 py-4 font-medium text-center">AI 解析权限</th>
                   <th className="px-6 py-4 font-medium text-center">AI 模型配置</th>
                   <th className="px-6 py-4 font-medium text-center">累计答题 (次)</th>
@@ -546,26 +532,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                         <option value="VIP">高级用户</option>
                         <option value="MEMBER">普通成员</option>
                       </select>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <input 
-                          type="text"
-                          className="w-24 px-2 py-1 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                          placeholder="未设置分组"
-                          value={editingGroups[user.username] !== undefined ? editingGroups[user.username] : (user.group || '')}
-                          onChange={(e) => setEditingGroups({...editingGroups, [user.username]: e.target.value})}
-                        />
-                        {editingGroups[user.username] !== undefined && editingGroups[user.username] !== (user.group || '') && (
-                          <button 
-                            onClick={() => handleUpdateGroup(user.username)}
-                            className="p-1 bg-green-100 text-green-600 rounded hover:bg-green-200 transition-colors"
-                            title="保存分组"
-                          >
-                            <Check size={12} />
-                          </button>
-                        )}
-                      </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button

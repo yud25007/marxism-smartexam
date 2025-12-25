@@ -57,7 +57,6 @@ export interface User {
   aiEnabled?: boolean; 
   aiModel?: 'gemini-3-pro-preview' | 'gemini-2.5-pro' | 'qwen3-coder-plus';
   invitedBy?: string;
-  group?: string; // Target group for specific notifications
 }
 
 export interface Announcement {

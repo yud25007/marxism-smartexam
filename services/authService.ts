@@ -17,8 +17,7 @@ const dbUserToUser = (dbUser: DbUser): StoredUser => ({
   status: dbUser.status,
   aiEnabled: dbUser.ai_enabled,
   aiModel: dbUser.ai_model as any || 'gemini-2.5-pro',
-  invitedBy: dbUser.invited_by,
-  group: dbUser.group
+  invitedBy: dbUser.invited_by
 });
 
 // ========== 本地存储模式 ==========
@@ -33,8 +32,7 @@ const localAuth = {
         role: 'ADMIN' as UserRole,
         status: 'ACTIVE' as UserStatus,
         aiEnabled: true,
-        aiModel: 'gemini-2.5-pro',
-        group: 'ADMIN_GROUP'
+        aiModel: 'gemini-2.5-pro'
       };
       localStorage.setItem(USERS_KEY, JSON.stringify([defaultAdmin]));
     }
@@ -64,21 +62,11 @@ const localAuth = {
   register: (username: string, password: string, role: UserRole, status: UserStatus, invitedBy?: string): boolean => {
     const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     if (users.some((u: any) => u.username === username)) return false;
-    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false, aiModel: 'gemini-2.5-pro', invitedBy, group: '' });
+    users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false, aiModel: 'gemini-2.5-pro', invitedBy });
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     return true;
-  },
-
-  updateGroup: (username: string, group: string): boolean => {
-    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    const idx = users.findIndex((u: any) => u.username === username);
-    if (idx !== -1) {
-      users[idx].group = group;
-      localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      return true;
-    }
-    return false;
-  },
+  }
+};
 
   updateAiModel: (username: string, model: string): boolean => {
     const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
@@ -303,30 +291,6 @@ export const authService = {
       .from('users')
       .update({ role })
       .eq('username', username);
-
-    return !error;
-  },
-
-  updateGroup: async (username: string, group: string): Promise<boolean> => {
-    if (!isSupabaseConfigured || !supabase) {
-      return localAuth.updateGroup(username, group);
-    }
-
-    const { error } = await supabase
-      .from('users')
-      .update({ group })
-      .eq('username', username);
-
-    if (!error) {
-      const currentUserStr = localStorage.getItem(CURRENT_USER_KEY);
-      if (currentUserStr) {
-        const currentUser = JSON.parse(currentUserStr);
-        if (currentUser.username === username) {
-          currentUser.group = group;
-          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
-        }
-      }
-    }
 
     return !error;
   },
