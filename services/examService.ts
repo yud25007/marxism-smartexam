@@ -29,26 +29,48 @@ export const examService = {
     }
   },
 
-  // 获取特定试卷的所有题目
+  // 获取特定试卷的所有题目 (递归获取，突破 1000 条限制)
   async getQuestions(examId: string): Promise<Question[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('exam_id', examId)
-      .order('created_at', { ascending: true });
     
-    if (error) throw error;
-    // 数据库中存储的是下划线命名，这里需要适配前端的驼峰命名
-    return (data || []).map(q => ({
-      id: q.id,
-      type: q.type,
-      text: q.text,
-      options: q.options || [],
-      correctAnswers: q.correct_answers || [],
-      points: q.points || 2,
-      answerText: q.answer_text
-    })) as Question[];
+    const allData: any[] = [];
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
+
+    try {
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('exam_id', examId)
+          .order('created_at', { ascending: true })
+          .range(from, from + step - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          hasMore = false;
+        } else {
+          allData.push(...data);
+          if (data.length < step) hasMore = false;
+          from += step;
+        }
+      }
+
+      // 适配数据库下划线字段到前端驼峰
+      return allData.map(q => ({
+        id: q.id,
+        type: q.type,
+        text: q.text,
+        options: q.options || [],
+        correctAnswers: q.correct_answers || [],
+        points: q.points || 2,
+        answerText: q.answer_text
+      })) as Question[];
+    } catch (err) {
+      console.error("Error in getQuestions (Live):", err);
+      return [];
+    }
   },
 
   // 更新题目的标准答案

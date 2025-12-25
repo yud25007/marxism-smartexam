@@ -32,6 +32,7 @@ const App: React.FC = () => {
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [isPublicReg, setIsPublicReg] = useState(true);
   const [cloudExams, setCloudExams] = useState<Exam[]>([]); // LIVE Exams from DB
+  const [isLiveActive, setIsLiveActive] = useState(false); // Track if current active exam is from Cloud
 
   // Load user and permissions on mount
   useEffect(() => {
@@ -114,13 +115,16 @@ const App: React.FC = () => {
       const liveQuestions = await examService.getQuestions(exam.id);
       if (liveQuestions && liveQuestions.length > 0) {
         setActiveExam({ ...exam, questions: liveQuestions });
+        setIsLiveActive(true);
       } else {
         // Fallback to static if cloud is empty
         setActiveExam(exam);
+        setIsLiveActive(false);
       }
     } catch (err) {
       console.warn("Failed to fetch live questions, falling back to static constants.");
       setActiveExam(exam);
+      setIsLiveActive(false);
     }
 
     setView('EXAM');
@@ -457,6 +461,7 @@ const App: React.FC = () => {
         exam={activeExam} 
         onFinish={handleFinishExam} 
         onExit={handleGoHome} 
+        isCloud={isLiveActive}
       />
     );
   }

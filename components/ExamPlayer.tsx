@@ -8,9 +8,10 @@ interface ExamPlayerProps {
   exam: Exam;
   onFinish: (result: ExamResult) => void;
   onExit: () => void;
+  isCloud?: boolean;
 }
 
-export const ExamPlayer: React.FC<ExamPlayerProps> = ({ exam, onFinish, onExit }) => {
+export const ExamPlayer: React.FC<ExamPlayerProps> = ({ exam, onFinish, onExit, isCloud = false }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [timeLeft, setTimeLeft] = useState(exam.durationMinutes * 60);
@@ -129,8 +130,11 @@ export const ExamPlayer: React.FC<ExamPlayerProps> = ({ exam, onFinish, onExit }
              <X size={20} />
           </button>
 
-          <h1 className="text-lg font-bold text-gray-800 truncate max-w-[150px] md:max-w-md">
+          <h1 className="text-lg font-bold text-gray-800 truncate max-w-[150px] md:max-w-md flex items-center gap-2">
             {exam.title}
+            <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-bold ${isCloud ? 'bg-green-100 text-green-600 animate-pulse' : 'bg-gray-100 text-gray-400'}`}>
+              {isCloud ? 'LIVE' : 'LOCAL'}
+            </span>
           </h1>
         </div>
         
