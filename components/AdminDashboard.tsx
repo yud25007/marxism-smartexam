@@ -6,9 +6,10 @@ import { announcementService, Announcement } from '../services/announcementServi
 import { isSupabaseConfigured } from '../services/supabaseClient';
 import { examService } from '../services/examService';
 import { importService } from '../services/importService';
+import { systemService, SystemSetting } from '../services/systemService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, Edit } from 'lucide-react';
+import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, Edit, Settings, Info } from 'lucide-react';
 import { Exam, Question } from '../types';
 
 interface AdminDashboardProps {
@@ -43,6 +44,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [tempAnswers, setTempAnswers] = useState<number[]>([]);
 
+  // System Settings states
+  const [systemSettings, setSystemSettings] = useState<SystemSetting[]>([]);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -50,16 +54,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [usersData, statsData, announcementData, examData] = await Promise.all([
+      const [usersData, statsData, announcementData, examData, settingsData] = await Promise.all([
         authService.getAllUsers(),
         historyService.getAllUserStats(),
         announcementService.getAdminAnnouncements(),
-        examService.getExams()
+        examService.getExams(),
+        systemService.getAllSettings()
       ]);
       setUsers(usersData);
       setExamCounts(statsData);
       setAnnouncements(announcementData);
       setExams(examData);
+      setSystemSettings(settingsData);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
@@ -67,7 +73,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     }
   };
 
+  const handleToggleSetting = async (key: string, currentValue: boolean) => {
+    const success = await systemService.updateSetting(key, !currentValue);
+    if (success) {
+      setSystemSettings(prev => prev.map(s => s.key === key ? { ...s, value: !currentValue } : s));
+    } else {
+      alert('更新设置失败');
+    }
+  };
+
   const handleSyncExams = async () => {
+    const syncSetting = systemSettings.find(s => s.key === 'allow_sync');
+    if (syncSetting && !syncSetting.value) {
+      alert('云端同步功能当前已被系统管理员禁用，请在“核心控制中心”开启后再试。');
+      return;
+    }
+
     if (!confirm('确定要将本地 constants.ts 中的题库同步到云端吗？这将覆盖云端同 ID 的题目。')) return;
     setIsSyncing(true);
     const res = await importService.syncToCloud();
@@ -276,10 +297,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
             <WifiOff className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
             <div className="text-sm text-yellow-800">
               <p className="font-bold mb-1">本地离线模式</p>
-              <p>云端服务未配置，数据仅保存在当前设备浏览器中。不同设备间数据不互通。</p>
+              <p>云端服务未配置，数据仅保存在当前设备浏览器中。</p>
             </div>
           </div>
         )}
+
+        {/* System Settings Control Center */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex items-center gap-2 bg-gray-50/50">
+            <Settings className="text-gray-600" size={20} />
+            <h3 className="font-bold text-gray-800">系统核心控制中心</h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {systemSettings.map((setting) => (
+                <div key={setting.key} className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col justify-between group hover:border-blue-200 transition-all">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <Sparkles size={18} />
+                    </div>
+                    <button 
+                      onClick={() => handleToggleSetting(setting.key, setting.value)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${setting.value ? 'bg-blue-600' : 'bg-gray-200'}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${setting.value ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">{setting.description}</h4>
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                      <div className={`w-1.5 h-1.5 rounded-full ${setting.value ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                      {setting.value ? '已启用 (Active)' : '已关闭 (Disabled)'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {systemSettings.length === 0 && (
+                <div className="col-span-full py-8 text-center text-gray-400 italic flex flex-col items-center gap-2">
+                  <Info size={24} />
+                  <p>未在数据库中检测到系统开关配置，请先运行 SQL 初始化。</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+
 
         {/* Pending Registrations Section */}
         {pendingUsers.length > 0 && (

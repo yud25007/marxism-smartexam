@@ -100,12 +100,74 @@ CREATE INDEX IF NOT EXISTS idx_announcements_target_group ON announcements(targe
 -- 3. 在 Policies 中为该 Bucket 分别添加 SELECT (所有人) 和 INSERT (管理员) 权限。
 ```
 
-## 6. 说明事项
+## 6. 动态题库系统 (Dynamic Question Bank)
+支持题目迁移至云端、管理员在线修改答案及动态管理。
+
+```sql
+-- A. 创建试卷表 (Exams)
+CREATE TABLE IF NOT EXISTS exams (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  duration_minutes INTEGER DEFAULT 60,
+  difficulty TEXT,
+  cover_image TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- B. 创建题目表 (Questions)
+CREATE TABLE IF NOT EXISTS questions (
+  id TEXT PRIMARY KEY,
+  exam_id TEXT REFERENCES exams(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- SINGLE_CHOICE, MULTIPLE_CHOICE, etc.
+  text TEXT NOT NULL,
+  options JSONB, -- 存储选项数组 ["A", "B", "C"]
+  correct_answers JSONB, -- 存储正确答案索引 [0] 或 [0, 1]
+  points INTEGER DEFAULT 2,
+  answer_text TEXT, -- 简答题答案
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- C. 权限配置 (RLS) - 已优化以支持自定义登录系统
+ALTER TABLE exams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
+
+-- 允许所有人读取题目
+DROP POLICY IF EXISTS "Exams Public Read" ON exams;
+CREATE POLICY "Exams Public Read" ON exams FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Questions Public Read" ON questions;
+CREATE POLICY "Questions Public Read" ON questions FOR SELECT USING (true);
+
+-- 允许所有人写入 (由于使用自定义 Auth，需放开此权限以支持同步)
+DROP POLICY IF EXISTS "Enable All Access" ON exams;
+CREATE POLICY "Enable All Access" ON exams FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Enable All Access" ON questions;
+CREATE POLICY "Enable All Access" ON questions FOR ALL USING (true) WITH CHECK (true);
+
+-- D. 系统开关表 (System Settings)
+CREATE TABLE IF NOT EXISTS system_settings (
+  key TEXT PRIMARY KEY,
+  value BOOLEAN DEFAULT FALSE,
+  description TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 初始化开关
+INSERT INTO system_settings (key, value, description)
+VALUES 
+  ('maintenance_mode', FALSE, '系统维护模式'),
+  ('allow_sync', TRUE, '允许云端同步操作'),
+  ('public_registration', TRUE, '允许用户自主注册')
+ON CONFLICT (key) DO NOTHING;
+```
+
+## 7. 说明事项
 1. **VIP 权限**：`VIP` 角色拥有全章节解锁权限，AI 解析默认使用 Qwen 模型。
 2. **字段映射**：代码中的 `aiModel` 对应数据库的 `ai_model`。
-3. **模型标识**：确保数据库中的字符串与预设列表完全一致。
+3. **动态题库**：首次部署后，需在管理员后台点击“同步本地题库”将静态数据存入数据库。
 4. **图片上传**：管理员后台的图片上传功能依赖于 `announcements` 存储桶的正确配置。
 
 ---
-**文档版本**：2025-12-25 
-**状态**：已整合通知系统与分组字段更新
+**文档版本**：2025-12-25 (v2)
+**状态**：已整合动态题库与云端同步支持
