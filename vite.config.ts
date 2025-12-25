@@ -7,12 +7,12 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     proxy: {
-    '/ai-api': {
-      target: 'https://yudmini.zeabur.app',
-      changeOrigin: true,
-      rewrite: (path) => path.replace(/^\/ai-api/, '')
+      '/ai-api': {
+        target: 'https://yudmini.zeabur.app',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ai-api/, '')
+      }
     }
-  }
   },
   plugins: [react()],
   // 允许所有环境变量（不限制 VITE_ 前缀）
@@ -21,5 +21,21 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, '.'),
     }
+  },
+  build: {
+    // 代码分割优化
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-markdown': ['react-markdown', 'remark-gfm', 'remark-math', 'rehype-katex', 'rehype-raw'],
+        }
+      }
+    },
+    // 启用 gzip 压缩提示
+    reportCompressedSize: true,
+    // chunk 大小警告阈值
+    chunkSizeWarningLimit: 1000,
   }
 });
