@@ -361,20 +361,5 @@ export const authService = {
       .eq('username', username);
 
     return !error;
-  },
-
-  verifyPassword: async (username: string, passwordToCheck: string): Promise<boolean> => {
-    if (!isSupabaseConfigured || !supabase) {
-      return localAuth.verifyPassword(username, passwordToCheck);
-    }
-
-    const { data, error } = await supabase
-      .from('users')
-      .select('password_hash')
-      .eq('username', username)
-      .single();
-
-    if (error || !data) return false;
-    return data.password_hash === passwordToCheck;
   }
 };

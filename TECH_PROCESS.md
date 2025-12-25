@@ -79,6 +79,7 @@
     2.  **开启 Gzip 压缩**：集成 `vite-plugin-compression` 插件，在构建时自动生成 `.gz` 文件。
     3.  **静态资源 CDN 化**：将 KaTeX CSS 移至 CDN 加载，并移除本地同步导入，利用浏览器缓存。
     4.  **清理冗余资源**：移除 `index.html` 中的旧版 `importmap`，由 Vite 统一管理模块导入。
+    5.  **代码清理**：修复 `authService.ts` 中因重复定义 `verifyPassword` 导致的构建警告，确保对象字面量唯一性。
 *   **最终成果**：主 Bundle 体积大幅下降，核心 JS 资源实现并行加载，首屏渲染速度（LCP）得到量级提升。
 
 ### 26. 笔记导出功能实现与 AI 容错加固

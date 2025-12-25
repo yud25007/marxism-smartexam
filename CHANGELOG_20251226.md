@@ -6,3 +6,6 @@
 - **资源清理**：移除 `index.html` 中冗余的 `importmap`，统一由 Vite 管理依赖。
 - **静态资源优化**：将 KaTeX CSS 移至 CDN 加载，减少 JS Bundle 体积并利用浏览器缓存。
 - **首屏渲染优化**：移除 `App.tsx` 中的同步 CSS 导入，防止阻塞关键渲染路径。
+
+## 故障修复
+- **代码规范**：修复 `authService.ts` 中重复定义 `verifyPassword` 方法导致的构建警告/错误。
