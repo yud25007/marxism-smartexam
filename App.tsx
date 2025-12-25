@@ -168,29 +168,50 @@ const App: React.FC = () => {
   // Global Maintenance Interceptor
   if (isMaintenance && currentUser?.role !== 'ADMIN') {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-center">
-        <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-8 animate-pulse">
-          <Wrench className="h-12 w-12 text-red-600" />
+      <div className="min-h-screen bg-[#0078d7] flex flex-col items-center justify-center p-4 text-white font-sans overflow-hidden">
+        <style>{`
+          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          .win-loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 48px; height: 48px; animation: spin 1.5s linear infinite; }
+        `}</style>
+        
+        <div className="flex flex-col items-center max-w-2xl w-full">
+          <div className="win-loader mb-12"></div>
+          
+          <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <h1 className="text-2xl md:text-3xl font-light">
+              正在准备理论同步，请勿关闭浏览器
+            </h1>
+            
+            <p className="text-lg md:text-xl font-light opacity-90">
+              系统正在进行深度逻辑重构。这可能需要一点时间。
+            </p>
+            
+            <div className="text-6xl md:text-7xl font-extralight py-4">
+              <span className="tabular-nums">
+                {Math.min(99, Math.floor(Date.now() / 10000000000) % 100)}%
+              </span>
+            </div>
+
+            <div className="space-y-2 opacity-80 italic font-light tracking-wide">
+              <p className="animate-pulse">“天涯若比邻...”</p>
+              <p className="text-sm">正在校准历史唯物主义时空坐标</p>
+            </div>
+          </div>
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">系统维护中</h1>
-        <p className="max-w-md text-lg text-gray-600 mb-8">
-          为了提供更好的服务，我们正在进行系统升级与数据维护。
-          给您带来的不便敬请谅解！
-        </p>
-        <div className="flex gap-4">
-          <Button variant="outline" onClick={() => window.location.reload()}>
-            <RefreshCcw size={18} className="mr-2" /> 刷新试试
-          </Button>
+
+        {/* Hidden Admin Entry */}
+        <div className="fixed bottom-8 right-8 group">
           <button 
-            onClick={() => setView('CONTACT')}
-            className="px-6 py-2 text-red-600 font-bold hover:underline transition-all"
+            onClick={() => setView('LOGIN')}
+            className="text-white/10 group-hover:text-white/40 transition-colors text-[10px] font-mono tracking-widest uppercase"
           >
-            联系管理员
+            Terminal Access [Admin Only]
           </button>
         </div>
-        <p className="mt-12 text-xs text-gray-400 uppercase tracking-widest font-bold">
-          Estimated downtime: ~30 minutes
-        </p>
+
+        <div className="fixed bottom-8 left-8 text-white/30 text-xs font-light">
+          ©️ 2025 Microsoft (Not really) Marxism SmartExam Update
+        </div>
       </div>
     );
   }
