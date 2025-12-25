@@ -567,6 +567,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleToggleAi(user)}
+                        className={`flex items-center gap-1 mx-auto px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          user.aiEnabled
+                            ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                        title={user.aiEnabled ? "点击关闭 AI 解析" : "点击开启 AI 解析"}
+                      >
+                         <Sparkles size={12} />
+                         {user.aiEnabled ? '已开启' : '已关闭'}
+                         {user.aiEnabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 text-center">
                       <select 
                         value={user.aiModel || 'gemini-2.5-pro'}

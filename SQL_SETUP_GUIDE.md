@@ -78,11 +78,44 @@ UPDATE users SET ai_model = 'gemini-3-pro-preview' WHERE role = 'ADMIN';
 ALTER TABLE exam_history ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT '';
 ```
 
-## 5. 说明事项
+## 5. 增强通知系统 (Announcements & Groups)
+支持 Markdown 渲染、图片上传以及分组定向通知。
+
+```sql
+-- A. 更新公告表：增加图片地址与目标分组
+ALTER TABLE announcements 
+ADD COLUMN IF NOT EXISTS image_url TEXT,
+ADD COLUMN IF NOT EXISTS target_group TEXT;
+
+-- 为分组查询增加索引
+CREATE INDEX IF NOT EXISTS idx_announcements_target_group ON announcements(target_group);
+
+-- B. 更新用户表：增加所属分组字段
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS "group" TEXT;
+
+-- 为分组查询增加索引
+CREATE INDEX IF NOT EXISTS idx_users_group ON users("group");
+
+-- C. 存储桶权限配置 (Supabase Storage)
+-- 1. 请在 Supabase 控制台 Storage 页面手动创建一个名为 'announcements' 的 Bucket
+-- 2. 将其设置为 "Public" (公共访问)
+-- 3. 在 Policies 中为该 Bucket 添加以下策略：
+
+-- 策略 1: 所有人可读 (SELECT)
+-- Target: announcements bucket, Action: SELECT, Access: Public
+
+-- 策略 2: 仅限管理员上传 (INSERT)
+-- 如果你的 RLS 策略支持，可以使用以下 SQL，或者在控制台可视化配置：
+-- CHECK (bucket_id = 'announcements')
+```
+
+## 6. 说明事项
 1. **VIP 权限**：`VIP` 角色拥有全章节解锁权限，AI 解析默认使用 Qwen 模型。
 2. **字段映射**：代码中的 `aiModel` 对应数据库的 `ai_model`。
 3. **模型标识**：确保数据库中的字符串与预设列表完全一致。
+4. **图片上传**：管理员后台的图片上传功能依赖于 `announcements` 存储桶的正确配置。
 
 ---
-**文档版本**：2025-12-24 
-**状态**：已整合 VIP 角色约束修复
+**文档版本**：2025-12-25 
+**状态**：已整合通知系统与分组字段更新
