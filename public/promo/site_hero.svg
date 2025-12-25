@@ -1,0 +1,14 @@
+<svg width="800" height="320" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cloud_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="320" rx="24" fill="url(#cloud_grad)"/>
+  <text x="400" y="120" text-anchor="middle" fill="white" style="font-family: sans-serif; font-weight: 900; font-size: 48px;">marx.zeabur.app</text>
+  <text x="400" y="170" text-anchor="middle" fill="white" fill-opacity="0.8" style="font-family: sans-serif; font-weight: 400; font-size: 20px; letter-spacing: 4px;">云端赋能 · 全球加速 · 永久同步</text>
+  
+  <rect x="250" y="210" width="300" height="50" rx="25" fill="white" fill-opacity="0.2" stroke="white" stroke-width="2"/>
+  <text x="400" y="242" text-anchor="middle" fill="white" style="font-family: sans-serif; font-weight: bold; font-size: 18px;">立即开启智能备考之旅</text>
+</svg>

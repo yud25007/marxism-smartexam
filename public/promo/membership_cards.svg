@@ -1,0 +1,34 @@
+<svg width="800" height="360" viewBox="0 0 800 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="360" rx="20" fill="#F8FAFC"/>
+  
+  <!-- Tier 1 -->
+  <rect x="40" y="40" width="220" height="280" rx="16" fill="white" stroke="#E2E8F0"/>
+  <rect x="40" y="40" width="220" height="60" rx="16 16 0 0" fill="#94A3B8"/>
+  <text x="150" y="78" text-anchor="middle" fill="white" style="font-weight:bold; font-size:18px;">普通成员</text>
+  <text x="150" y="130" text-anchor="middle" fill="#64748B" style="font-size:12px;">基础备考</text>
+  <circle cx="150" cy="200" r="30" fill="#F1F5F9"/>
+  <path d="M140 200L147 210L160 195" stroke="#94A3B8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Tier 2 (VIP) -->
+  <rect x="290" y="30" width="220" height="300" rx="16" fill="white" stroke="#FBBF24" stroke-width="2" style="filter: drop-shadow(0px 10px 15px rgba(251, 191, 36, 0.2));"/>
+  <rect x="290" y="30" width="220" height="70" rx="16 16 0 0" fill="url(#grad_vip)"/>
+  <text x="400" y="72" text-anchor="middle" fill="white" style="font-weight:bold; font-size:20px;">高级用户 (VIP)</text>
+  <text x="400" y="130" text-anchor="middle" fill="#B45309" style="font-weight:bold; font-size:12px;">邀请 1 位新用户即可</text>
+  <circle cx="400" cy="200" r="35" fill="#FFFBEB"/>
+  <path d="M385 200L395 215L415 190" stroke="#F59E0B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Tier 3 (SVIP) -->
+  <rect x="540" y="40" width="220" height="280" rx="16" fill="white" stroke="#818CF8"/>
+  <rect x="540" y="40" width="220" height="60" rx="16 16 0 0" fill="#4F46E5"/>
+  <text x="650" y="78" text-anchor="middle" fill="white" style="font-weight:bold; font-size:18px;">超级用户 (SVIP)</text>
+  <text x="650" y="130" text-anchor="middle" fill="#4338CA" style="font-weight:bold; font-size:12px;">邀请 ≥ 5 位新用户</text>
+  <circle cx="650" cy="200" r="30" fill="#EEF2FF"/>
+  <path d="M635 200L645 210L665 190" stroke="#4F46E5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <defs>
+    <linearGradient id="grad_vip" x1="290" y1="30" x2="510" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+</svg>

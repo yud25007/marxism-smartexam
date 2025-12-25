@@ -1,0 +1,6 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#00ACC1"/>
+  <circle cx="50%" cy="50%" r="40%" fill="white" fill-opacity="0.1"/>
+  <rect x="10%" y="10%" width="80%" height="80%" fill="none" stroke="white" stroke-width="5" stroke-opacity="0.3"/>
+  <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold" font-size="36">第七章</text><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold" font-size="36">共产主义是人类最崇高的社会理想</text>
+</svg>

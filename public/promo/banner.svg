@@ -1,0 +1,14 @@
+<svg width="800" height="300" viewBox="0 0 800 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="300" rx="20" fill="url(#paint0_linear)"/>
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="800" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EF4444"/>
+      <stop offset="1" stop-color="#991B1B"/>
+    </linearGradient>
+  </defs>
+  <circle cx="700" cy="50" r="100" fill="white" fill-opacity="0.05"/>
+  <circle cx="100" cy="250" r="150" fill="white" fill-opacity="0.05"/>
+  <text x="400" y="140" text-anchor="middle" fill="white" style="font-family: 'PingFang SC', sans-serif; font-weight: 800; font-size: 48px;">马克思主义基本原理</text>
+  <text x="400" y="190" text-anchor="middle" fill="white" fill-opacity="0.8" style="font-family: 'PingFang SC', sans-serif; font-weight: 400; font-size: 24px;">智能学习生态 · 懂马原，更懂你</text>
+  <rect x="350" y="220" width="100" height="4" rx="2" fill="white" fill-opacity="0.5"/>
+</svg>

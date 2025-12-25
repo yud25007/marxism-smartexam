@@ -1,0 +1,17 @@
+<svg width="800" height="400" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" rx="20" fill="#F8FAFC"/>
+  <rect x="40" y="40" width="340" height="320" rx="16" fill="white" stroke="#E2E8F0" stroke-width="2"/>
+  <rect x="420" y="40" width="340" height="320" rx="16" fill="white" stroke="#E2E8F0" stroke-width="2"/>
+  
+  <!-- Left Side: AI -->
+  <circle cx="210" cy="120" r="40" fill="#FEF2F2"/>
+  <path d="M210 100V140M190 120H230" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+  <text x="210" y="200" text-anchor="middle" fill="#1E293B" style="font-family: sans-serif; font-weight: 800; font-size: 20px;">保姆级 AI 解析</text>
+  <text x="210" y="235" text-anchor="middle" fill="#64748B" style="font-family: sans-serif; font-size: 14px;">白话拆解、记忆口诀、无限追问</text>
+  
+  <!-- Right Side: Note -->
+  <circle cx="590" cy="120" r="40" fill="#EEF2FF"/>
+  <rect x="575" y="105" width="30" height="30" rx="4" stroke="#4F46E5" stroke-width="4"/>
+  <text x="590" y="200" text-anchor="middle" fill="#1E293B" style="font-family: sans-serif; font-weight: 800; font-size: 20px;">结构化复习笔记</text>
+  <text x="590" y="235" text-anchor="middle" fill="#64748B" style="font-family: sans-serif; font-size: 14px;">一键整理心得、自动折叠汇总</text>
+</svg>

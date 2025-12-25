@@ -51,17 +51,22 @@ export type UserRole = 'ADMIN' | 'VIP' | 'MEMBER';
 export type UserStatus = 'ACTIVE' | 'PENDING';
 
 export interface User {
-
   username: string;
-
   role: UserRole;
-
   status: UserStatus; // New field for approval workflow
-
   aiEnabled?: boolean; 
-
   aiModel?: 'gemini-3-pro-preview' | 'gemini-2.5-pro' | 'qwen3-coder-plus';
-
   invitedBy?: string;
+  group?: string; // Target group for specific notifications
+}
 
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  type: 'info' | 'warning' | 'important';
+  is_active?: boolean;
+  image_url?: string; // URL for an announcement image
+  target_group?: string; // Optional group to target (null/undefined means everyone)
 }

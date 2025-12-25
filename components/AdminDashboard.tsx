@@ -15,6 +15,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const [users, setUsers] = useState<StoredUser[]>([]);
   const [examCounts, setExamCounts] = useState<Record<string, number>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+  const [editingGroups, setEditingGroups] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   
   // Announcement states
@@ -25,8 +26,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: '',
     content: '',
-    type: 'info' as Announcement['type']
+    type: 'info' as Announcement['type'],
+    image_url: '',
+    target_group: ''
   });
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -59,7 +63,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     if (success) {
       alert('发布成功！');
       setShowAddAnnouncement(false);
-      setNewAnnouncement({ title: '', content: '', type: 'info' });
+      setNewAnnouncement({ title: '', content: '', type: 'info', image_url: '', target_group: '' });
       loadData();
     } else {
       alert('发布失败，请检查数据库配置');
@@ -72,6 +76,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
       if (success) {
         loadData();
       }
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('请选择图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('图片大小不能超过 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const url = await announcementService.uploadImage(file);
+      if (url) {
+        setNewAnnouncement(prev => ({ ...prev, image_url: url }));
+      } else {
+        alert('图片上传失败，请检查 Supabase Storage 配置');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('上传出错');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -121,6 +155,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
       loadData();
     } else {
       alert('更新角色失败');
+    }
+  };
+
+  const handleUpdateGroup = async (username: string) => {
+    const group = editingGroups[username];
+    if (group === undefined) return;
+    
+    const success = await authService.updateGroup(username, group);
+    if (success) {
+      const newEditingGroups = { ...editingGroups };
+      delete newEditingGroups[username];
+      setEditingGroups(newEditingGroups);
+      loadData();
+    } else {
+      alert('更新分组失败');
     }
   };
 
@@ -306,6 +355,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                         </select>
                       </div>
                    </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                          公告图片 URL (可选)
+                        </label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="https://example.com/image.jpg"
+                            value={newAnnouncement.image_url}
+                            onChange={e => setNewAnnouncement({...newAnnouncement, image_url: e.target.value})}
+                          />
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              id="image-upload"
+                              onChange={handleImageUpload}
+                              disabled={isUploading}
+                            />
+                            <label
+                              htmlFor="image-upload"
+                              className={`flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                                isUploading ? 'bg-gray-100 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                              }`}
+                            >
+                              {isUploading ? <RefreshCw size={18} className="animate-spin" /> : <Cloud size={18} />}
+                              <span className="ml-2 text-sm font-bold whitespace-nowrap">
+                                {isUploading ? '上传中...' : '上传图片'}
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">目标用户分组 (可选, 留空则全员可见)</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="例如：2025届3班"
+                          value={newAnnouncement.target_group}
+                          onChange={e => setNewAnnouncement({...newAnnouncement, target_group: e.target.value})}
+                        />
+                      </div>
+                   </div>
                    <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-1 flex justify-between">
                         详细内容 (支持 Markdown)
@@ -322,6 +418,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                ) : (
                  <div className="space-y-4">
                     <div className="bg-white p-4 rounded-lg border border-gray-200 min-h-[300px]">
+                       {newAnnouncement.image_url && (
+                         <div className="mb-4 rounded-xl overflow-hidden shadow-sm border border-gray-100 max-w-md mx-auto">
+                           <img src={newAnnouncement.image_url} alt="Preview" className="w-full h-auto object-cover" />
+                         </div>
+                       )}
                        <h2 className="text-2xl font-bold mb-4">{newAnnouncement.title || '（暂无标题）'}</h2>
                        <div className="prose prose-blue max-w-none">
                           <ReactMarkdown>{newAnnouncement.content || '（暂无内容）'}</ReactMarkdown>
@@ -343,6 +444,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                 <tr className="bg-gray-50 text-gray-500 text-sm border-b border-gray-200">
                   <th className="px-6 py-4 font-medium">标题</th>
                   <th className="px-6 py-4 font-medium">类型</th>
+                  <th className="px-6 py-4 font-medium">目标分组</th>
                   <th className="px-6 py-4 font-medium">内容摘要</th>
                   <th className="px-6 py-4 font-medium">日期</th>
                   <th className="px-6 py-4 font-medium text-right">操作</th>
@@ -351,14 +453,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
               <tbody className="divide-y divide-gray-100">
                 {announcements.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-400 italic">
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-400 italic">
                       暂无公告，点击右上角发布您的第一条公告。
                     </td>
                   </tr>
                 ) : (
                   announcements.map((ann) => (
                     <tr key={ann.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-gray-900">{ann.title}</td>
+                      <td className="px-6 py-4 font-semibold text-gray-900">
+                        {ann.title}
+                        {ann.image_url && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-green-500" title="包含图片"></span>}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${
                           ann.type === 'important' ? 'bg-red-100 text-red-700' :
@@ -367,6 +472,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                         }`}>
                           {ann.type}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {ann.target_group ? (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded border border-gray-200">
+                            {ann.target_group}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic">全员</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{ann.content}</td>
                       <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">{ann.date}</td>
@@ -401,6 +515,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                   <th className="px-6 py-4 font-medium">用户名</th>
                   <th className="px-6 py-4 font-medium">邀请人</th>
                   <th className="px-6 py-4 font-medium">身份权限</th>
+                  <th className="px-6 py-4 font-medium text-center">所属分组</th>
                   <th className="px-6 py-4 font-medium text-center">AI 解析权限</th>
                   <th className="px-6 py-4 font-medium text-center">AI 模型配置</th>
                   <th className="px-6 py-4 font-medium text-center">累计答题 (次)</th>
@@ -432,20 +547,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                       </select>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleToggleAi(user)}
-                        className={`flex items-center gap-1 mx-auto px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                          user.aiEnabled
-                            ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
-                        title={user.aiEnabled ? "点击关闭 AI 解析" : "点击开启 AI 解析"}
-                      >
-                         <Sparkles size={12} />
-                         {user.aiEnabled ? '已开启' : '已关闭'}
-                         {user.aiEnabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                      </button>
+                      <div className="flex items-center justify-center gap-1">
+                        <input 
+                          type="text"
+                          className="w-24 px-2 py-1 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                          placeholder="未设置分组"
+                          value={editingGroups[user.username] !== undefined ? editingGroups[user.username] : (user.group || '')}
+                          onChange={(e) => setEditingGroups({...editingGroups, [user.username]: e.target.value})}
+                        />
+                        {editingGroups[user.username] !== undefined && editingGroups[user.username] !== (user.group || '') && (
+                          <button 
+                            onClick={() => handleUpdateGroup(user.username)}
+                            className="p-1 bg-green-100 text-green-600 rounded hover:bg-green-200 transition-colors"
+                            title="保存分组"
+                          >
+                            <Check size={12} />
+                          </button>
+                        )}
+                      </div>
                     </td>
+                    <td className="px-6 py-4 text-center">
                     <td className="px-6 py-4 text-center">
                       <select 
                         value={user.aiModel || 'gemini-2.5-pro'}

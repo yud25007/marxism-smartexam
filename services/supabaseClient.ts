@@ -28,6 +28,7 @@ export interface DbUser {
   ai_enabled: boolean;
   ai_model?: string;
   invited_by?: string;
+  group?: string;
   created_at: string;
 }
 

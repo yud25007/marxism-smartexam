@@ -1,31 +1,31 @@
 import { supabase } from './supabaseClient';
-
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-  type: 'info' | 'warning' | 'important';
-  is_active?: boolean;
-}
+import { Announcement } from '../types';
 
 const LOCAL_STORAGE_KEY = 'marxism_local_announcements';
 
 export const announcementService = {
-  async getLatestAnnouncement(): Promise<Announcement | null> {
+  async getLatestAnnouncement(userGroup?: string): Promise<Announcement | null> {
     if (!supabase) {
       // 如果没有 Supabase，使用本地默认公告
       return this.getLocalAnnouncement();
     }
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('announcements')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order('created_at', { ascending: false });
+
+      if (userGroup) {
+        // If user has a group, show announcements targeted at their group OR public announcements
+        query = query.or(`target_group.is.null,target_group.eq."${userGroup}"`);
+      } else {
+        // If user has no group, only show public announcements
+        query = query.is('target_group', null);
+      }
+
+      const { data, error } = await query.limit(1).maybeSingle();
 
       if (error) throw error;
       return data;
@@ -91,5 +91,30 @@ export const announcementService = {
       date: new Date().toISOString().split('T')[0],
       type: 'info'
     };
+  },
+
+  async uploadImage(file: File): Promise<string | null> {
+    if (!supabase) return null;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `announcements/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('announcements')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('announcements')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      return null;
+    }
   }
 };

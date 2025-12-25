@@ -1,0 +1,18 @@
+<svg width="800" height="240" viewBox="0 0 800 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="240" rx="12" fill="white"/>
+  <rect x="20" y="40" width="170" height="160" rx="8" fill="#FEE2E2"/>
+  <text x="105" y="110" text-anchor="middle" fill="#991B1B" style="font-family:sans-serif; font-weight:800; font-size:18px;">专项 I</text>
+  <text x="105" y="140" text-anchor="middle" fill="#B91C1C" style="font-family:sans-serif; font-size:12px;">导论/唯物辩证</text>
+
+  <rect x="215" y="40" width="170" height="160" rx="8" fill="#FEF3C7"/>
+  <text x="300" y="110" text-anchor="middle" fill="#92400E" style="font-family:sans-serif; font-weight:800; font-size:18px;">专项 II</text>
+  <text x="300" y="140" text-anchor="middle" fill="#B45309" style="font-family:sans-serif; font-size:12px;">认识论/史观</text>
+
+  <rect x="410" y="40" width="170" height="160" rx="8" fill="#D1FAE5"/>
+  <text x="495" y="110" text-anchor="middle" fill="#065F46" style="font-family:sans-serif; font-weight:800; font-size:18px;">专项 III</text>
+  <text x="495" y="140" text-anchor="middle" fill="#047857" style="font-family:sans-serif; font-size:12px;">政治经济学</text>
+
+  <rect x="605" y="40" width="170" height="160" rx="8" fill="#DBEAFE"/>
+  <text x="690" y="110" text-anchor="middle" fill="#1E40AF" style="font-family:sans-serif; font-weight:800; font-size:18px;">专项 IV</text>
+  <text x="690" y="140" text-anchor="middle" fill="#1D4ED8" style="font-family:sans-serif; font-size:12px;">社中/共产</text>
+</svg>

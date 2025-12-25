@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, X, Bell, Info, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { announcementService, Announcement } from '../services/announcementService';
+import rehypeRaw from 'rehype-raw';
+import { announcementService } from '../services/announcementService';
+import { Announcement, User } from '../types';
 
 interface AnnouncementModalProps {
   isOpen?: boolean;
@@ -20,7 +22,15 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   useEffect(() => {
     const fetchAnnouncement = async () => {
       try {
-        const latest = await announcementService.getLatestAnnouncement();
+        // Try to get user info for group filtering
+        const userStr = localStorage.getItem('marxism_user');
+        let userGroup: string | undefined;
+        if (userStr) {
+          const user = JSON.parse(userStr) as User;
+          userGroup = user.group;
+        }
+
+        const latest = await announcementService.getLatestAnnouncement(userGroup);
         if (latest) {
           setCurrentAnnouncement(latest);
           
@@ -120,9 +130,21 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
           </button>
         </div>
         
-        <div className="p-6 overflow-y-auto flex-1 text-gray-600 leading-relaxed whitespace-pre-wrap">
-          <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4">
-            <ReactMarkdown>{currentAnnouncement.content}</ReactMarkdown>
+        <div className="p-6 overflow-y-auto flex-1 text-gray-600 leading-relaxed">
+          {currentAnnouncement.image_url && (
+            <div className="mb-4 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+              <img 
+                src={currentAnnouncement.image_url} 
+                alt={currentAnnouncement.title}
+                className="w-full h-auto object-cover max-h-64"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4 prose-img:rounded-xl">
+            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{currentAnnouncement.content}</ReactMarkdown>
           </div>
         </div>
         

@@ -1,0 +1,14 @@
+<svg width="800" height="320" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="320" rx="20" fill="#F0F9FF"/>
+  <rect x="40" y="60" width="720" height="200" rx="16" fill="white" stroke="#BAE6FD" stroke-width="2"/>
+  <circle cx="80" cy="100" r="15" fill="#38BDF8"/>
+  <circle cx="120" cy="100" r="15" fill="#FB7185"/>
+  <circle cx="160" cy="100" r="15" fill="#34D399"/>
+  
+  <text x="80" y="160" fill="#0369A1" style="font-family: monospace; font-weight: bold; font-size: 18px;">AI> 正在为您流式解析考点...</text>
+  <text x="80" y="200" fill="#334155" style="font-family: sans-serif; font-size: 16px;">[白话拆解] 原理就像是...</text>
+  <text x="80" y="230" fill="#E11D48" style="font-family: sans-serif; font-weight: bold; font-size: 16px;">[避坑] 别把概念搞混了！</text>
+  <path d="M350 155L350 165" stroke="#0369A1" stroke-width="3">
+    <animate attributeName="opacity" values="0;1;0" dur="0.8s" repeatCount="indefinite" />
+  </path>
+</svg>

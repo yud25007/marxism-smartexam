@@ -1,0 +1,21 @@
+<svg width="800" height="240" viewBox="0 0 800 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Module 1 -->
+  <rect x="20" y="40" width="180" height="160" rx="20" fill="#FEE2E2"/>
+  <text x="110" y="100" text-anchor="middle" fill="#991B1B" style="font-weight:900; font-size:24px;">专项 I</text>
+  <text x="110" y="140" text-anchor="middle" fill="#B91C1C" style="font-size:12px;">导论与辩证法</text>
+  
+  <!-- Module 2 -->
+  <rect x="215" y="40" width="180" height="160" rx="20" fill="#FEF3C7"/>
+  <text x="305" y="100" text-anchor="middle" fill="#92400E" style="font-weight:900; font-size:24px;">专项 II</text>
+  <text x="305" y="140" text-anchor="middle" fill="#B45309" style="font-size:12px;">认识论与史观</text>
+
+  <!-- Module 3 -->
+  <rect x="410" y="40" width="180" height="160" rx="20" fill="#D1FAE5"/>
+  <text x="500" y="100" text-anchor="middle" fill="#065F46" style="font-weight:900; font-size:24px;">专项 III</text>
+  <text x="500" y="140" text-anchor="middle" fill="#047857" style="font-size:12px;">政治经济学</text>
+
+  <!-- Module 4 -->
+  <rect x="605" y="40" width="180" height="160" rx="20" fill="#DBEAFE"/>
+  <text x="695" y="100" text-anchor="middle" fill="#1E40AF" style="font-weight:900; font-size:24px;">专项 IV</text>
+  <text x="695" y="140" text-anchor="middle" fill="#1D4ED8" style="font-size:12px;">社中与共产</text>
+</svg>
