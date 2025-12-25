@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Exam, ExamResult, Question, User } from '../types';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Share, Maximize2, Minimize2 } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, RefreshCcw, Home, Sparkles, ChevronDown, ChevronUp, Lock, Send, MessageSquareText, Star, BookOpen, Edit3, Share, Maximize2, Minimize2, Trash2, Palette, Highlighter, Underline } from 'lucide-react';
 import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';

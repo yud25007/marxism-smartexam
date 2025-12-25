@@ -74,7 +74,13 @@ export const getAIExplanation = async (
       })
     });
 
-    if (!response.ok) throw new Error("API 请求失败");
+    if (!response.ok) {
+      if (response.status === 429) {
+        onContent("⚠️ AI 解析请求过于频繁，请稍等几分钟再试（频率限制）。");
+        return;
+      }
+      throw new Error('API 请求失败');
+    }
 
     const reader = response.body?.getReader();
     const decoder = new TextDecoder("utf-8");
