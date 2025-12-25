@@ -412,8 +412,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                          </div>
                        )}
                        <h2 className="text-2xl font-bold mb-4">{newAnnouncement.title || '（暂无标题）'}</h2>
-                       <div className="prose prose-blue max-w-none prose-table:border-collapse prose-th:border prose-th:border-gray-200 prose-th:p-2 prose-td:border prose-td:border-gray-200 prose-td:p-2 overflow-x-auto">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{newAnnouncement.content || '（暂无内容）'}</ReactMarkdown>
+                       <div className="prose prose-blue max-w-none overflow-x-auto">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              table: ({node, ...props}) => <table className="border-collapse border border-gray-300 my-4 w-full text-sm" {...props} />,
+                              thead: ({node, ...props}) => <thead className="bg-gray-50" {...props} />,
+                              th: ({node, ...props}) => <th className="border border-gray-300 px-3 py-2 font-bold text-left" {...props} />,
+                              td: ({node, ...props}) => <td className="border border-gray-300 px-3 py-2" {...props} />,
+                            }}
+                          >
+                            {newAnnouncement.content || '（暂无内容）'}
+                          </ReactMarkdown>
                        </div>
                     </div>
                  </div>

@@ -158,10 +158,16 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
                   />
                 </div>
               )}
-              <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4 prose-img:rounded-xl prose-table:border-collapse prose-th:border prose-th:border-gray-200 prose-th:p-2 prose-td:border prose-td:border-gray-200 prose-td:p-2 overflow-x-auto">
+              <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4 prose-img:rounded-xl overflow-x-auto">
                 <ReactMarkdown 
                   rehypePlugins={[rehypeRaw]} 
                   remarkPlugins={[remarkGfm]}
+                  components={{
+                    table: ({node, ...props}) => <table className="border-collapse border border-gray-300 my-4 w-full text-sm" {...props} />,
+                    thead: ({node, ...props}) => <thead className="bg-gray-50" {...props} />,
+                    th: ({node, ...props}) => <th className="border border-gray-300 px-3 py-2 font-bold text-left" {...props} />,
+                    td: ({node, ...props}) => <td className="border border-gray-300 px-3 py-2" {...props} />,
+                  }}
                 >
                   {currentAnnouncement.content}
                 </ReactMarkdown>
