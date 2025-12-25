@@ -31,6 +31,7 @@ const App: React.FC = () => {
   const [permissions, setPermissions] = useState<Record<string, ExamPermission>>({});
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [isPublicReg, setIsPublicReg] = useState(true);
+  const [cloudExams, setCloudExams] = useState<Exam[]>([]); // LIVE Exams from DB
 
   // Load user and permissions on mount
   useEffect(() => {
@@ -38,14 +39,16 @@ const App: React.FC = () => {
       const user = authService.getCurrentUser();
       setCurrentUser(user);
       
-      const [perms, maintenanceStatus, regStatus] = await Promise.all([
+      const [perms, maintenanceStatus, regStatus, dbExams] = await Promise.all([
         permissionService.getAllPermissions(),
         systemService.isEnabled('maintenance_mode'),
-        systemService.isEnabled('public_registration')
+        systemService.isEnabled('public_registration'),
+        examService.getExams()
       ]);
       setPermissions(perms);
       setIsMaintenance(maintenanceStatus);
       setIsPublicReg(regStatus);
+      setCloudExams(dbExams.length > 0 ? dbExams : EXAMS); // Fallback to static if DB empty
     };
     init();
 
@@ -136,10 +139,25 @@ const App: React.FC = () => {
     }
   };
 
-  const handleViewHistoryDetail = (result: ExamResult) => {
-    const exam = EXAMS.find(e => e.id === result.examId);
+  const handleViewHistoryDetail = async (result: ExamResult) => {
+    // Priority: Find from cloud-fetched exams
+    let exam = cloudExams.find(e => e.id === result.examId);
+    
+    // Safety Fallback: Find from static EXAMS if not in cloud state
+    if (!exam) exam = EXAMS.find(e => e.id === result.examId);
+
     if (exam) {
-      setActiveExam(exam);
+      try {
+        // Crucial: Load live questions for this chapter to reflect any admin edits
+        const liveQuestions = await examService.getQuestions(exam.id);
+        if (liveQuestions && liveQuestions.length > 0) {
+          setActiveExam({ ...exam, questions: liveQuestions });
+        } else {
+          setActiveExam(exam);
+        }
+      } catch (err) {
+        setActiveExam(exam);
+      }
       setExamResult(result);
       setView('RESULT');
       window.scrollTo(0, 0);
@@ -374,9 +392,12 @@ const App: React.FC = () => {
         <AdminDashboard 
           onGoHome={handleGoHome} 
           onSettingChange={() => {
-            // Trigger a refresh of settings
+            // Trigger a refresh of settings AND exams
             systemService.isEnabled('maintenance_mode').then(setIsMaintenance);
             systemService.isEnabled('public_registration').then(setIsPublicReg);
+            examService.getExams().then(dbExams => {
+              if (dbExams.length > 0) setCloudExams(dbExams);
+            });
           }}
         />
       </>
@@ -532,7 +553,7 @@ const App: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {EXAMS.map(exam => {
+          {cloudExams.map(exam => {
             const perm = permissions[exam.id];
             const isHighLevelUser = currentUser?.role === 'ADMIN' || currentUser?.role === 'VIP';
             let isLockedByPerm = false;
