@@ -48,9 +48,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
   // System Settings states
   const [systemSettings, setSystemSettings] = useState<SystemSetting[]>([]);
 
+  // Local Sync states
+  const [syncServiceStatus, setSyncServiceStatus] = useState<'online' | 'offline'>('offline');
+  const [syncConfig, setSyncConfig] = useState({ targetPath: '', port: 3001 });
+  const [isLocalSyncing, setIsLocalSyncing] = useState(false);
+
   useEffect(() => {
     loadData();
+    checkSyncService();
   }, []);
+
+  const checkSyncService = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/status');
+      const data = await res.json();
+      if (data.status === 'online') {
+        setSyncServiceStatus('online');
+        setSyncConfig(data.config);
+      }
+    } catch (e) {
+      setSyncServiceStatus('offline');
+    }
+  };
+
+  const handleLocalSync = async () => {
+    setIsLocalSyncing(true);
+    try {
+      const res = await fetch('http://localhost:3001/sync', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        alert(`🎉 同步成功！已更新题库至：\n${data.path}`);
+      } else {
+        alert('❌ 同步失败: ' + data.error);
+      }
+    } catch (e) {
+      alert('❌ 无法连接到本地同步助手，请确保已在终端运行 node sync_to_source.js');
+    } finally {
+      setIsLocalSyncing(false);
+    }
+  };
+
+  const saveSyncConfig = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetPath: syncConfig.targetPath })
+      });
+      if (res.ok) {
+        alert('✅ 固化位置已更新！');
+      }
+    } catch (e) {
+      alert('❌ 保存失败');
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -675,27 +726,65 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
             <span>提醒：在云端修正答案后，请执行下方“一键发布”流程以同步给全球用户。</span>
           </div>
           
-          <div className="mx-6 mt-4 p-4 rounded-xl bg-indigo-900 text-white shadow-lg overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <RefreshCw size={80} />
+          {/* Local Sync Helper Console */}
+          <div className="mx-6 mt-6 p-5 rounded-2xl bg-slate-900 text-white shadow-xl relative border border-slate-700 overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+              <RefreshCw size={120} />
             </div>
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h4 className="font-bold flex items-center gap-2">
-                  <Cloud size={18} /> 一键发布到全球 (Global Sync)
-                </h4>
-                <p className="text-[10px] opacity-70 mt-1">
-                  该操作将自动拉取云端修正，重新编译静态源码并推送到 GitHub 生产环境。
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 min-w-[200px]">
-                <div className="bg-black/30 px-3 py-2 rounded font-mono text-[10px] border border-white/10 select-all cursor-pointer" title="点击复制代码" onClick={() => {
-                  navigator.clipboard.writeText('node publish.js');
-                  alert('已复制发布指令！请在本地终端运行。');
-                }}>
-                  node publish.js
+            
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-2 h-2 rounded-full ${syncServiceStatus === 'online' ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
+                    <h4 className="text-lg font-bold">本地同步助手 (Local Sync Console)</h4>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    {syncServiceStatus === 'online' 
+                      ? '已连接本地服务。点击下方按钮直接将云端最新题库写入源码。' 
+                      : '未检测到本地服务。请在项目根目录运行: node sync_to_source.js'}
+                  </p>
                 </div>
-                <p className="text-[9px] text-center opacity-50 italic">复制指令并在本地终端运行</p>
+                {syncServiceStatus === 'online' && (
+                  <Button 
+                    onClick={handleLocalSync} 
+                    disabled={isLocalSyncing}
+                    className="bg-blue-600 hover:bg-blue-500 text-white border-none shadow-lg shadow-blue-900/20 py-6 px-8 rounded-xl"
+                  >
+                    {isLocalSyncing ? <RefreshCw className="animate-spin mr-2" /> : <Database className="mr-2" />}
+                    {isLocalSyncing ? '正在抓取云端并保存...' : '立即拉取最新题库'}
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">固化的源码位置</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm font-mono text-blue-300 outline-none focus:border-blue-500"
+                      value={syncConfig.targetPath}
+                      onChange={e => setSyncConfig({...syncConfig, targetPath: e.target.value})}
+                      placeholder="E:/path/to/cloud_data.ts"
+                    />
+                    <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800" onClick={saveSyncConfig}>
+                      固化位置
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-slate-500 italic">一旦填入，下次启动将自动识别此路径。</p>
+                </div>
+
+                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+                  <h5 className="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1">
+                    <Info size={14} className="text-blue-400" /> 同步逻辑说明
+                  </h5>
+                  <ul className="text-[10px] text-slate-400 space-y-1.5 list-disc list-inside">
+                    <li>该操作将直接修改本地磁盘上的 <span className="text-blue-300">cloud_data.ts</span> 文件。</li>
+                    <li>同步完成后，刷新首页即可看到最新的题库内容（无需等待 API）。</li>
+                    <li>若要让全球用户生效，仍需进行常规的 <span className="text-white font-bold">git push</span>。</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
