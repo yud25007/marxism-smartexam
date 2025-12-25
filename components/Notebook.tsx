@@ -1,7 +1,12 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, X, Maximize2, Minimize2, Save, FileEdit, Eye, Palette, Highlighter, Underline, List, Bold, Italic, Type, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BookOpen, X, Maximize2, Minimize2, Save, FileEdit, Eye, Palette, Highlighter, Underline, List, Bold, Italic, Type, Trash2, Columns } from 'lucide-react';
 import { Button } from './Button';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
 import { historyService } from '../services/historyService';
 
 interface NotebookProps {
@@ -11,22 +16,20 @@ interface NotebookProps {
 }
 
 export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, onClose }) => {
+  const [content, setContent] = useState(initialContent);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const editorRef = useRef<HTMLDivElement>(null);
 
-  // Initialize content
+  // Sync with external updates
   useEffect(() => {
-    if (editorRef.current && initialContent !== editorRef.current.innerHTML) {
-      editorRef.current.innerHTML = initialContent;
-    }
+    setContent(initialContent);
   }, [initialContent]);
 
   const handleSave = async () => {
-    if (!recordId || !editorRef.current) return;
+    if (!recordId) return;
     setIsSaving(true);
-    const content = editorRef.current.innerHTML;
     const success = await historyService.updateNotes(recordId, content);
     if (success) setLastSaved(new Date());
     setIsSaving(false);
@@ -35,18 +38,28 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
   // Auto save
   useEffect(() => {
     const timer = setInterval(() => {
-      handleSave();
-    }, 10000); // Auto save every 10s
+      if (content !== initialContent) handleSave();
+    }, 15000);
     return () => clearInterval(timer);
-  }, []);
+  }, [content, initialContent]);
 
-  const execCommand = (command: string, value: string = '') => {
-    document.execCommand(command, false, value);
-    if (editorRef.current) editorRef.current.focus();
+  const insertText = (before: string, after: string = '') => {
+    const textarea = document.getElementById('notebook-textarea') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
+    
+    setContent(newText);
+    
+    // Reset focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, end + before.length);
+    }, 0);
   };
-
-  const applyColor = (color: string) => execCommand('foreColor', color);
-  const applyBg = (color: string) => execCommand('hiliteColor', color);
 
   return (
     <div className={`fixed transition-all duration-300 z-[100] shadow-2xl flex flex-col bg-white border border-gray-200 overflow-hidden
@@ -57,7 +70,7 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
       <div className="bg-indigo-600 p-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">
           <BookOpen size={20} />
-          <h3 className="font-bold">全卷学习笔记 (富文本)</h3>
+          <h3 className="font-bold">答题笔记 (Markdown)</h3>
           {isSaving ? (
             <span className="text-[10px] bg-indigo-500 px-2 py-0.5 rounded animate-pulse">保存中...</span>
           ) : lastSaved && (
@@ -65,6 +78,9 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
           )}
         </div>
         <div className="flex items-center gap-1">
+          <button onClick={() => setIsPreview(!isPreview)} className="p-1.5 hover:bg-white/20 rounded" title={isPreview ? "返回编辑" : "预览效果"}>
+            {isPreview ? <FileEdit size={18} /> : <Eye size={18} />}
+          </button>
           <button onClick={() => setIsExpanded(!isExpanded)} className="p-1.5 hover:bg-white/20 rounded hidden md:block">
             {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
           </button>
@@ -74,30 +90,57 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
         </div>
       </div>
 
-      <div className="bg-gray-50 px-2 py-2 border-b border-gray-200 flex items-center gap-1 flex-wrap sticky top-0 z-10">
-         <button onClick={() => execCommand('bold')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="加粗"><Bold size={16} /></button>
-         <button onClick={() => execCommand('italic')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="斜体"><Italic size={16} /></button>
-         <button onClick={() => execCommand('underline')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="下划线"><Underline size={16} /></button>
+      <div className="bg-gray-50 px-2 py-1.5 border-b border-gray-200 flex items-center gap-1 flex-wrap sticky top-0 z-10">
+         <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="加粗"><Bold size={16} /></button>
+         <button onClick={() => insertText('_', '_')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="斜体"><Italic size={16} /></button>
+         <button onClick={() => insertText('<u>', '</u>')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="下划线"><Underline size={16} /></button>
          <div className="w-px h-4 bg-gray-300 mx-1"></div>
-         <button onClick={() => applyColor('#ef4444')} className="p-2 hover:bg-red-50 text-red-600 rounded" title="红色"><Palette size={16} /></button>
-         <button onClick={() => applyColor('#3b82f6')} className="p-2 hover:bg-blue-50 text-blue-600 rounded" title="蓝色"><Palette size={16} /></button>
-         <button onClick={() => applyBg('#fef08a')} className="p-2 hover:bg-yellow-100 text-yellow-600 rounded" title="高亮"><Highlighter size={16} /></button>
+         <button onClick={() => insertText('<span style="color: #ef4444">', '</span>')} className="p-2 hover:bg-red-50 text-red-600 rounded" title="红色"><Palette size={16} /></button>
+         <button onClick={() => insertText('<span style="color: #3b82f6">', '</span>')} className="p-2 hover:bg-blue-50 text-blue-600 rounded" title="蓝色"><Palette size={16} /></button>
+         <button onClick={() => insertText('<mark style="background: #fef08a; padding: 0 2px">', '</mark>')} className="p-2 hover:bg-yellow-100 text-yellow-600 rounded" title="高亮"><Highlighter size={16} /></button>
          <div className="w-px h-4 bg-gray-300 mx-1"></div>
-         <button onClick={() => execCommand('insertUnorderedList')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="列表"><List size={16} /></button>
-         <button onClick={() => execCommand('formatBlock', 'H3')} className="p-2 hover:bg-gray-200 rounded text-gray-700 font-bold text-xs" title="标题">H3</button>
-         <button onClick={() => execCommand('removeFormat')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="清除格式"><Type size={16} /></button>
+         <button onClick={() => insertText('- ')} className="p-2 hover:bg-gray-200 rounded text-gray-700" title="列表"><List size={16} /></button>
+         <button onClick={() => insertText('### ')} className="p-2 hover:bg-gray-200 rounded text-gray-700 font-bold text-xs" title="标题">H3</button>
       </div>
 
-      <div 
-        ref={editorRef}
-        contentEditable
-        className="flex-1 overflow-y-auto p-6 focus:outline-none bg-white prose prose-indigo max-w-none text-gray-800 leading-relaxed"
-        style={{ minHeight: '100px' }}
-        onBlur={handleSave}
-      />
+      <div className="flex-1 overflow-hidden relative flex flex-col md:flex-row">
+        {/* Editor Area */}
+        <textarea
+          id="notebook-textarea"
+          className={`flex-1 w-full p-4 focus:outline-none resize-none font-sans text-sm leading-relaxed border-r border-gray-100 ${isPreview && !isExpanded ? 'hidden' : 'block'}`}
+          placeholder="支持 Markdown 及上方工具栏... 公式请用 $...$ 包含"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+
+        {/* Preview Area (Visible when isPreview is true OR in expanded side-by-side mode) */}
+        {(isPreview || isExpanded) && (
+          <div className={`flex-1 overflow-y-auto p-6 prose prose-sm prose-indigo max-w-none bg-gray-50/30 ${!isPreview && isExpanded ? 'hidden md:block' : 'block'}`}>
+            <style>{`
+              .notebook-preview { white-space: pre-wrap; }
+              .notebook-preview details { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem; background: white; overflow: hidden; }
+              .notebook-preview summary { padding: 12px 16px; cursor: pointer; font-weight: bold; background: #f8fafc; border-bottom: 1px solid transparent; transition: all 0.2s; list-style: none; }
+              .notebook-preview details[open] summary { border-bottom-color: #e2e8f0; background: #eff6ff; color: #1e40af; }
+              .notebook-preview blockquote { border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+              .notebook-preview table { border-collapse: collapse; width: 100%; margin: 16px 0; border: 1px solid #cbd5e1; }
+              .notebook-preview th, .notebook-preview td { border: 1px solid #cbd5e1; padding: 8px 12px; }
+              .notebook-preview th { background: #f1f5f9; }
+              .katex-display { overflow-x: auto; overflow-y: hidden; padding: 8px 0; }
+            `}</style>
+            <div className="notebook-preview">
+              <ReactMarkdown 
+                rehypePlugins={[rehypeRaw, rehypeKatex]} 
+                remarkPlugins={[remarkGfm, remarkMath]}
+              >
+                {content}
+              </ReactMarkdown>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-end items-center">
-         <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-indigo-600 text-white h-8 text-xs">
+         <Button size="sm" onClick={handleSave} disabled={isSaving || content === initialContent} className="bg-indigo-600 text-white h-8 text-xs">
            <Save size={14} className="mr-1" /> 立即保存
          </Button>
       </div>
