@@ -214,12 +214,12 @@ const App: React.FC = () => {
     setView('HOME');
   };
 
-  // Render Logic
+  // ==================== Render Logic ====================
 
-  // Global Maintenance Interceptor
+  // 1. Global Maintenance Interceptor (Highest Priority)
   if (isMaintenance && currentUser?.role !== 'ADMIN' && view !== 'LOGIN' && view !== 'CONTACT') {
     return (
-      <div className="min-h-screen bg-[#0078d7] flex flex-col items-center justify-center p-4 text-white font-sans overflow-hidden">
+      <div className="min-h-screen bg-[#0078d7] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden">
         <style>{`
           @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
           .win-loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 48px; height: 48px; animation: spin 1.5s linear infinite; }
@@ -229,7 +229,7 @@ const App: React.FC = () => {
           <div className="win-loader mb-12"></div>
           
           <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <h1 className="text-2xl md:text-3xl font-light">
+            <h1 className="text-2xl md:text-3xl font-light leading-tight">
               正在准备理论同步，请勿关闭浏览器
             </h1>
             
@@ -243,7 +243,7 @@ const App: React.FC = () => {
               </span>
             </div>
 
-            <div className="space-y-2 opacity-80 italic font-light tracking-wide">
+            <div className="space-y-2 opacity-80 italic font-light tracking-wide px-4">
               <p className="animate-pulse">“天涯若比邻...”</p>
               <p className="text-sm">正在校准历史唯物主义时空坐标</p>
             </div>
@@ -254,19 +254,20 @@ const App: React.FC = () => {
         <div className="fixed bottom-8 right-8 group">
           <button 
             onClick={() => setView('LOGIN')}
-            className="text-white/10 group-hover:text-white/40 transition-colors text-[10px] font-mono tracking-widest uppercase"
+            className="text-white/10 group-hover:text-white/40 transition-colors text-[10px] font-mono tracking-widest uppercase p-4"
           >
             Terminal Access [Admin Only]
           </button>
         </div>
 
-        <div className="fixed bottom-8 left-8 text-white/30 text-xs font-light">
+        <div className="fixed bottom-8 left-8 text-white/30 text-[10px] font-light">
           ©️ 2025 Microsoft (Not really) Marxism SmartExam Update
         </div>
       </div>
     );
   }
 
+  // 2. Normal View Rendering
   if (view === 'CONTACT') {
     return (
       <>
