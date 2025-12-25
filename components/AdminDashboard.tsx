@@ -666,19 +666,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
               <Database className="text-indigo-600" size={20} />
               <h3 className="font-bold text-gray-800">题库管理 (云端动态更新)</h3>
             </div>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={handleSyncExams}
-              disabled={isSyncing}
-              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-            >
-              {isSyncing ? <RefreshCw className="animate-spin mr-1" size={16} /> : <Cloud className="mr-1" size={16} />}
-              同步本地题库到云端
+            <Button size="sm" variant="outline" onClick={handleSyncExams} disabled={isSyncing} className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+              {isSyncing ? <RefreshCw className="animate-spin mr-1" size={16} /> : <Cloud className="mr-1" size={16} />}同步本地题库
             </Button>
           </div>
-          
-          <div className="p-6 space-y-6">
+          <div className="px-6 py-2 bg-amber-50 text-amber-700 text-[10px] font-bold flex items-center gap-2">
+            <Info size={14} />
+            <span>提醒：在云端修正答案后，需本地运行 `node sync_to_source.js` 重新编译静态库并推送，全站响应速度将提升 10 倍。</span>
+          </div>
+          <div className="p-6 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-1">
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">选择要编辑的题库章节</label>

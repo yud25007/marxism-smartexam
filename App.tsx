@@ -7,6 +7,7 @@ import { LoginView, RegisterView } from './components/AuthViews';
 import { ChangePasswordView } from './components/ChangePasswordView';
 import { ContactView } from './components/ContactView';
 import { EXAMS } from './constants';
+import { STATIC_CLOUD_EXAMS } from './cloud_data';
 import { Exam, ExamResult, User } from './types';
 import { authService } from './services/authService';
 import { historyService } from './services/historyService';
@@ -33,12 +34,9 @@ const App: React.FC = () => {
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [isPublicReg, setIsPublicReg] = useState(true);
   
-  // SWR Strategy: Initial state from localStorage or static EXAMS for instant display
-  const [cloudExams, setCloudExams] = useState<Exam[]>(() => {
-    const cached = localStorage.getItem('cached_exams');
-    return cached ? JSON.parse(cached) : EXAMS;
-  });
-  const [isLiveActive, setIsLiveActive] = useState(false);
+  // LIVE Data Strategy: Primary source is static compiled file, fallback to cache/EXAMS
+  const [cloudExams, setCloudExams] = useState<Exam[]>(STATIC_CLOUD_EXAMS); 
+  const [isLiveActive, setIsLiveActive] = useState(true); // Default to true as STATIC_CLOUD_EXAMS is the live source
 
   // Load user and permissions on mount
   useEffect(() => {
@@ -46,7 +44,7 @@ const App: React.FC = () => {
       const user = authService.getCurrentUser();
       setCurrentUser(user);
       
-      // Parallelize non-dependent requests
+      // Parallelize non-dependent requests (Core settings)
       const corePromise = Promise.all([
         permissionService.getAllPermissions(),
         systemService.isEnabled('maintenance_mode'),
@@ -57,15 +55,16 @@ const App: React.FC = () => {
         setIsPublicReg(reg);
       });
 
+      // Background Fetch: Check if cloud has MORE recent or new data
+      // Only replaces if DB has items and user is on a slow connection
       const examPromise = examService.getExams().then(dbExams => {
-        if (dbExams && dbExams.length > 0) {
+        if (dbExams && dbExams.length > 0 && STATIC_CLOUD_EXAMS.length === 0) {
           setCloudExams(dbExams);
-          localStorage.setItem('cached_exams', JSON.stringify(dbExams));
         }
       });
 
       await Promise.all([corePromise, examPromise]).catch(err => {
-        console.warn("Soft init failure, some cloud features might be degraded", err);
+        console.warn("Soft init failure", err);
       });
     };
     init();
@@ -109,22 +108,26 @@ const App: React.FC = () => {
       }
     }
 
-    // NEW: Fetch LIVE questions from DB to ensure latest answers
-    try {
-      const liveQuestions = await examService.getQuestions(exam.id);
-      if (liveQuestions && liveQuestions.length > 0) {
-        setActiveExam({ ...exam, questions: liveQuestions });
-        setIsLiveActive(true);
-      } else {
-        alert("云端题库内容为空，系统已切换到离线模式(LOCAL)。\n请确保已在后台点击“同步题库”。");
+    // OPTIMIZATION: Prioritize pre-compiled STATIC_CLOUD_EXAMS for instant load
+    const staticExam = STATIC_CLOUD_EXAMS.find(e => e.id === exam.id);
+    if (staticExam && staticExam.questions.length > 0) {
+      setActiveExam(staticExam);
+      setIsLiveActive(true);
+    } else {
+      // Fallback: Fetch LIVE questions from DB if not in static file
+      try {
+        const liveQuestions = await examService.getQuestions(exam.id);
+        if (liveQuestions && liveQuestions.length > 0) {
+          setActiveExam({ ...exam, questions: liveQuestions });
+          setIsLiveActive(true);
+        } else {
+          setActiveExam(exam);
+          setIsLiveActive(false);
+        }
+      } catch (err: any) {
         setActiveExam(exam);
         setIsLiveActive(false);
       }
-    } catch (err: any) {
-      console.warn("Failed to fetch live questions, falling back to static constants.");
-      alert("进入考试失败 (Live模式报错): " + err.message);
-      setActiveExam(exam);
-      setIsLiveActive(false);
     }
 
     setView('EXAM');
@@ -162,24 +165,27 @@ const App: React.FC = () => {
   };
 
   const handleViewHistoryDetail = async (result: ExamResult) => {
-    // Priority: Find from cloud-fetched exams
-    let exam = cloudExams.find(e => e.id === result.examId);
+    // 1. Try pre-compiled static cloud source first (fastest)
+    let exam = STATIC_CLOUD_EXAMS.find(e => e.id === result.examId);
     
-    // Safety Fallback: Find from static EXAMS if not in cloud state
-    if (!exam) exam = EXAMS.find(e => e.id === result.examId);
-
-    if (exam) {
+    if (exam && exam.questions.length > 0) {
+      setActiveExam(exam);
+      setIsLiveActive(true);
+    } else {
+      // 2. Fallback to live fetching
       try {
-        // Crucial: Load live questions for this chapter to reflect any admin edits
-        const liveQuestions = await examService.getQuestions(exam.id);
+        const liveQuestions = await examService.getQuestions(result.examId);
         if (liveQuestions && liveQuestions.length > 0) {
-          setActiveExam({ ...exam, questions: liveQuestions });
-        } else {
-          setActiveExam(exam);
+          const baseExam = cloudExams.find(e => e.id === result.examId) || EXAMS.find(e => e.id === result.examId);
+          if (baseExam) setActiveExam({ ...baseExam, questions: liveQuestions });
+          setIsLiveActive(true);
         }
       } catch (err) {
-        setActiveExam(exam);
+        // ... handled below
       }
+    }
+
+    if (activeExam || exam) {
       setExamResult(result);
       setView('RESULT');
       window.scrollTo(0, 0);
