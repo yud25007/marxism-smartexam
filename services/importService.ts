@@ -3,10 +3,58 @@ import { EXAMS } from '../constants';
 import { QuestionType } from '../types';
 
 export const importService = {
-  // 之前的同步逻辑保持不变...
   async syncToCloud(): Promise<{ success: boolean; message: string }> {
-    // ... (保持原有代码)
-    return { success: true, message: "同步成功" };
+    if (!supabase) return { success: false, message: "Supabase 未配置" };
+
+    console.log("Starting full sync to cloud...");
+    try {
+      // 1. Sync Exams
+      const examData = EXAMS.map(exam => ({
+        id: exam.id,
+        title: exam.title,
+        description: exam.description,
+        category: exam.category,
+        duration_minutes: exam.durationMinutes,
+        difficulty: exam.difficulty,
+        cover_image: exam.coverImage
+      }));
+
+      const { error: examError } = await supabase
+        .from('exams')
+        .upsert(examData, { onConflict: 'id' });
+
+      if (examError) throw new Error(`Exam sync failed: ${examError.message}`);
+
+      // 2. Sync Questions in Batches (to avoid large payload issues)
+      const allQuestions = EXAMS.flatMap(exam => 
+        exam.questions.map(q => ({
+          id: q.id,
+          exam_id: exam.id,
+          type: q.type,
+          text: q.text,
+          options: q.options,
+          correct_answers: q.correctAnswers,
+          points: q.points,
+          answer_text: q.answerText || null
+        }))
+      );
+
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < allQuestions.length; i += BATCH_SIZE) {
+        const batch = allQuestions.slice(i, i + BATCH_SIZE);
+        const { error: qError } = await supabase
+          .from('questions')
+          .upsert(batch, { onConflict: 'id' });
+
+        if (qError) throw new Error(`Question batch ${i} failed: ${qError.message}`);
+        console.log(`Synced ${Math.min(i + BATCH_SIZE, allQuestions.length)} / ${allQuestions.length} questions`);
+      }
+
+      return { success: true, message: `同步成功！累计上传 ${allQuestions.length} 道题目。` };
+    } catch (err: any) {
+      console.error("Sync error details:", err);
+      return { success: false, message: `同步失败: ${err.message}` };
+    }
   },
 
   // 新增：从大型 JSON 文件导入

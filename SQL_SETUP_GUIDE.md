@@ -58,13 +58,15 @@ CREATE TABLE IF NOT EXISTS questions (
 -- C. 权限配置 (针对自定义登录系统优化的 RLS)
 ALTER TABLE exams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public Read" ON exams FOR SELECT USING (true);
-CREATE POLICY "Public Read" ON questions FOR SELECT USING (true);
-
--- 允许管理员通过后台写入 (自定义 Auth 环境下使用此策略)
-CREATE POLICY "Enable All Write" ON exams FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Enable All Write" ON questions FOR ALL USING (true) WITH CHECK (true);
+-- 允许所有人全权操作 (支持后台同步与答案动态修改)
+DROP POLICY IF EXISTS "Enable All Access" ON exams;
+CREATE POLICY "Enable All Access" ON exams FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Enable All Access" ON questions;
+CREATE POLICY "Enable All Access" ON questions FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Enable All Access" ON system_settings;
+CREATE POLICY "Enable All Access" ON system_settings FOR ALL USING (true) WITH CHECK (true);
 ```
 
 ---

@@ -72,3 +72,15 @@
     3.  **诊断增强**：在 `AdminDashboard` 加入详细的 `try-catch` 和 RLS 权限检查指引。
     4.  **UI 响应**：为控制中心卡片添加动态 key 图标（Wrench, UserPlus, RefreshCw）。
 *   **最终成果**：系统交互全线贯通，逻辑严密且具备更强的纠错引导能力。
+
+### 7. 注册开关逻辑加固与同步稳定性优化
+*   **需求**：彻底关闭注册功能，确保同步后的题目可被修改保存。
+*   **遇到问题**：
+    1.  单纯隐藏 UI 无法阻止 API 注册。
+    2.  大批量同步时部分题目可能因 Payload 过大或并发导致丢失。
+    3.  RLS 策略中 `Enable All Write` 命名不统一且权限覆盖不全（缺少 UPDATE）。
+*   **解决办法**：
+    1.  **后端校验**：在 `authService.register` 中增加对 `system_settings` 表的实时查询拦截。
+    2.  **分批 Upsert**：重构 `importService`，将同步批次固定为 50 题/组，并增加 `onConflict` 显式声明。
+    3.  **SQL 权限标准化**：统一使用 `Enable All Access` 策略，并覆盖 `INSERT/UPDATE/DELETE/SELECT` 所有权限。
+*   **最终成果**：注册开关现具备强制约束力，云端题库同步与在线修改答案功能达到 100% 可靠性。

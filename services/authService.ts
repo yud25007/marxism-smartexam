@@ -184,6 +184,29 @@ export const authService = {
       return localAuth.register(username, password, role, status, invitedBy);
     }
 
+    // Security Check: Only allow if public registration is enabled OR it's an admin-initiated registration
+    // (In our app, register view is reused for Admin adding users, but that has currentUser check in App.tsx)
+    const { data: regEnabled } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'public_registration')
+      .maybeSingle();
+    
+    // Note: If adding user via AdminDashboard, this check should ideally be bypassed, 
+    // but standard public registration must honor this.
+    if (regEnabled && !regEnabled.value) {
+      // If we are not an admin adding a user, block it.
+      // Since service doesn't know context, we rely on value. 
+      // Admin bypass is handled via UI gating, but here we add a safety layer.
+      const currentUserStr = localStorage.getItem(CURRENT_USER_KEY);
+      const isActuallyAdmin = currentUserStr && JSON.parse(currentUserStr).role === 'ADMIN';
+      
+      if (!isActuallyAdmin) {
+        console.error('Registration is currently disabled by system administrator.');
+        return false; 
+      }
+    }
+
     const { data: existing } = await supabase
       .from('users')
       .select('username')
