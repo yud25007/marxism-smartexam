@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { AnnouncementModal } from './components/Announcement';
+import 'katex/dist/katex.min.css';
 import { ExamCard } from './components/ExamCard';
 import { ExamPlayer } from './components/ExamPlayer';
 import { ResultView } from './components/ResultView';

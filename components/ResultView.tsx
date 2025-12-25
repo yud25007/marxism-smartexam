@@ -7,6 +7,10 @@ import { getAIExplanation } from '../services/aiService';
 import { favoriteService } from '../services/favoriteService';
 import { Notebook } from './Notebook';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
 
 interface ResultViewProps {
   exam: Exam;
@@ -63,25 +67,40 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   };
 
   const handleAddToNotes = (question: Question) => {
-    const personalNote = localNotesMap[question.id] || "_（暂无个人心得）_";
+    const personalNote = localNotesMap[question.id] || "（暂无个人心得）";
     const optionsText = question.options.length > 0 
-      ? question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')
+      ? question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('<br/>')
       : "（简答/填空题）";
     const correctAns = question.correctAnswers.length > 0
       ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
       : (question.answerText || "详见解析");
 
-    // Construct Clean & Foldable HTML/Markdown Mix
-    let block = `\n<details>\n<summary>📝 考点记录：${question.text.substring(0, 35)}...</summary>\n\n`;
-    block += `#### 📥 题目原文\n> ${question.text}\n\n`;
-    block += `**选项参考：**\n\`\`\`text\n${optionsText}\n\`\`\`\n\n`;
-    block += `**标准答案：** \`${correctAns}\`\n\n`;
-    block += `#### 💡 我的心得体会\n${personalNote}\n\n`;
-    block += `</details>\n<hr />\n`;
+    // Construct Clean & Foldable HTML Block
+    let block = `<details data-q-id="${question.id}" style="border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem; background: white; overflow: hidden;">`;
+    block += `<summary style="padding: 12px 16px; cursor: pointer; font-weight: bold; background: #f8fafc; list-style: none;">📝 考点记录：${question.text.substring(0, 35)}...</summary>`;
+    block += `<div style="padding: 16px; border-top: 1px solid #e2e8f0;">`;
+    block += `<h4 style="margin-top: 0; color: #1e40af;">📥 题目原文</h4><blockquote style="border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px; margin: 12px 0;">${question.text}</blockquote>`;
+    block += `<p><strong>选项参考：</strong><br/><code style="background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">${optionsText}</code></p>`;
+    block += `<p><strong>标准答案：</strong> <code style="background: #dcfce7; color: #166534; padding: 2px 4px; border-radius: 4px;">${correctAns}</code></p>`;
+    block += `<h4 style="color: #1e40af;">💡 我的心得体会</h4><div>${personalNote}</div>`;
+    block += `</div></details><hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 1rem 0;"/>`;
     
     setNotes(prev => prev + block);
     setShowNotebook(true);
-    // Notification handled by UI transition
+  };
+
+  const handleRemoveFromNotes = (questionId: string) => {
+    // We look for the <details data-q-id="..."> block and remove it
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<div>${notes}</div>`, 'text/html');
+    const element = doc.querySelector(`details[data-q-id="${questionId}"]`);
+    
+    if (element) {
+      element.nextElementSibling?.tagName === 'HR' && element.nextElementSibling.remove();
+      element.remove();
+      const newNotes = doc.querySelector('div')?.innerHTML || "";
+      setNotes(newNotes);
+    }
   };
 
   const handleAskAI = async (question: Question, followUp?: string) => {
@@ -250,8 +269,19 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                    <div className="space-y-2 animate-pulse"><div className="h-2 bg-indigo-200 rounded w-3/4"></div><div className="h-2 bg-indigo-200 rounded w-full"></div></div>
                                  ) : (
                                   <div className="text-sm text-indigo-800 leading-relaxed prose prose-sm prose-indigo max-w-none">
-                                       <style>{`.markdown-content ul { list-style-type: disc; margin-left: 1.5rem; } .markdown-content strong { font-weight: 800; color: #312e81; }`}</style>
-                                       <div className="markdown-content"><ReactMarkdown>{explanation}</ReactMarkdown></div>
+                                       <style>{`
+                                         .markdown-content ul { list-style-type: disc; margin-left: 1.5rem; } 
+                                         .markdown-content strong { font-weight: 800; color: #312e81; }
+                                         .katex-display { overflow-x: auto; overflow-y: hidden; padding: 8px 0; }
+                                       `}</style>
+                                       <div className="markdown-content">
+                                         <ReactMarkdown 
+                                           remarkPlugins={[remarkMath, remarkGfm]} 
+                                           rehypePlugins={[rehypeKatex, rehypeRaw]}
+                                         >
+                                           {explanation}
+                                         </ReactMarkdown>
+                                       </div>
                                        {isLoading && <span className="inline-block ml-2 animate-bounce">...</span>}
                                    </div>
                                    )}
@@ -264,16 +294,58 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                                 <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
                                   <div className="flex items-center gap-2 text-xs font-bold text-gray-600"><Edit3 size={14} /> 个人心得笔记</div>
                                   <div className="flex gap-3">
+                                    {notes.includes(`data-q-id="${question.id}"`) && (
+                                      <button onClick={() => handleRemoveFromNotes(question.id)} className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> 从全卷笔记中移除</button>
+                                    )}
                                     <button onClick={() => setFullScreenNoteId(question.id)} className="text-[10px] font-bold text-gray-500 hover:text-indigo-600 flex items-center gap-1"><Maximize2 size={12} /> 全屏编辑</button>
-                                    <button onClick={() => setIsSaPreview(prev => ({...prev, [question.id]: !prev[question.id]}))} className="text-[10px] font-bold text-indigo-600 hover:underline">{showSaPreview ? "返回编辑" : "Markdown 预览"}</button>
                                   </div>
                                 </div>
                                 <div className="p-3">
-                                  {showSaPreview ? (
-                                    <div className="min-h-[120px] text-sm text-gray-700 prose prose-sm max-w-none"><ReactMarkdown>{localNote || "*暂未填写笔记内容*"}</ReactMarkdown></div>
-                                  ) : (
-                                    <textarea className="w-full text-sm focus:outline-none min-h-[120px] resize-none leading-relaxed" placeholder="记录您的心得..." value={localNote} onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))} />
-                                  )}
+                                  <div className="bg-gray-50 px-2 py-1 mb-2 border rounded flex gap-1">
+                                     <button onClick={() => {
+                                       const textarea = document.getElementById(`note-edit-${question.id}`) as HTMLTextAreaElement;
+                                       if (textarea) {
+                                         const start = textarea.selectionStart;
+                                         const end = textarea.selectionEnd;
+                                         const text = textarea.value;
+                                         const newText = text.substring(0, start) + '<span style="color: #ef4444">' + text.substring(start, end) + '</span>' + text.substring(end);
+                                         setLocalNotesMap(prev => ({...prev, [question.id]: newText}));
+                                       }
+                                     }} className="p-1 hover:bg-white text-red-600 rounded" title="红色"><Palette size={14} /></button>
+                                     <button onClick={() => {
+                                       const textarea = document.getElementById(`note-edit-${question.id}`) as HTMLTextAreaElement;
+                                       if (textarea) {
+                                         const start = textarea.selectionStart;
+                                         const end = textarea.selectionEnd;
+                                         const text = textarea.value;
+                                         const newText = text.substring(0, start) + '<mark style="background: #fef08a">' + text.substring(start, end) + '</mark>' + text.substring(end);
+                                         setLocalNotesMap(prev => ({...prev, [question.id]: newText}));
+                                       }
+                                     }} className="p-1 hover:bg-white text-yellow-600 rounded" title="高亮"><Highlighter size={14} /></button>
+                                     <button onClick={() => {
+                                       const textarea = document.getElementById(`note-edit-${question.id}`) as HTMLTextAreaElement;
+                                       if (textarea) {
+                                         const start = textarea.selectionStart;
+                                         const end = textarea.selectionEnd;
+                                         const text = textarea.value;
+                                         const newText = text.substring(0, start) + '<u>' + text.substring(start, end) + '</u>' + text.substring(end);
+                                         setLocalNotesMap(prev => ({...prev, [question.id]: newText}));
+                                       }
+                                     }} className="p-1 hover:bg-white text-gray-700 rounded" title="下划线"><Underline size={14} /></button>
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <textarea 
+                                      id={`note-edit-${question.id}`}
+                                      className="w-full text-sm focus:outline-none min-h-[120px] resize-none leading-relaxed border p-2 rounded" 
+                                      placeholder="记录您的心得... 支持 HTML 标签美化" 
+                                      value={localNote} 
+                                      onChange={(e) => setLocalNotesMap(prev => ({...prev, [question.id]: e.target.value}))} 
+                                    />
+                                    <div className="border rounded p-2 bg-gray-50 overflow-y-auto max-h-[120px]">
+                                      <div className="text-[10px] font-bold text-gray-400 uppercase mb-1">预览</div>
+                                      <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: localNote || '<i style="color: #999">暂未填写笔记内容</i>' }} />
+                                    </div>
+                                  </div>
                                   <div className="mt-3 flex justify-end">
                                     <Button onClick={() => handleAddToNotes(question)} className="bg-indigo-600 text-white h-8 text-[10px] font-bold"><Share size={12} className="mr-1" /> 整理并存入全卷笔记</Button>
                                   </div>
