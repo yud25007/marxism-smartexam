@@ -347,16 +347,7 @@ export const authService = {
   },
 
   rejectUser: async (username: string): Promise<boolean> => {
-    if (!isSupabaseConfigured || !supabase) {
-      return localAuth.rejectUser(username);
-    }
-
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('username', username);
-
-    return !error;
+    return authService.deleteUser(username);
   },
 
   deleteUser: async (username: string): Promise<boolean> => {
