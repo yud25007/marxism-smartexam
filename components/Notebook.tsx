@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BookOpen, X, Maximize2, Minimize2, Save, FileEdit, Eye, Palette, Highlighter, Underline, List, Bold, Italic, Type, Trash2, Columns } from 'lucide-react';
+import { BookOpen, X, Maximize2, Minimize2, Save, FileEdit, Eye, Palette, Highlighter, Underline, List, Bold, Italic, Type, Trash2, Columns, Download } from 'lucide-react';
 import { Button } from './Button';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -59,6 +59,18 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
       textarea.focus();
       textarea.setSelectionRange(start + before.length, end + before.length);
     }, 0);
+  };
+
+  const handleDownloadMd = () => {
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `马原学习笔记_${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -139,7 +151,14 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
         )}
       </div>
 
-      <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-end items-center">
+      <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center">
+         <button 
+           onClick={handleDownloadMd}
+           className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-indigo-600 transition-colors"
+           title="导出为 Markdown 文件"
+         >
+           <Download size={14} /> 导出 MD
+         </button>
          <Button size="sm" onClick={handleSave} disabled={isSaving || content === initialContent} className="bg-indigo-600 text-white h-8 text-xs">
            <Save size={14} className="mr-1" /> 立即保存
          </Button>

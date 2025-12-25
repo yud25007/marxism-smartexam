@@ -76,7 +76,7 @@ export const getAIExplanation = async (
 
     if (!response.ok) {
       if (response.status === 429) {
-        onContent("⚠️ AI 解析请求过于频繁，请稍等几分钟再试（频率限制）。");
+        onChunk("⚠️ AI 解析请求过于频繁，请稍等几分钟再试（频率限制）。");
         return;
       }
       throw new Error('API 请求失败');
@@ -110,8 +110,12 @@ export const getAIExplanation = async (
         }
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI API Error:", error);
-    onChunk("抱歉，获取解析时出错。");
+    if (error.name === 'TypeError' || error.message.includes('fetch')) {
+      onChunk("⚠️ AI 老师网络连接失败，请检查您的网络连接或代理服务器 (VPN) 状态。");
+    } else {
+      onChunk("❌ 获取解析暂时不可用: " + error.message);
+    }
   }
 };
