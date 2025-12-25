@@ -145,9 +145,9 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
 
     try {
       const initialStatus = isAdminMode ? 'ACTIVE' : 'PENDING';
-      const isSuccess = await authService.register(username, password, role, initialStatus, invitedBy);
+      const result = await authService.register(username, password, role, initialStatus, invitedBy);
 
-      if (isSuccess) {
+      if (result.success) {
         if (isAdminMode) {
           setSuccess('用户 ' + username + ' 创建成功！');
           setTimeout(() => onRegisterSuccess(), 2000);
@@ -158,7 +158,13 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegisterSuccess, o
         setPassword('');
         setInvitedBy('');
       } else {
-        setError('用户名已存在');
+        if (result.error === 'REGISTRATION_DISABLED') {
+          setError('当前阶段无法注册，请微信公众号私信留言。');
+        } else if (result.error === 'USER_EXISTS') {
+          setError('用户名已存在，请尝试其他名称。');
+        } else {
+          setError('注册失败: ' + (result.error || '未知错误'));
+        }
       }
     } catch (err) {
       setError('注册失败，请检查网络连接');

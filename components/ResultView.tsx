@@ -47,6 +47,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   // Quick Edit States
   const [editingAnsId, setEditingAnsId] = useState<string | null>(null);
   const [liveCorrectAnswers, setLiveCorrectAnswers] = useState<Record<string, number[]>>({});
+  const [pendingAnsMap, setPendingAnsMap] = useState<Record<string, number[]>>({});
 
   const scrollPosRef = useRef<Record<string, number>>({});
 
@@ -65,8 +66,9 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     }
   }, [user]);
 
-  const handleQuickUpdateAnswer = async (questionId: string, optionsIndex: number, isSingle: boolean) => {
-    const current = liveCorrectAnswers[questionId] || [];
+  const handleQuickUpdateAnswer = (questionId: string, optionsIndex: number, isSingle: boolean) => {
+    // Current state could be from pending, or from live (if not pending)
+    const current = pendingAnsMap[questionId] || liveCorrectAnswers[questionId] || [];
     let next: number[];
     
     if (isSingle) {
@@ -77,14 +79,25 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
         : [...current, optionsIndex].sort((a,b) => a-b);
     }
 
-    // Immediate optimistic update UI
-    setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: next }));
-    
+    setPendingAnsMap(prev => ({ ...prev, [questionId]: next }));
+  };
+
+  const handleCommitQuickAnswer = async (questionId: string) => {
+    const next = pendingAnsMap[questionId];
+    if (!next) return;
+
     // Save to DB
     const success = await examService.updateQuestionAnswer(questionId, next);
-    if (!success) {
-      alert('同步至云端失败，请检查数据库。');
-      setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: current })); // Rollback
+    if (success) {
+      alert('✅ 标准答案已成功同步至云端！');
+      setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: next }));
+      setPendingAnsMap(prev => {
+        const newer = { ...prev };
+        delete newer[questionId];
+        return newer;
+      });
+    } else {
+      alert('❌ 同步至云端失败，请检查数据库权限 (RLS)。');
     }
   };
 
@@ -287,33 +300,62 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                   <div className="px-5 pb-5 pt-2 border-t border-gray-100 bg-gray-50/50">
                     {/* Admin Quick Edit Tools */}
                     {isAdmin && (
-                      <div className="mb-6 p-4 bg-white rounded-xl border border-indigo-100 shadow-sm">
+                      <div className={`mb-6 p-4 rounded-xl border transition-all ${pendingAnsMap[question.id] ? 'bg-amber-50 border-amber-200' : 'bg-white border-indigo-100'}`}>
                         <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-xs font-extrabold text-indigo-600 flex items-center gap-1">
+                          <h4 className={`text-xs font-extrabold flex items-center gap-1 ${pendingAnsMap[question.id] ? 'text-amber-700' : 'text-indigo-600'}`}>
                             <Edit size={12} /> 管理员快捷工具：修正标准答案
                           </h4>
-                          <span className="text-[10px] text-gray-400 italic">修改即时同步云端</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {question.options.length > 0 ? (
-                            question.options.map((opt, i) => (
-                              <button
-                                key={i}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleQuickUpdateAnswer(question.id, i, question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE');
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                                  currentCAns.includes(i)
-                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm scale-105'
-                                    : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-300'
-                                }`}
-                              >
-                                {String.fromCharCode(65 + i)}
-                              </button>
-                            ))
+                          {pendingAnsMap[question.id] ? (
+                            <span className="text-[10px] text-amber-600 font-bold animate-pulse">检测到修改，请及时保存</span>
                           ) : (
-                            <span className="text-xs text-gray-400 italic">此题型暂不支持快速修改</span>
+                            <span className="text-[10px] text-gray-400 italic">当前为云端同步模式</span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-wrap gap-2">
+                            {question.options.length > 0 ? (
+                              question.options.map((opt, i) => (
+                                <button
+                                  key={i}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuickUpdateAnswer(question.id, i, question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE');
+                                  }}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                    (pendingAnsMap[question.id] || currentCAns).includes(i)
+                                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm scale-105'
+                                      : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-300'
+                                  }`}
+                                >
+                                  {String.fromCharCode(65 + i)}
+                                </button>
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">此题型暂不支持快速修改</span>
+                            )}
+                          </div>
+                          
+                          {pendingAnsMap[question.id] && (
+                            <div className="flex items-center gap-3 pt-2 border-t border-amber-100">
+                              <button 
+                                onClick={() => handleCommitQuickAnswer(question.id)}
+                                className="px-4 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-1"
+                              >
+                                <Check size={14} /> 确认并保存至云端
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setPendingAnsMap(prev => {
+                                    const newer = { ...prev };
+                                    delete newer[question.id];
+                                    return newer;
+                                  });
+                                }}
+                                className="text-xs text-gray-500 hover:text-gray-700 underline"
+                              >
+                                撤销修改
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
