@@ -42,7 +42,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
       const [usersData, statsData, announcementData] = await Promise.all([
         authService.getAllUsers(),
         historyService.getAllUserStats(),
-        announcementService.getAllAnnouncements()
+        announcementService.getAdminAnnouncements()
       ]);
       setUsers(usersData);
       setExamCounts(statsData);

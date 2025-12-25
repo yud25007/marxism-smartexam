@@ -35,19 +35,42 @@ export const announcementService = {
     }
   },
 
-  async getAllAnnouncements(): Promise<Announcement[]> {
+  async getAllAnnouncements(userRole?: string): Promise<Announcement[]> {
     if (!supabase) return [];
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('announcements')
         .select('*')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
+
+      if (userRole) {
+        // Filter by role or public
+        query = query.or(`target_group.is.null,target_group.eq."${userRole}"`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data || [];
     } catch (err) {
       console.error('Error fetching all announcements:', err);
+      return [];
+    }
+  },
+
+  async getAdminAnnouncements(): Promise<Announcement[]> {
+    if (!supabase) return [];
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('Error fetching admin announcements:', err);
       return [];
     }
   },
