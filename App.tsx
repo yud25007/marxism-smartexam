@@ -62,10 +62,13 @@ const App: React.FC = () => {
         if (dbExams && dbExams.length > 0) {
           setCloudExams(dbExams);
         } else {
+          console.warn("Database 'exams' table is empty, showing static constants.");
           setCloudExams(EXAMS);
         }
-      } catch (err) {
-        console.warn("Cloud exams fetch failed, using static data.", err);
+      } catch (err: any) {
+        console.warn("Cloud exams fetch failed:", err);
+        // Temporary alert for diagnosis
+        alert("云端题库加载失败: " + err.message + "\n系统将降级使用离线模式(LOCAL)。");
         setCloudExams(EXAMS);
       }
     };
@@ -117,12 +120,13 @@ const App: React.FC = () => {
         setActiveExam({ ...exam, questions: liveQuestions });
         setIsLiveActive(true);
       } else {
-        // Fallback to static if cloud is empty
+        alert("云端题库内容为空，系统已切换到离线模式(LOCAL)。\n请确保已在后台点击“同步题库”。");
         setActiveExam(exam);
         setIsLiveActive(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Failed to fetch live questions, falling back to static constants.");
+      alert("进入考试失败 (Live模式报错): " + err.message);
       setActiveExam(exam);
       setIsLiveActive(false);
     }
