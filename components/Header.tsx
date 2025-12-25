@@ -1,5 +1,5 @@
-import React from 'react';
-import { BookOpen, User, LogOut, UserPlus, Shield, Key, LayoutDashboard, Home, History, Megaphone } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, User, LogOut, UserPlus, Shield, Key, LayoutDashboard, Home, History, Megaphone, ChevronDown } from 'lucide-react';
 import { User as UserType } from '../types';
 
 interface HeaderProps {
