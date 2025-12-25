@@ -5,12 +5,22 @@ import { Button } from './Button';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getAIExplanation } from '../services/aiService';
 import { favoriteService } from '../services/favoriteService';
+import { examService } from '../services/examService';
 import { Notebook } from './Notebook';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import { Check, Edit } from 'lucide-react';
+
+interface ResultViewProps {
+  exam: Exam;
+  result: ExamResult;
+  user: User | null;
+  onRetry: () => void;
+  onGoHome: () => void;
+}
 
 interface ResultViewProps {
   exam: Exam;
@@ -31,18 +41,52 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   const [notes, setNotes] = useState(result.notes || "");
   const [followUpQuery, setFollowUpText] = useState("");
   
-  // Note states
   const [localNotesMap, setLocalNotesMap] = useState<Record<string, string>>({});
-  const [isSaPreview, setIsSaPreview] = useState<Record<string, boolean>>({});
   const [fullScreenNoteId, setFullScreenNoteId] = useState<string | null>(null);
+  
+  // Quick Edit States
+  const [editingAnsId, setEditingAnsId] = useState<string | null>(null);
+  const [liveCorrectAnswers, setLiveCorrectAnswers] = useState<Record<string, number[]>>({});
 
   const scrollPosRef = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    // Initialize live answers from original questions
+    const initialMap: Record<string, number[]> = {};
+    exam.questions.forEach(q => {
+      initialMap[q.id] = q.correctAnswers;
+    });
+    setLiveCorrectAnswers(initialMap);
+  }, [exam]);
 
   useEffect(() => {
     if (user) {
       favoriteService.getFavorites(user.username).then(setFavorites);
     }
   }, [user]);
+
+  const handleQuickUpdateAnswer = async (questionId: string, optionsIndex: number, isSingle: boolean) => {
+    const current = liveCorrectAnswers[questionId] || [];
+    let next: number[];
+    
+    if (isSingle) {
+      next = [optionsIndex];
+    } else {
+      next = current.includes(optionsIndex) 
+        ? current.filter(i => i !== optionsIndex) 
+        : [...current, optionsIndex].sort((a,b) => a-b);
+    }
+
+    // Immediate optimistic update UI
+    setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: next }));
+    
+    // Save to DB
+    const success = await examService.updateQuestionAnswer(questionId, next);
+    if (!success) {
+      alert('同步至云端失败，请检查数据库。');
+      setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: current })); // Rollback
+    }
+  };
 
   const handleToggleExpand = (questionId: string) => {
     if (expandedQuestionId === questionId) {
@@ -211,7 +255,8 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
             const explanation = aiExplanations[question.id];
             const isLoading = loadingMap[question.id];
             const localNote = localNotesMap[question.id] || "";
-            const showSaPreview = isSaPreview[question.id];
+            const currentCAns = liveCorrectAnswers[question.id] || question.correctAnswers;
+            const isAdmin = user?.role === 'ADMIN';
 
             return (
               <div key={question.id} id={`q-card-${question.id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all">
@@ -224,9 +269,12 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                       <div className="flex justify-between items-start">
                          <div className="flex items-center gap-2 mb-1">
                            <span className="text-sm font-semibold text-gray-500">第 {index + 1} 题</span>
-                           <button onClick={(e) => handleToggleFavorite(question.id, e)} className={`p-1 rounded-full transition-colors ${favorites.includes(question.id) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`} title="收藏题目">
+                           <button onClick={(e) => { e.stopPropagation(); handleToggleFavorite(question.id, e); }} className={`p-1 rounded-full transition-colors ${favorites.includes(question.id) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`} title="收藏题目">
                              <Star size={16} fill={favorites.includes(question.id) ? "currentColor" : "none"} />
                            </button>
+                           {isAdmin && (
+                             <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">云端同步</span>
+                           )}
                          </div>
                          {isOpen ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
                       </div>
@@ -237,10 +285,44 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
 
                 {isOpen && (
                   <div className="px-5 pb-5 pt-2 border-t border-gray-100 bg-gray-50/50">
+                    {/* Admin Quick Edit Tools */}
+                    {isAdmin && (
+                      <div className="mb-6 p-4 bg-white rounded-xl border border-indigo-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-xs font-extrabold text-indigo-600 flex items-center gap-1">
+                            <Edit size={12} /> 管理员快捷工具：修正标准答案
+                          </h4>
+                          <span className="text-[10px] text-gray-400 italic">修改即时同步云端</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {question.options.length > 0 ? (
+                            question.options.map((opt, i) => (
+                              <button
+                                key={i}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleQuickUpdateAnswer(question.id, i, question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE');
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                  currentCAns.includes(i)
+                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm scale-105'
+                                    : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-300'
+                                }`}
+                              >
+                                {String.fromCharCode(65 + i)}
+                              </button>
+                            ))
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">此题型暂不支持快速修改</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-2 mb-4">
                       {question.options.map((opt, i) => {
                          const isSelected = userAns.includes(i);
-                         const isRight = question.correctAnswers.includes(i);
+                         const isRight = currentCAns.includes(i);
                          let style = "p-3 rounded-lg text-sm border ";
                          if (isRight) style += "bg-green-100 border-green-200 text-green-800 font-medium";
                          else if (isSelected && !isRight) style += "bg-red-100 border-red-200 text-red-800";

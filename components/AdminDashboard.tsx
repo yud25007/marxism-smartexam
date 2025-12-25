@@ -4,9 +4,12 @@ import { authService, StoredUser } from '../services/authService';
 import { historyService } from '../services/historyService';
 import { announcementService, Announcement } from '../services/announcementService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
+import { examService } from '../services/examService';
+import { importService } from '../services/importService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2 } from 'lucide-react';
+import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, BookOpen, Edit } from 'lucide-react';
+import { Exam, Question } from '../types';
 
 interface AdminDashboardProps {
   onGoHome: () => void;
@@ -32,6 +35,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   });
   const [isUploading, setIsUploading] = useState(false);
 
+  // Question Management states
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [selectedExamId, setSelectedExamId] = useState<string>('');
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [tempAnswers, setTempAnswers] = useState<number[]>([]);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -39,18 +50,64 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [usersData, statsData, announcementData] = await Promise.all([
+      const [usersData, statsData, announcementData, examData] = await Promise.all([
         authService.getAllUsers(),
         historyService.getAllUserStats(),
-        announcementService.getAdminAnnouncements()
+        announcementService.getAdminAnnouncements(),
+        examService.getExams()
       ]);
       setUsers(usersData);
       setExamCounts(statsData);
       setAnnouncements(announcementData);
+      setExams(examData);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncExams = async () => {
+    if (!confirm('确定要将本地 constants.ts 中的题库同步到云端吗？这将覆盖云端同 ID 的题目。')) return;
+    setIsSyncing(true);
+    const res = await importService.syncToCloud();
+    alert(res.message);
+    if (res.success) loadData();
+    setIsSyncing(false);
+  };
+
+  const loadQuestions = async (examId: string) => {
+    setSelectedExamId(examId);
+    if (!examId) {
+      setQuestions([]);
+      return;
+    }
+    const data = await examService.getQuestions(examId);
+    setQuestions(data);
+  };
+
+  const handleEditAnswer = (q: Question) => {
+    setEditingQuestionId(q.id);
+    setTempAnswers([...q.correctAnswers]);
+  };
+
+  const toggleTempAnswer = (index: number, isSingle: boolean) => {
+    if (isSingle) {
+      setTempAnswers([index]);
+    } else {
+      setTempAnswers(prev => 
+        prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index].sort((a,b) => a-b)
+      );
+    }
+  };
+
+  const saveNewAnswer = async (questionId: string) => {
+    const success = await examService.updateQuestionAnswer(questionId, tempAnswers);
+    if (success) {
+      setQuestions(prev => prev.map(q => q.id === questionId ? {...q, correctAnswers: tempAnswers} : q));
+      setEditingQuestionId(null);
+    } else {
+      alert('保存失败');
     }
   };
 
@@ -497,9 +554,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* Active Users List */}
+        )}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex items-center gap-2">
             <Users className="text-gray-400" size={20} />
