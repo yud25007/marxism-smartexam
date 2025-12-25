@@ -8,7 +8,7 @@ import { examService } from '../services/examService';
 import { importService } from '../services/importService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, BookOpen, Edit } from 'lucide-react';
+import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, Edit } from 'lucide-react';
 import { Exam, Question } from '../types';
 
 interface AdminDashboardProps {
@@ -306,7 +306,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                             <span className="inline-flex items-center gap-1 bg-white px-2 py-1 rounded border border-orange-200">
                               <Users size={12} /> {user.invitedBy}
                             </span>
-                          ) : '-'}
+                          ) : ('-')}
                         </td>
                         <td className="px-6 py-4 text-right flex justify-end gap-2">
                           <Button
@@ -421,9 +421,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                             />
                             <label
                               htmlFor="image-upload"
-                              className={`flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer transition-colors ${
-                                isUploading ? 'bg-gray-100 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                              }`}
+                              className={`flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer transition-colors ${isUploading ? 'bg-gray-100 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
                             >
                               {isUploading ? <RefreshCw size={18} className="animate-spin" /> : <Cloud size={18} />}
                               <span className="ml-2 text-sm font-bold whitespace-nowrap">
@@ -520,11 +518,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                         {ann.image_url && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-green-500" title="包含图片"></span>}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          ann.type === 'important' ? 'bg-red-100 text-red-700' :
-                          ann.type === 'warning' ? 'bg-orange-100 text-orange-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${ann.type === 'important' ? 'bg-red-100 text-red-700' : ann.type === 'warning' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
                           {ann.type}
                         </span>
                       </td>
@@ -554,7 +548,130 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
               </tbody>
             </table>
           </div>
-        )}
+        </div>
+
+        {/* Question Management Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-indigo-50/30">
+            <div className="flex items-center gap-2">
+              <Database className="text-indigo-600" size={20} />
+              <h3 className="font-bold text-gray-800">题库管理 (云端动态更新)</h3>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleSyncExams}
+              disabled={isSyncing}
+              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            >
+              {isSyncing ? <RefreshCw className="animate-spin mr-1" size={16} /> : <Cloud className="mr-1" size={16} />}
+              同步本地题库到云端
+            </Button>
+          </div>
+          
+          <div className="p-6 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">选择要编辑的题库章节</label>
+                <select 
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                  value={selectedExamId}
+                  onChange={(e) => loadQuestions(e.target.value)}
+                >
+                  <option value="">-- 请选择章节 --</option>
+                  {exams.map(ex => (
+                    <option key={ex.id} value={ex.id}>{ex.title} ({ex.questionCount}题)</option>
+                  ))}
+                </select>
+              </div>
+              <div className="pt-5">
+                <p className="text-xs text-gray-400">选择章节后，下方将显示该章节所有题目，您可以直接修改标准答案并保存。</p>
+              </div>
+            </div>
+
+            {questions.length > 0 && (
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
+                <div className="max-h-[500px] overflow-y-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="sticky top-0 bg-gray-50 z-10">
+                      <tr className="text-gray-500 text-xs border-b border-gray-200">
+                        <th className="px-4 py-3 font-bold w-16">题号</th>
+                        <th className="px-4 py-3 font-bold">题目文本 (预览)</th>
+                        <th className="px-4 py-3 font-bold w-48 text-center">当前标准答案</th>
+                        <th className="px-4 py-3 font-bold w-32 text-right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {questions.map((q, idx) => (
+                        <tr key={q.id} className="hover:bg-indigo-50/20 transition-colors text-sm">
+                          <td className="px-4 py-4 text-gray-400 font-mono">{idx + 1}</td>
+                          <td className="px-4 py-4">
+                            <div className="font-medium text-gray-900 line-clamp-2" title={q.text}>{q.text}</div>
+                            <div className="text-[10px] text-gray-400 mt-1 uppercase font-bold">{q.type}</div>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            {editingQuestionId === q.id ? (
+                              <div className="flex flex-wrap justify-center gap-1">
+                                {q.options.map((opt, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() => toggleTempAnswer(i, q.type === 'SINGLE_CHOICE' || q.type === 'TRUE_FALSE')}
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all ${tempAnswers.includes(i) ? 'bg-green-600 text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:border-green-300'}`}
+                                  >
+                                    {String.fromCharCode(65 + i)}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex justify-center gap-1">
+                                {q.correctAnswers.map(ans => (
+                                  <span key={ans} className="inline-flex items-center justify-center w-6 h-6 bg-green-100 text-green-700 rounded font-bold text-xs">
+                                    {String.fromCharCode(65 + ans)}
+                                  </span>
+                                ))}
+                                {q.correctAnswers.length === 0 && <span className="text-gray-300 italic text-xs">未设置</span>}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            {editingQuestionId === q.id ? (
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  onClick={() => saveNewAnswer(q.id)}
+                                  className="p-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm"
+                                  title="保存修改"
+                                >
+                                  <Check size={16} />
+                                </button>
+                                <button 
+                                  onClick={() => setEditingQuestionId(null)}
+                                  className="p-1.5 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
+                                  title="取消"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            ) : (
+                              <button 
+                                onClick={() => handleEditAnswer(q)}
+                                className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
+                                title="修改答案"
+                              >
+                                <Edit size={16} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Active Users List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex items-center gap-2">
             <Users className="text-gray-400" size={20} />
@@ -587,11 +704,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                       <select 
                         value={user.role}
                         onChange={(e) => handleUpdateRole(user.username, e.target.value)}
-                        className={`inline-flex items-center px-2 py-1 rounded border text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-white ${
-                          user.role === 'ADMIN' ? 'text-blue-700 border-blue-200 bg-blue-50' : 
-                          user.role === 'VIP' ? 'text-purple-700 border-purple-200 bg-purple-50' : 
-                          'text-green-700 border-green-200 bg-green-50'
-                        }`}
+                        className={`inline-flex items-center px-2 py-1 rounded border text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-white ${user.role === 'ADMIN' ? 'text-blue-700 border-blue-200 bg-blue-50' : user.role === 'VIP' ? 'text-purple-700 border-purple-200 bg-purple-50' : 'text-green-700 border-green-200 bg-green-50'}`}
                       >
                         <option value="ADMIN">管理员</option>
                         <option value="VIP">高级用户</option>
@@ -601,11 +714,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleToggleAi(user)}
-                        className={`flex items-center gap-1 mx-auto px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                          user.aiEnabled
-                            ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
+                        className={`flex items-center gap-1 mx-auto px-3 py-1 rounded-full text-xs font-medium transition-colors ${user.aiEnabled ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                         title={user.aiEnabled ? "点击关闭 AI 解析" : "点击开启 AI 解析"}
                       >
                          <Sparkles size={12} />
