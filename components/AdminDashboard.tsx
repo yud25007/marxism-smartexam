@@ -672,8 +672,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
           </div>
           <div className="px-6 py-2 bg-amber-50 text-amber-700 text-[10px] font-bold flex items-center gap-2">
             <Info size={14} />
-            <span>提醒：在云端修正答案后，需本地运行 `node sync_to_source.js` 重新编译静态库并推送，全站响应速度将提升 10 倍。</span>
+            <span>提醒：在云端修正答案后，请执行下方“一键发布”流程以同步给全球用户。</span>
           </div>
+          
+          <div className="mx-6 mt-4 p-4 rounded-xl bg-indigo-900 text-white shadow-lg overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <RefreshCw size={80} />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h4 className="font-bold flex items-center gap-2">
+                  <Cloud size={18} /> 一键发布到全球 (Global Sync)
+                </h4>
+                <p className="text-[10px] opacity-70 mt-1">
+                  该操作将自动拉取云端修正，重新编译静态源码并推送到 GitHub 生产环境。
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 min-w-[200px]">
+                <div className="bg-black/30 px-3 py-2 rounded font-mono text-[10px] border border-white/10 select-all cursor-pointer" title="点击复制代码" onClick={() => {
+                  navigator.clipboard.writeText('node publish.js');
+                  alert('已复制发布指令！请在本地终端运行。');
+                }}>
+                  node publish.js
+                </div>
+                <p className="text-[9px] text-center opacity-50 italic">复制指令并在本地终端运行</p>
+              </div>
+            </div>
+          </div>
+
           <div className="p-6 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-1">
