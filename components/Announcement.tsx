@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Megaphone, X, Bell, Info, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
 import { announcementService } from '../services/announcementService';
 import { Announcement, User } from '../types';
 
@@ -143,8 +144,13 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               />
             </div>
           )}
-          <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4 prose-img:rounded-xl">
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{currentAnnouncement.content}</ReactMarkdown>
+          <div className="prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-4 prose-img:rounded-xl prose-table:border-collapse prose-th:border prose-th:border-gray-200 prose-th:p-2 prose-td:border prose-td:border-gray-200 prose-td:p-2 overflow-x-auto">
+            <ReactMarkdown 
+              rehypePlugins={[rehypeRaw]} 
+              remarkPlugins={[remarkGfm]}
+            >
+              {currentAnnouncement.content}
+            </ReactMarkdown>
           </div>
         </div>
         

@@ -5,6 +5,7 @@ import { historyService } from '../services/historyService';
 import { announcementService, Announcement } from '../services/announcementService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -424,8 +425,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                          </div>
                        )}
                        <h2 className="text-2xl font-bold mb-4">{newAnnouncement.title || '（暂无标题）'}</h2>
-                       <div className="prose prose-blue max-w-none">
-                          <ReactMarkdown>{newAnnouncement.content || '（暂无内容）'}</ReactMarkdown>
+                       <div className="prose prose-blue max-w-none prose-table:border-collapse prose-th:border prose-th:border-gray-200 prose-th:p-2 prose-td:border prose-td:border-gray-200 prose-td:p-2 overflow-x-auto">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{newAnnouncement.content || '（暂无内容）'}</ReactMarkdown>
                        </div>
                     </div>
                  </div>
