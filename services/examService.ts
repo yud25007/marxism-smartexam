@@ -29,9 +29,9 @@ export const examService = {
       id: q.id,
       type: q.type,
       text: q.text,
-      options: q.options,
-      correctAnswers: q.correct_answers,
-      points: q.points,
+      options: q.options || [],
+      correctAnswers: q.correct_answers || [],
+      points: q.points || 2,
       answerText: q.answer_text
     })) as Question[];
   },

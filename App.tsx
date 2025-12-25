@@ -60,7 +60,7 @@ const App: React.FC = () => {
     return () => window.removeEventListener('switchView', handleSwitchView);
   }, []);
 
-  const handleStartExam = (exam: Exam) => {
+  const handleStartExam = async (exam: Exam) => {
     // Maintenance Check
     if (isMaintenance && currentUser?.role !== 'ADMIN') {
       alert('系统正在维护中，暂时无法开始考试，请稍后再试。');
@@ -78,25 +78,30 @@ const App: React.FC = () => {
     const isHighLevelUser = currentUser.role === 'ADMIN' || currentUser.role === 'VIP';
 
     if (perm) {
-      // If min_role is ADMIN, block non-high-level users
       if (perm.min_role === 'ADMIN' && !isHighLevelUser) {
         alert('该题库目前仅限高级用户及管理员访问。');
         return;
       }
-      // If not public, block anyone except high-level users
       if (!perm.is_public && !isHighLevelUser) {
         alert('该题库尚未公开。');
         return;
       }
-    } else {
-      // Default fallback for new IDs not in DB: only ADMIN/VIP can access
-      if (!isHighLevelUser) {
-        alert('此新增章节正在维护，仅限高级用户及管理员访问。');
-        return;
-      }
     }
 
-    setActiveExam(exam);
+    // NEW: Fetch LIVE questions from DB to ensure latest answers
+    try {
+      const liveQuestions = await examService.getQuestions(exam.id);
+      if (liveQuestions && liveQuestions.length > 0) {
+        setActiveExam({ ...exam, questions: liveQuestions });
+      } else {
+        // Fallback to static if cloud is empty
+        setActiveExam(exam);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch live questions, falling back to static constants.");
+      setActiveExam(exam);
+    }
+
     setView('EXAM');
     window.scrollTo(0, 0);
   };
