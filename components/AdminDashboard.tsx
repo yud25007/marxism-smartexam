@@ -135,13 +135,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
   };
 
   const saveNewAnswer = async (questionId: string) => {
+    console.log(`[Admin] Attempting to update answer for: ${questionId}`);
     const success = await examService.updateQuestionAnswer(questionId, tempAnswers);
+    
     if (success) {
+      alert('✅ 标准答案已更新至云端');
       setQuestions(prev => prev.map(q => q.id === questionId ? {...q, correctAnswers: tempAnswers} : q));
       setEditingQuestionId(null);
-      // Optional: show a small toast or just silent success
     } else {
-      alert('❌ 答案保存失败，请检查数据库权限 (RLS)。');
+      // Logic: Maybe ID prefix mismatch? Let's try to alert actual failure
+      alert('❌ 保存失败。请检查：\n1. 数据库 RLS 策略是否已设为 Enable All Access\n2. 该题目 ID 是否存在于云端');
     }
   };
 

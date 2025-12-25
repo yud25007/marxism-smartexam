@@ -91,9 +91,22 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     // Save to DB
     const success = await examService.updateQuestionAnswer(questionId, next);
     if (success) {
-      console.log(`[QuickEdit] Successfully saved to cloud.`);
+      console.log(`[QuickEdit] Successfully saved to cloud. Refreshing state...`);
       alert('✅ 标准答案已成功同步至云端！');
-      setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: next }));
+      
+      // OPTIMIZATION: Force re-fetch chapter questions to be absolutely sure
+      try {
+        const freshQuestions = await examService.getQuestions(exam.id);
+        const newMap: Record<string, number[]> = {};
+        freshQuestions.forEach(q => {
+          newMap[q.id] = q.correctAnswers;
+        });
+        setLiveCorrectAnswers(newMap);
+      } catch (err) {
+        // Fallback to local update if re-fetch fails
+        setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: next }));
+      }
+
       setPendingAnsMap(prev => {
         const newer = { ...prev };
         delete newer[questionId];
