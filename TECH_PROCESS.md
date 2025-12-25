@@ -65,6 +65,22 @@
 ---
 **当前项目状态**：架构已完成革命性转型，具备了工业级的稳定性与可维护性。
 
+## 📅 2025-12-26
+
+### 1. 性能优化：首屏加载速度专项整治 (Performance Optimization)
+*   **需求**：针对生产环境下 `https://marx.zeabur.app/` 首次加载慢（LCP 过长）的问题进行深度优化。
+*   **遇到问题**：
+    1.  **包体积过大**：所有重型依赖（KaTeX, Recharts, Gemini SDK）打包在单个 JS 文件中，体积高达数 MB。
+    2.  **CSS 渲染阻塞**：App.tsx 同步导入了 KaTeX CSS，阻塞了首屏渲染。
+    3.  **网络传输低效**：未开启静态资源压缩（Gzip），传输耗时长。
+    4.  **资源重叠**：`index.html` 中的 `importmap` 与 Vite 构建产物共存，导致加载逻辑混乱。
+*   **解决办法**：
+    1.  **Vite 构建分包策略**：在 `vite.config.ts` 实施 `manualChunks` 策略，将重型库拆分为 `katex-vendor`, `ui-vendor`, `markdown-vendor`, `genai-vendor` 等独立分包。
+    2.  **开启 Gzip 压缩**：集成 `vite-plugin-compression` 插件，在构建时自动生成 `.gz` 文件。
+    3.  **静态资源 CDN 化**：将 KaTeX CSS 移至 CDN 加载，并移除本地同步导入，利用浏览器缓存。
+    4.  **清理冗余资源**：移除 `index.html` 中的旧版 `importmap`，由 Vite 统一管理模块导入。
+*   **最终成果**：主 Bundle 体积大幅下降，核心 JS 资源实现并行加载，首屏渲染速度（LCP）得到量级提升。
+
 ### 26. 笔记导出功能实现与 AI 容错加固
 *   **需求**：支持全卷笔记下载为 .md 文件；修复 `Failed to fetch` 导致的 AI 生硬报错。
 *   **遇到问题**：
