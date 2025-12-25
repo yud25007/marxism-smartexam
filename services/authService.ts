@@ -65,8 +65,7 @@ const localAuth = {
     users.push({ id: `local-${Date.now()}`, username, password, role, status, aiEnabled: false, aiModel: 'gemini-2.5-pro', invitedBy });
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     return true;
-  }
-};
+  },
 
   updateAiModel: (username: string, model: string): boolean => {
     const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
