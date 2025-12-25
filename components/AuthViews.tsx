@@ -8,9 +8,14 @@ import { Shield, User as UserIcon, AlertCircle, ArrowLeft, Cloud, WifiOff, Check
 interface LoginViewProps {
   onLoginSuccess: (user: User) => void;
   onCancel: () => void;
+  showRegister?: boolean;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onCancel }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ 
+  onLoginSuccess, 
+  onCancel,
+  showRegister = true
+}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -94,6 +99,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onCancel }
              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>{loading ? '登录中...' : '登录'}</Button>
           </div>
         </form>
+
+        {showRegister && (
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-500">
+              还没有账号？
+              <button 
+                onClick={() => (window as any).dispatchEvent(new CustomEvent('switchView', { detail: 'REGISTER' }))}
+                className="ml-1 text-red-600 font-bold hover:underline"
+              >
+                立即注册申请
+              </button>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -16,7 +16,8 @@ import { Exam, ExamResult, User } from './types';
 import { authService } from './services/authService';
 import { historyService } from './services/historyService';
 import { permissionService, ExamPermission } from './services/permissionService';
-import { GraduationCap, Search, TrendingUp, Lock, Star } from 'lucide-react';
+import { systemService } from './services/systemService';
+import { GraduationCap, Search, TrendingUp, Lock, Star, Wrench } from 'lucide-react';
 
 type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT' | 'COLLECTION';
 
@@ -28,6 +29,8 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<ExamResult[]>([]);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [permissions, setPermissions] = useState<Record<string, ExamPermission>>({});
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [isPublicReg, setIsPublicReg] = useState(true);
 
   // Load user and permissions on mount
   useEffect(() => {
@@ -35,13 +38,25 @@ const App: React.FC = () => {
       const user = authService.getCurrentUser();
       setCurrentUser(user);
       
-      const perms = await permissionService.getAllPermissions();
+      const [perms, maintenanceStatus, regStatus] = await Promise.all([
+        permissionService.getAllPermissions(),
+        systemService.isEnabled('maintenance_mode'),
+        systemService.isEnabled('public_registration')
+      ]);
       setPermissions(perms);
+      setIsMaintenance(maintenanceStatus);
+      setIsPublicReg(regStatus);
     };
     init();
   }, []);
 
   const handleStartExam = (exam: Exam) => {
+    // Maintenance Check
+    if (isMaintenance && currentUser?.role !== 'ADMIN') {
+      alert('系统正在维护中，暂时无法开始考试，请稍后再试。');
+      return;
+    }
+
     if (!currentUser) {
       setView('LOGIN');
       window.scrollTo(0, 0);
@@ -150,6 +165,36 @@ const App: React.FC = () => {
 
   // Render Logic
 
+  // Global Maintenance Interceptor
+  if (isMaintenance && currentUser?.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-center">
+        <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-8 animate-pulse">
+          <Wrench className="h-12 w-12 text-red-600" />
+        </div>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">系统维护中</h1>
+        <p className="max-w-md text-lg text-gray-600 mb-8">
+          为了提供更好的服务，我们正在进行系统升级与数据维护。
+          给您带来的不便敬请谅解！
+        </p>
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            <RefreshCcw size={18} className="mr-2" /> 刷新试试
+          </Button>
+          <button 
+            onClick={() => setView('CONTACT')}
+            className="px-6 py-2 text-red-600 font-bold hover:underline transition-all"
+          >
+            联系管理员
+          </button>
+        </div>
+        <p className="mt-12 text-xs text-gray-400 uppercase tracking-widest font-bold">
+          Estimated downtime: ~30 minutes
+        </p>
+      </div>
+    );
+  }
+
   if (view === 'CONTACT') {
     return (
       <>
@@ -192,10 +237,12 @@ const App: React.FC = () => {
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
           onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
+          showRegister={isPublicReg}
         />
         <LoginView 
           onLoginSuccess={handleLoginSuccess} 
           onCancel={handleGoHome} 
+          showRegister={isPublicReg}
         />
       </>
     );
@@ -286,8 +333,16 @@ const App: React.FC = () => {
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
           onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
+          showRegister={isPublicReg}
         />
-        <AdminDashboard onGoHome={handleGoHome} />
+        <AdminDashboard 
+          onGoHome={handleGoHome} 
+          onSettingChange={() => {
+            // Trigger a refresh of settings
+            systemService.isEnabled('maintenance_mode').then(setIsMaintenance);
+            systemService.isEnabled('public_registration').then(setIsPublicReg);
+          }}
+        />
       </>
     );
   }

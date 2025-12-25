@@ -11,22 +11,26 @@ interface HeaderProps {
   onHistoryClick: () => void;
   onChangePasswordClick: () => void;
   onAdminDashboardClick: () => void;
-  onAnnouncementClick: () => void;
-  currentView?: string;
-}
-
-export const Header: React.FC<HeaderProps> = ({ 
-  onGoHome, 
-  user, 
-  onLoginClick, 
-  onLogoutClick,
-  onRegisterClick,
-  onHistoryClick,
-  onChangePasswordClick,
-  onAdminDashboardClick,
-  onAnnouncementClick,
-  currentView
-}) => {
+    onAnnouncementClick: () => void;
+    currentView?: string;
+    showRegister?: boolean;
+  }
+  
+  export const Header: React.FC<HeaderProps> = ({
+    onGoHome,
+    user,
+    onLoginClick,
+    onLogoutClick,
+    onRegisterClick,
+    onHistoryClick,
+    onChangePasswordClick,
+    onAdminDashboardClick,
+    onAnnouncementClick,
+    currentView,
+    showRegister = true
+  }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
   
   const NavItem = ({ active, onClick, icon: Icon, label }: any) => (
     <button
@@ -155,12 +159,14 @@ export const Header: React.FC<HeaderProps> = ({
               </>
             ) : (
               <>
-                <button 
-                  onClick={onRegisterClick}
-                  className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
-                >
-                  注册
-                </button>
+                {showRegister && (
+                  <button 
+                    onClick={onRegisterClick}
+                    className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
+                  >
+                    注册
+                  </button>
+                )}
                 <button 
                   onClick={onLoginClick}
                   className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
@@ -205,6 +211,14 @@ export const Header: React.FC<HeaderProps> = ({
                   label="注册成员" 
                 />
               </>
+            )}
+            {!user && showRegister && (
+              <NavItem 
+                active={currentView === 'REGISTER'} 
+                onClick={onRegisterClick} 
+                icon={UserPlus} 
+                label="立即注册" 
+              />
             )}
           </div>
         </div>

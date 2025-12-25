@@ -14,9 +14,10 @@ import { Exam, Question } from '../types';
 
 interface AdminDashboardProps {
   onGoHome: () => void;
+  onSettingChange?: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSettingChange }) => {
   const [users, setUsers] = useState<StoredUser[]>([]);
   const [examCounts, setExamCounts] = useState<Record<string, number>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
@@ -77,6 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
     const success = await systemService.updateSetting(key, !currentValue);
     if (success) {
       setSystemSettings(prev => prev.map(s => s.key === key ? { ...s, value: !currentValue } : s));
+      if (onSettingChange) onSettingChange();
     } else {
       alert('更新设置失败');
     }
