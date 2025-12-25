@@ -86,9 +86,12 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     const next = pendingAnsMap[questionId];
     if (!next) return;
 
+    console.log(`[QuickEdit] Committing new answer for ${questionId}:`, next);
+
     // Save to DB
     const success = await examService.updateQuestionAnswer(questionId, next);
     if (success) {
+      console.log(`[QuickEdit] Successfully saved to cloud.`);
       alert('✅ 标准答案已成功同步至云端！');
       setLiveCorrectAnswers(prev => ({ ...prev, [questionId]: next }));
       setPendingAnsMap(prev => {
@@ -97,6 +100,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
         return newer;
       });
     } else {
+      console.error(`[QuickEdit] Database update failed.`);
       alert('❌ 同步至云端失败，请检查数据库权限 (RLS)。');
     }
   };
@@ -262,13 +266,18 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
           
           {exam.questions.map((question, index) => {
             const userAns = result.answers[question.id] || [];
-            const isCorrect = userAns.length === question.correctAnswers.length && userAns.every(val => question.correctAnswers.includes(val)) && question.correctAnswers.every(val => userAns.includes(val));
+            const currentCAns = liveCorrectAnswers[question.id] || question.correctAnswers;
+            
+            // Re-calculate correctness based on LIVE answers
+            const isCorrect = userAns.length === currentCAns.length && 
+                             userAns.every(val => currentCAns.includes(val)) && 
+                             currentCAns.every(val => userAns.includes(val));
+            
             const isSkipped = userAns.length === 0;
             const isOpen = expandedQuestionId === question.id;
             const explanation = aiExplanations[question.id];
             const isLoading = loadingMap[question.id];
             const localNote = localNotesMap[question.id] || "";
-            const currentCAns = liveCorrectAnswers[question.id] || question.correctAnswers;
             const isAdmin = user?.role === 'ADMIN';
 
             return (

@@ -95,3 +95,12 @@
     2.  **错误原因解耦**：重构 `authService.register` 的返回结构，新增 `error` 字段区分 `REGISTRATION_DISABLED` 和 `USER_EXISTS`。
     3.  **文案定制**：在 `AuthViews` 中针对禁用状态注入“请微信公众号私信留言”的特定文案。
 *   **最终成果**：管理操作具备了容错性（可撤销修改），前端对非开放期间的流量引导更加清晰。
+
+### 9. 答案修正 UI 实时响应加固
+*   **需求**：修改答案后，标准答案和正确性状态必须立即改变。
+*   **遇到问题**：渲染循环中的 `isCorrect` 判定仍在使用 `question.correctAnswers`（静态数据），导致 `liveCorrectAnswers` 的变更无法即时反馈到图标颜色上。
+*   **解决办法**：
+    1.  **逻辑重排**：在 `.map()` 循环的最顶部提取 `liveCorrectAnswers`。
+    2.  **动态重算**：显式基于 `currentCAns` 重新计算 `isCorrect` 和 `isSkipped` 状态。
+    3.  **调试透明化**：在 `handleCommitQuickAnswer` 注入控制台追踪日志。
+*   **最终成果**：管理员修正答案并确认后，题目卡片的对错图标、选项颜色会瞬间随之更新，实现真正的“云端同步-即时反馈”。
