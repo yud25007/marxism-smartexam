@@ -104,15 +104,3 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
     </div>
   );
 };
-
-      <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center">
-         <div className="flex gap-2">
-            <span className="text-[10px] text-gray-400">字符: {content.length}</span>
-         </div>
-         <Button size="sm" onClick={handleSave} disabled={isSaving || content === initialContent} className="bg-indigo-600 text-white h-8 text-xs">
-           <Save size={14} className="mr-1" /> 立即保存
-         </Button>
-      </div>
-    </div>
-  );
-};
