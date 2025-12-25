@@ -3,14 +3,9 @@ import { Header } from './components/Header';
 import { AnnouncementModal } from './components/Announcement';
 import 'katex/dist/katex.min.css';
 import { ExamCard } from './components/ExamCard';
-import { ExamPlayer } from './components/ExamPlayer';
-import { ResultView } from './components/ResultView';
 import { LoginView, RegisterView } from './components/AuthViews';
-import { HistoryView } from './components/HistoryView';
 import { ChangePasswordView } from './components/ChangePasswordView';
-import { AdminDashboard } from './components/AdminDashboard';
 import { ContactView } from './components/ContactView';
-import { CollectionView } from './components/CollectionView';
 import { EXAMS } from './constants';
 import { Exam, ExamResult, User } from './types';
 import { authService } from './services/authService';
@@ -18,9 +13,14 @@ import { historyService } from './services/historyService';
 import { permissionService, ExamPermission } from './services/permissionService';
 import { systemService } from './services/systemService';
 import { examService } from './services/examService';
-import { GraduationCap, Search, TrendingUp, Lock, Star, Wrench, RefreshCcw } from 'lucide-react';
+import { GraduationCap, Search, TrendingUp, Lock, Star, Wrench, RefreshCcw, Loader2 } from 'lucide-react';
 
-type AppState = 'HOME' | 'EXAM' | 'RESULT' | 'LOGIN' | 'REGISTER' | 'HISTORY' | 'CHANGE_PASSWORD' | 'ADMIN_DASHBOARD' | 'CONTACT' | 'COLLECTION';
+// Lazy load heavy components to reduce initial bundle size
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const ExamPlayer = React.lazy(() => import('./components/ExamPlayer').then(m => ({ default: m.ExamPlayer })));
+const ResultView = React.lazy(() => import('./components/ResultView').then(m => ({ default: m.ResultView })));
+const HistoryView = React.lazy(() => import('./components/HistoryView').then(m => ({ default: m.HistoryView })));
+const CollectionView = React.lazy(() => import('./components/CollectionView').then(m => ({ default: m.CollectionView })));
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
@@ -32,8 +32,13 @@ const App: React.FC = () => {
   const [permissions, setPermissions] = useState<Record<string, ExamPermission>>({});
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [isPublicReg, setIsPublicReg] = useState(true);
-  const [cloudExams, setCloudExams] = useState<Exam[]>([]); // LIVE Exams from DB
-  const [isLiveActive, setIsLiveActive] = useState(false); // Track if current active exam is from Cloud
+  
+  // SWR Strategy: Initial state from localStorage or static EXAMS for instant display
+  const [cloudExams, setCloudExams] = useState<Exam[]>(() => {
+    const cached = localStorage.getItem('cached_exams');
+    return cached ? JSON.parse(cached) : EXAMS;
+  });
+  const [isLiveActive, setIsLiveActive] = useState(false);
 
   // Load user and permissions on mount
   useEffect(() => {
@@ -41,37 +46,27 @@ const App: React.FC = () => {
       const user = authService.getCurrentUser();
       setCurrentUser(user);
       
-      // 1. Core settings & Perms
-      try {
-        const [perms, maintenanceStatus, regStatus] = await Promise.all([
-          permissionService.getAllPermissions(),
-          systemService.isEnabled('maintenance_mode'),
-          systemService.isEnabled('public_registration')
-        ]);
+      // Parallelize non-dependent requests
+      const corePromise = Promise.all([
+        permissionService.getAllPermissions(),
+        systemService.isEnabled('maintenance_mode'),
+        systemService.isEnabled('public_registration')
+      ]).then(([perms, maint, reg]) => {
         setPermissions(perms);
-        setIsMaintenance(maintenanceStatus);
-        setIsPublicReg(regStatus);
-      } catch (err) {
-        console.error("Core init failed:", err);
-      }
+        setIsMaintenance(maint);
+        setIsPublicReg(reg);
+      });
 
-      // 2. LIVE Exams (Isolated so failure doesn't break app)
-      try {
-        const dbExams = await examService.getExams();
-        console.log(`Cloud exams loaded: ${dbExams?.length || 0}`);
-        
+      const examPromise = examService.getExams().then(dbExams => {
         if (dbExams && dbExams.length > 0) {
           setCloudExams(dbExams);
-        } else {
-          console.warn("Database 'exams' table is empty, showing static constants.");
-          setCloudExams(EXAMS);
+          localStorage.setItem('cached_exams', JSON.stringify(dbExams));
         }
-      } catch (err: any) {
-        console.warn("Cloud exams fetch failed:", err);
-        // Temporary alert for diagnosis
-        alert("云端题库加载失败: " + err.message + "\n系统将降级使用离线模式(LOCAL)。");
-        setCloudExams(EXAMS);
-      }
+      });
+
+      await Promise.all([corePromise, examPromise]).catch(err => {
+        console.warn("Soft init failure, some cloud features might be degraded", err);
+      });
     };
     init();
 
@@ -222,6 +217,13 @@ const App: React.FC = () => {
     // Optionally log out or just go home
     setView('HOME');
   };
+
+  const LoadingScreen = () => (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <Loader2 className="h-10 w-10 text-red-600 animate-spin mb-4" />
+      <p className="text-gray-500 font-medium animate-pulse text-sm">正在加载组件...</p>
+    </div>
+  );
 
   // ==================== Render Logic ====================
 
@@ -399,7 +401,7 @@ const App: React.FC = () => {
       return null;
     }
     return (
-      <>
+      <React.Suspense fallback={<LoadingScreen />}>
         <AnnouncementModal 
           isOpen={showAnnouncement} 
           onClose={() => setShowAnnouncement(false)} 
@@ -424,17 +426,20 @@ const App: React.FC = () => {
             systemService.isEnabled('maintenance_mode').then(setIsMaintenance);
             systemService.isEnabled('public_registration').then(setIsPublicReg);
             examService.getExams().then(dbExams => {
-              if (dbExams.length > 0) setCloudExams(dbExams);
+              if (dbExams.length > 0) {
+                setCloudExams(dbExams);
+                localStorage.setItem('cached_exams', JSON.stringify(dbExams));
+              }
             });
           }}
         />
-      </>
+      </React.Suspense>
     );
   }
 
   if (view === 'HISTORY' && currentUser) {
     return (
-      <>
+      <React.Suspense fallback={<LoadingScreen />}>
         <AnnouncementModal 
           isOpen={showAnnouncement} 
           onClose={() => setShowAnnouncement(false)} 
@@ -456,24 +461,26 @@ const App: React.FC = () => {
           onViewDetail={handleViewHistoryDetail}
           onGoHome={handleGoHome}
         />
-      </>
+      </React.Suspense>
     );
   }
 
   if (view === 'EXAM' && activeExam && currentUser) {
     return (
-      <ExamPlayer 
-        exam={activeExam} 
-        onFinish={handleFinishExam} 
-        onExit={handleGoHome} 
-        isCloud={isLiveActive}
-      />
+      <React.Suspense fallback={<LoadingScreen />}>
+        <ExamPlayer 
+          exam={activeExam} 
+          onFinish={handleFinishExam} 
+          onExit={handleGoHome} 
+          isCloud={isLiveActive}
+        />
+      </React.Suspense>
     );
   }
 
   if (view === 'RESULT' && activeExam && examResult) {
     return (
-      <>
+      <React.Suspense fallback={<LoadingScreen />}>
         <AnnouncementModal 
           isOpen={showAnnouncement} 
           onClose={() => setShowAnnouncement(false)} 
@@ -497,12 +504,16 @@ const App: React.FC = () => {
           onRetry={handleRetry} 
           onGoHome={handleGoHome}
         />
-      </>
+      </React.Suspense>
     );
   }
 
   if (view === 'COLLECTION' && currentUser) {
-    return <CollectionView user={currentUser} onGoHome={handleGoHome} />;
+    return (
+      <React.Suspense fallback={<LoadingScreen />}>
+        <CollectionView user={currentUser} onGoHome={handleGoHome} />
+      </React.Suspense>
+    );
   }
 
   // Home View
