@@ -108,4 +108,25 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_model TEXT DEFAULT 'gemini-2.5-pro
 4. **验证**：在“解析界面”或“题库管理”尝试修改答案，确认同步成功。
 
 **文档版本**：v2.5 (2025-12-25)
+
 **状态**：全面支持云端动态维护
+
+
+
+---
+
+
+
+## 补丁：2025-12-25 18:55 (修复题目数量显示)
+
+用于解决首页章节显示为“0题”的问题。
+
+
+
+```sql
+
+-- 增加题目数量统计字段
+
+ALTER TABLE exams ADD COLUMN IF NOT EXISTS question_count INTEGER DEFAULT 0;
+
+```

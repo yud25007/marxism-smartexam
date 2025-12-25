@@ -16,7 +16,8 @@ export const importService = {
         category: exam.category,
         duration_minutes: exam.durationMinutes,
         difficulty: exam.difficulty,
-        cover_image: exam.coverImage
+        cover_image: exam.coverImage,
+        question_count: exam.questions.length // NEW: Sync question count
       }));
 
       const { error: examError } = await supabase
