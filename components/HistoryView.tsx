@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ExamResult } from '../types';
 import { Button } from './Button';
-import { Clock, Calendar, ChevronRight, BarChart2, AlertCircle } from 'lucide-react';
+import { Clock, Calendar, ChevronRight, BarChart2, AlertCircle, Trash2, RefreshCw } from 'lucide-react';
 import { EXAMS } from '../constants';
+import { historyService } from '../services/historyService';
 
 interface HistoryViewProps {
   history: ExamResult[];
@@ -10,7 +11,10 @@ interface HistoryViewProps {
   onGoHome: () => void;
 }
 
-export const HistoryView: React.FC<HistoryViewProps> = ({ history, onViewDetail, onGoHome }) => {
+export const HistoryView: React.FC<HistoryViewProps> = ({ history: initialHistory, onViewDetail, onGoHome }) => {
+  const [history, setHistory] = useState(initialHistory);
+  const [loadingId, setLoadingId] = useState<string | Date | null>(null);
+
   const getExamTitle = (examId: string) => {
     const exam = EXAMS.find(e => e.id === examId);
     return exam ? exam.title : '未知试卷';
@@ -25,6 +29,30 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ history, onViewDetail,
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleDeleteRecord = async (e: React.MouseEvent, record: ExamResult) => {
+    e.stopPropagation();
+    if (confirm('确定要永久删除这条答题记录吗？此操作不可撤销。')) {
+      const id = record.id || record.completedAt;
+      setLoadingId(id);
+      try {
+        const userStr = localStorage.getItem('smart_exam_current_user');
+        const username = userStr ? JSON.parse(userStr).username : '';
+        const success = await historyService.deleteRecord(username, record.id, record.completedAt);
+        if (success) {
+          setHistory(prev => prev.filter(r => 
+            record.id ? r.id !== record.id : r.completedAt !== record.completedAt
+          ));
+        } else {
+          alert('删除失败，请重试');
+        }
+      } catch (err) {
+        alert('删除过程中发生错误');
+      } finally {
+        setLoadingId(null);
+      }
+    }
   };
 
   return (
@@ -90,7 +118,21 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ history, onViewDetail,
                       <div className="text-xs text-gray-500">正确率</div>
                     </div>
 
-                    <ChevronRight className="text-gray-300 group-hover:text-red-500" />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => handleDeleteRecord(e, record)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        title="删除记录"
+                        disabled={!!loadingId}
+                      >
+                        {loadingId === (record.id || record.completedAt) ? (
+                          <RefreshCw size={18} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
+                      </button>
+                      <ChevronRight className="text-gray-300 group-hover:text-red-500" />
+                    </div>
                   </div>
                 </div>
               </div>

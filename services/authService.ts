@@ -122,6 +122,13 @@ const localAuth = {
     const newUsers = users.filter((u: any) => u.username !== username);
     localStorage.setItem(USERS_KEY, JSON.stringify(newUsers));
     return true;
+  },
+
+  deleteUser: (username: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const newUsers = users.filter((u: any) => u.username !== username);
+    localStorage.setItem(USERS_KEY, JSON.stringify(newUsers));
+    return true;
   }
 };
 
@@ -350,5 +357,21 @@ export const authService = {
       .eq('username', username);
 
     return !error;
-  }
-};
+  },
+
+  deleteUser: async (username: string): Promise<boolean> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.deleteUser(username);
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('username', username);
+
+    return !error;
+  },
+
+  verifyPassword: async (username: string, passwordToCheck: string): Promise<boolean> => {
+
+

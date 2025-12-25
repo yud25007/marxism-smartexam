@@ -39,6 +39,16 @@ const localHistory = {
     localStorage.removeItem(`${HISTORY_KEY_PREFIX}${username}`);
   },
 
+  deleteRecord: (username: string, completedAt: Date): void => {
+    if (!username) return;
+    const key = `${HISTORY_KEY_PREFIX}${username}`;
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    // Local storage uses ISO string comparison
+    const targetTime = completedAt.toISOString();
+    const newHistory = history.filter((r: any) => new Date(r.completedAt).toISOString() !== targetTime);
+    localStorage.setItem(key, JSON.stringify(newHistory));
+  },
+
   getAllUserStats: (): Record<string, number> => {
     const stats: Record<string, number> = {};
     for (let i = 0; i < localStorage.length; i++) {
@@ -131,6 +141,21 @@ export const historyService = {
       .from('exam_history')
       .delete()
       .eq('username', username);
+  },
+
+  deleteRecord: async (username: string, recordId?: string, completedAt?: Date): Promise<boolean> => {
+    if (!isSupabaseConfigured || !supabase) {
+      if (completedAt) localHistory.deleteRecord(username, completedAt);
+      return true;
+    }
+
+    if (!recordId) return false;
+    const { error } = await supabase
+      .from('exam_history')
+      .delete()
+      .eq('id', recordId);
+    
+    return !error;
   },
 
   getAllUserStats: async (): Promise<Record<string, number>> => {

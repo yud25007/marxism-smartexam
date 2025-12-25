@@ -263,6 +263,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
     }
   };
 
+  const handleDeleteUser = async (username: string) => {
+    if (confirm(`⚠️ 极其重要：确定要永久删除用户【${username}】吗？\n\n该操作将移除其所有账号信息、AI解析权限及登录凭证（其答题历史仍将保留在统计中），此操作无法撤销。`)) {
+      const success = await authService.deleteUser(username);
+      if (success) {
+        alert('用户已永久删除');
+        loadData();
+      } else {
+        alert('删除失败，请检查网络或权限');
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -828,15 +840,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        onClick={() => handleEditPassword(user)}
-                      >
-                        <Key size={14} className="mr-1.5" />
-                        修改密码
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
+                          onClick={() => handleEditPassword(user)}
+                          title="修改密码"
+                        >
+                          <Key size={14} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-red-400 hover:text-red-600 hover:bg-red-50 h-8 px-2"
+                          onClick={() => handleDeleteUser(user.username)}
+                          title="永久删除用户"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
