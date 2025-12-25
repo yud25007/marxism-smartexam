@@ -5,13 +5,28 @@ export const examService = {
   // 获取所有试卷列表
   async getExams(): Promise<Exam[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase
-      .from('exams')
-      .select('*')
-      .order('created_at', { ascending: true });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('exams')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error("Supabase error fetching exams:", error);
+        return [];
+      }
+
+      // 适配数据库下划线字段到前端驼峰
+      return (data || []).map(ex => ({
+        ...ex,
+        durationMinutes: ex.duration_minutes || 60,
+        coverImage: ex.cover_image || `https://picsum.photos/seed/${ex.id}/800/600`,
+        questionCount: ex.question_count || 0 // 暂时使用冗余字段或默认值
+      })) as Exam[];
+    } catch (err) {
+      console.error("Critical error in getExams:", err);
+      return [];
+    }
   },
 
   // 获取特定试卷的所有题目

@@ -39,16 +39,34 @@ const App: React.FC = () => {
       const user = authService.getCurrentUser();
       setCurrentUser(user);
       
-      const [perms, maintenanceStatus, regStatus, dbExams] = await Promise.all([
-        permissionService.getAllPermissions(),
-        systemService.isEnabled('maintenance_mode'),
-        systemService.isEnabled('public_registration'),
-        examService.getExams()
-      ]);
-      setPermissions(perms);
-      setIsMaintenance(maintenanceStatus);
-      setIsPublicReg(regStatus);
-      setCloudExams(dbExams.length > 0 ? dbExams : EXAMS); // Fallback to static if DB empty
+      // 1. Core settings & Perms
+      try {
+        const [perms, maintenanceStatus, regStatus] = await Promise.all([
+          permissionService.getAllPermissions(),
+          systemService.isEnabled('maintenance_mode'),
+          systemService.isEnabled('public_registration')
+        ]);
+        setPermissions(perms);
+        setIsMaintenance(maintenanceStatus);
+        setIsPublicReg(regStatus);
+      } catch (err) {
+        console.error("Core init failed:", err);
+      }
+
+      // 2. LIVE Exams (Isolated so failure doesn't break app)
+      try {
+        const dbExams = await examService.getExams();
+        console.log(`Cloud exams loaded: ${dbExams?.length || 0}`);
+        
+        if (dbExams && dbExams.length > 0) {
+          setCloudExams(dbExams);
+        } else {
+          setCloudExams(EXAMS);
+        }
+      } catch (err) {
+        console.warn("Cloud exams fetch failed, using static data.", err);
+        setCloudExams(EXAMS);
+      }
     };
     init();
 
