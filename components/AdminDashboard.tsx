@@ -9,7 +9,7 @@ import { importService } from '../services/importService';
 import { systemService, SystemSetting } from '../services/systemService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, Edit, Settings, Info } from 'lucide-react';
+import { Shield, Users, Eye, EyeOff, ArrowLeft, Key, Sparkles, ToggleLeft, ToggleRight, UserPlus, X, Check, Cloud, RefreshCw, WifiOff, Megaphone, Plus, Trash2, Maximize2, Minimize2, Database, Edit, Settings, Info, Wrench } from 'lucide-react';
 import { Exam, Question } from '../types';
 
 interface AdminDashboardProps {
@@ -92,11 +92,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
     }
 
     if (!confirm('确定要将本地 constants.ts 中的题库同步到云端吗？这将覆盖云端同 ID 的题目。')) return;
+    
     setIsSyncing(true);
-    const res = await importService.syncToCloud();
-    alert(res.message);
-    if (res.success) loadData();
-    setIsSyncing(false);
+    try {
+      const res = await importService.syncToCloud();
+      if (res.success) {
+        alert('🎉 ' + res.message);
+        loadData();
+      } else {
+        alert('❌ 同步失败: ' + res.message + '\n\n请检查：\n1. Supabase SQL 文档中的 RLS 策略是否已运行\n2. 网络连接是否稳定');
+      }
+    } catch (err: any) {
+      alert('❌ 发生异常: ' + err.message);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const loadQuestions = async (examId: string) => {
@@ -129,8 +139,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
     if (success) {
       setQuestions(prev => prev.map(q => q.id === questionId ? {...q, correctAnswers: tempAnswers} : q));
       setEditingQuestionId(null);
+      // Optional: show a small toast or just silent success
     } else {
-      alert('保存失败');
+      alert('❌ 答案保存失败，请检查数据库权限 (RLS)。');
     }
   };
 
@@ -312,28 +323,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {systemSettings.map((setting) => (
-                <div key={setting.key} className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col justify-between group hover:border-blue-200 transition-all">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                      <Sparkles size={18} />
+              {systemSettings.map((setting) => {
+                const getIcon = (key: string) => {
+                  switch(key) {
+                    case 'public_registration': return <UserPlus size={18} />;
+                    case 'maintenance_mode': return <Wrench size={18} />;
+                    case 'allow_sync': return <RefreshCw size={18} />;
+                    default: return <Sparkles size={18} />;
+                  }
+                };
+                const getColor = (key: string) => {
+                  switch(key) {
+                    case 'public_registration': return setting.value ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400';
+                    case 'maintenance_mode': return setting.value ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-400';
+                    case 'allow_sync': return setting.value ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400';
+                    default: return 'bg-blue-50 text-blue-600';
+                  }
+                };
+
+                return (
+                  <div key={setting.key} className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col justify-between group hover:border-blue-200 transition-all">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`p-2 rounded-lg transition-colors ${getColor(setting.key)}`}>
+                        {getIcon(setting.key)}
+                      </div>
+                      <button 
+                        onClick={() => handleToggleSetting(setting.key, setting.value)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${setting.value ? 'bg-blue-600' : 'bg-gray-200'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${setting.value ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => handleToggleSetting(setting.key, setting.value)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${setting.value ? 'bg-blue-600' : 'bg-gray-200'}`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${setting.value ? 'translate-x-6' : 'translate-x-1'}`} />
-                    </button>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 mb-1">{setting.description}</h4>
-                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                      <div className={`w-1.5 h-1.5 rounded-full ${setting.value ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                      {setting.value ? '已启用 (Active)' : '已关闭 (Disabled)'}
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-1">{setting.description}</h4>
+                      <div className="flex items-center gap-1.5 text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                        <div className={`w-1.5 h-1.5 rounded-full ${setting.value ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                        {setting.value ? '已启用 (Active)' : '已关闭 (Disabled)'}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {systemSettings.length === 0 && (
                 <div className="col-span-full py-8 text-center text-gray-400 italic flex flex-col items-center gap-2">
                   <Info size={24} />
@@ -674,30 +704,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
                             <div className="font-medium text-gray-900 line-clamp-2" title={q.text}>{q.text}</div>
                             <div className="text-[10px] text-gray-400 mt-1 uppercase font-bold">{q.type}</div>
                           </td>
-                          <td className="px-4 py-4 text-center">
-                            {editingQuestionId === q.id ? (
-                              <div className="flex flex-wrap justify-center gap-1">
-                                {q.options.map((opt, i) => (
-                                  <button
-                                    key={i}
-                                    onClick={() => toggleTempAnswer(i, q.type === 'SINGLE_CHOICE' || q.type === 'TRUE_FALSE')}
-                                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all ${tempAnswers.includes(i) ? 'bg-green-600 text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:border-green-300'}`}
-                                  >
-                                    {String.fromCharCode(65 + i)}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="flex justify-center gap-1">
-                                {q.correctAnswers.map(ans => (
-                                  <span key={ans} className="inline-flex items-center justify-center w-6 h-6 bg-green-100 text-green-700 rounded font-bold text-xs">
-                                    {String.fromCharCode(65 + ans)}
-                                  </span>
-                                ))}
-                                {q.correctAnswers.length === 0 && <span className="text-gray-300 italic text-xs">未设置</span>}
-                              </div>
-                            )}
-                          </td>
+                        <td className="px-4 py-3 text-center">
+                          {editingQuestionId === q.id ? (
+                            <div className="flex justify-center gap-1">
+                              {q.type === 'SHORT_ANSWER' ? (
+                                <span className="text-xs text-gray-400 italic">简答题需在解析界面修改</span>
+                              ) : (
+                                q.options.map((_, i) => (
+                                  <button key={i} onClick={() => toggleTempAnswer(i, q.type.includes('SINGLE') || q.type.includes('TRUE'))} className={`w-6 h-6 rounded text-[10px] font-bold ${tempAnswers.includes(i) ? 'bg-green-600 text-white' : 'bg-white border text-gray-400'}`}>{String.fromCharCode(65+i)}</button>
+                                ))
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-green-600 font-bold">
+                              {q.type === 'SHORT_ANSWER' ? 'SA' : q.correctAnswers.map(i => String.fromCharCode(65+i)).join('')}
+                            </span>
+                          )}
+                        </td>
                           <td className="px-4 py-4 text-right">
                             {editingQuestionId === q.id ? (
                               <div className="flex justify-end gap-2">

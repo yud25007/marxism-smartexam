@@ -48,6 +48,16 @@ const App: React.FC = () => {
       setIsPublicReg(regStatus);
     };
     init();
+
+    // Listen for cross-component view switches
+    const handleSwitchView = (e: any) => {
+      if (e.detail) {
+        setView(e.detail);
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('switchView', handleSwitchView);
+    return () => window.removeEventListener('switchView', handleSwitchView);
   }, []);
 
   const handleStartExam = (exam: Exam) => {
@@ -166,7 +176,7 @@ const App: React.FC = () => {
   // Render Logic
 
   // Global Maintenance Interceptor
-  if (isMaintenance && currentUser?.role !== 'ADMIN') {
+  if (isMaintenance && currentUser?.role !== 'ADMIN' && view !== 'LOGIN' && view !== 'CONTACT') {
     return (
       <div className="min-h-screen bg-[#0078d7] flex flex-col items-center justify-center p-4 text-white font-sans overflow-hidden">
         <style>{`
