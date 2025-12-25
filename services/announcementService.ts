@@ -56,9 +56,17 @@ export const announcementService = {
     if (!supabase) return false;
 
     try {
+      // 数据清洗：将空字符串转换为 null，避免数据库约束错误
+      const cleanData = {
+        ...announcement,
+        image_url: announcement.image_url?.trim() || null,
+        target_group: announcement.target_group?.trim() || null,
+        date: new Date().toISOString().split('T')[0]
+      };
+
       const { error } = await supabase
         .from('announcements')
-        .insert([{ ...announcement, date: new Date().toISOString().split('T')[0] }]);
+        .insert([cleanData]);
 
       if (error) throw error;
       return true;
