@@ -25,5 +25,21 @@ export const permissionService = {
       console.error('获取权限失败:', err);
       return {}; // 失败时返回空，代码将按默认逻辑处理
     }
+  },
+
+  async getPermission(examId: string): Promise<ExamPermission | null> {
+    try {
+      const { data, error } = await supabase
+        .from('exam_permissions')
+        .select('*')
+        .eq('exam_id', examId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 means no rows found
+      return data;
+    } catch (err) {
+      console.warn('查询单章权限失败:', err);
+      return null;
+    }
   }
 };

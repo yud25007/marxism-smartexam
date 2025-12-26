@@ -29,44 +29,15 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [history, setHistory] = useState<ExamResult[]>([]);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
-  const [permissions, setPermissions] = useState<Record<string, ExamPermission>>({});
-  const [isMaintenance, setIsMaintenance] = useState(false);
-  const [isPublicReg, setIsPublicReg] = useState(true);
   
-  // LIVE Data Strategy: Primary source is static compiled file, fallback to cache/EXAMS
+  // Static-First Strategy: HOME view always uses pre-compiled STATIC_CLOUD_EXAMS
   const [cloudExams, setCloudExams] = useState<Exam[]>(STATIC_CLOUD_EXAMS); 
-  const [isLiveActive, setIsLiveActive] = useState(true); // Default to true as STATIC_CLOUD_EXAMS is the live source
+  const [isLiveActive, setIsLiveActive] = useState(true); 
 
-  // Load user and permissions on mount
+  // Load user on mount
   useEffect(() => {
-    const init = async () => {
-      const user = authService.getCurrentUser();
-      setCurrentUser(user);
-      
-      // Parallelize non-dependent requests (Core settings)
-      const corePromise = Promise.all([
-        permissionService.getAllPermissions(),
-        systemService.isEnabled('maintenance_mode'),
-        systemService.isEnabled('public_registration')
-      ]).then(([perms, maint, reg]) => {
-        setPermissions(perms);
-        setIsMaintenance(maint);
-        setIsPublicReg(reg);
-      });
-
-      // Background Fetch: Check if cloud has MORE recent or new data
-      // Only replaces if DB has items and user is on a slow connection
-      const examPromise = examService.getExams().then(dbExams => {
-        if (dbExams && dbExams.length > 0 && STATIC_CLOUD_EXAMS.length === 0) {
-          setCloudExams(dbExams);
-        }
-      });
-
-      await Promise.all([corePromise, examPromise]).catch(err => {
-        console.warn("Soft init failure", err);
-      });
-    };
-    init();
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
 
     // Listen for cross-component view switches
     const handleSwitchView = (e: any) => {
@@ -80,31 +51,36 @@ const App: React.FC = () => {
   }, []);
 
   const handleStartExam = async (exam: Exam) => {
-    // Maintenance Check
-    if (isMaintenance && currentUser?.role !== 'ADMIN') {
-      alert('系统正在维护中，暂时无法开始考试，请稍后再试。');
-      return;
-    }
-
     if (!currentUser) {
       setView('LOGIN');
       window.scrollTo(0, 0);
       return;
     }
 
-    // Dynamic Permission Check
-    const perm = permissions[exam.id];
-    const isHighLevelUser = currentUser.role === 'ADMIN' || currentUser.role === 'VIP';
+    // Dynamic checks only when starting (On-demand fetching)
+    try {
+      // 1. Check maintenance mode
+      const isMaint = await systemService.isEnabled('maintenance_mode');
+      if (isMaint && currentUser.role !== 'ADMIN') {
+        alert('系统正在维护中，暂时无法开始考试，请稍后再试。');
+        return;
+      }
 
-    if (perm) {
-      if (perm.min_role === 'ADMIN' && !isHighLevelUser) {
-        alert('该题库目前仅限高级用户及管理员访问。');
-        return;
+      // 2. Check permissions for this specific exam
+      const perm = await permissionService.getPermission(exam.id);
+      const isHighLevelUser = currentUser.role === 'ADMIN' || currentUser.role === 'VIP';
+      if (perm) {
+        if (perm.min_role === 'ADMIN' && !isHighLevelUser) {
+          alert('该题库目前仅限高级用户及管理员访问。');
+          return;
+        }
+        if (!perm.is_public && !isHighLevelUser) {
+          alert('该题库尚未公开。');
+          return;
+        }
       }
-      if (!perm.is_public && !isHighLevelUser) {
-        alert('该题库尚未公开。');
-        return;
-      }
+    } catch (err) {
+      console.warn("Permission check skipped due to network", err);
     }
 
     // OPTIMIZATION: Prioritize pre-compiled STATIC_CLOUD_EXAMS for instant load
@@ -232,57 +208,6 @@ const App: React.FC = () => {
 
   // ==================== Render Logic ====================
 
-  // 1. Global Maintenance Interceptor (Highest Priority)
-  if (isMaintenance && currentUser?.role !== 'ADMIN' && view !== 'LOGIN' && view !== 'CONTACT') {
-    return (
-      <div className="min-h-screen bg-[#0078d7] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden">
-        <style>{`
-          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-          .win-loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 48px; height: 48px; animation: spin 1.5s linear infinite; }
-        `}</style>
-        
-        <div className="flex flex-col items-center max-w-2xl w-full">
-          <div className="win-loader mb-12"></div>
-          
-          <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <h1 className="text-2xl md:text-3xl font-light leading-tight">
-              正在准备理论同步，请勿关闭浏览器
-            </h1>
-            
-            <p className="text-lg md:text-xl font-light opacity-90">
-              系统正在进行深度逻辑重构。这可能需要一点时间。
-            </p>
-            
-            <div className="text-6xl md:text-7xl font-extralight py-4">
-              <span className="tabular-nums">
-                {Math.min(99, Math.floor(Date.now() / 10000000000) % 100)}%
-              </span>
-            </div>
-
-            <div className="space-y-2 opacity-80 italic font-light tracking-wide px-4">
-              <p className="animate-pulse">“天涯若比邻...”</p>
-              <p className="text-sm">正在校准历史唯物主义时空坐标</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Hidden Admin Entry */}
-        <div className="fixed bottom-8 right-8 group">
-          <button 
-            onClick={() => setView('LOGIN')}
-            className="text-white/10 group-hover:text-white/40 transition-colors text-[10px] font-mono tracking-widest uppercase p-4"
-          >
-            Terminal Access [Admin Only]
-          </button>
-        </div>
-
-        <div className="fixed bottom-8 left-8 text-white/30 text-[10px] font-light">
-          ©️ 2025 Microsoft (Not really) Marxism SmartExam Update
-        </div>
-      </div>
-    );
-  }
-
   // 2. Normal View Rendering
   if (view === 'CONTACT') {
     return (
@@ -326,12 +251,12 @@ const App: React.FC = () => {
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
           onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
-          showRegister={isPublicReg}
+          showRegister={true}
         />
         <LoginView 
           onLoginSuccess={handleLoginSuccess} 
           onCancel={handleGoHome} 
-          showRegister={isPublicReg}
+          showRegister={true}
         />
       </>
     );
@@ -422,20 +347,13 @@ const App: React.FC = () => {
           onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
           onAnnouncementClick={() => setShowAnnouncement(true)}
           currentView={view}
-          showRegister={isPublicReg}
+          showRegister={true}
         />
         <AdminDashboard 
           onGoHome={handleGoHome} 
           onSettingChange={() => {
-            // Trigger a refresh of settings AND exams
-            systemService.isEnabled('maintenance_mode').then(setIsMaintenance);
-            systemService.isEnabled('public_registration').then(setIsPublicReg);
-            examService.getExams().then(dbExams => {
-              if (dbExams.length > 0) {
-                setCloudExams(dbExams);
-                localStorage.setItem('cached_exams', JSON.stringify(dbExams));
-              }
-            });
+            // Only update local view if needed
+            alert('设置已更新，刷新页面生效。');
           }}
         />
       </React.Suspense>
@@ -599,23 +517,14 @@ const App: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {cloudExams.map(exam => {
-            const perm = permissions[exam.id];
-            const isHighLevelUser = currentUser?.role === 'ADMIN' || currentUser?.role === 'VIP';
-            let isLockedByPerm = false;
-            
-            if (perm) {
-              isLockedByPerm = (perm.min_role === 'ADMIN' && !isHighLevelUser) || (!perm.is_public && !isHighLevelUser);
-            } else {
-              // Default for new unconfigured chapters: Lock for non-high-level users
-              isLockedByPerm = !isHighLevelUser;
-            }
-
+            // Decoupled Logic: Only lock if NOT logged in. 
+            // Permissions are checked inside handleStartExam on-demand.
             return (
               <ExamCard 
                 key={exam.id} 
                 exam={exam} 
                 onStart={handleStartExam}
-                isLocked={!currentUser || isLockedByPerm}
+                isLocked={!currentUser}
               />
             );
           })}
