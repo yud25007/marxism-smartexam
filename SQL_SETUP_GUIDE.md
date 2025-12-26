@@ -15,13 +15,13 @@ CREATE TABLE IF NOT EXISTS system_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 初始化系统开关
-INSERT INTO system_settings (key, value, description)
-VALUES 
-  ('maintenance_mode', FALSE, '系统维护模式'),
-  ('allow_sync', TRUE, '允许云端同步操作'),
-  ('public_registration', TRUE, '允许用户自主注册')
-ON CONFLICT (key) DO UPDATE SET description = EXCLUDED.description;
+-- 插入初始系统设置
+INSERT INTO system_settings (key, value, description) VALUES
+('public_registration', true, '允许游客自主注册新账号'),
+('maintenance_mode_zeabur', false, '主站(Zeabur)维护模式开关'),
+('maintenance_mode_cloudflare', false, '镜像站(Cloudflare)维护模式开关'),
+('allow_sync', true, '允许管理员触发云端题库同步')
+ON CONFLICT (key) DO NOTHING;
 ```
 
 ---

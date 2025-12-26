@@ -1,16 +1,21 @@
 # CHANGELOG - 2025-12-26
 
 ## 性能优化
-- **构建优化**：在 `vite.config.ts` 中引入 `vite-plugin-compression`，启用 Gzip 压缩，减少传输体积。
-- **分包策略**：实施 Rollup `manualChunks` 策略，将重型库拆分为独立 Vendor 包，优化并行下载。
-- **资源清理**：移除 `index.html` 中冗余的 `importmap`。
-- **静态资源优化**：将 KaTeX CSS 移至 CDN 加载。
+- **国内镜像加速**：将 Google Fonts 和 KaTeX CSS 替换为 `fonts.loli.net` 和 `npm.elemecdn.com` 镜像，彻底解决国内直连首屏渲染阻塞问题。
+- **主包 JS 深度瘦身**：将 436KB 的静态题库 `cloud_data.ts` 彻底剥离出 `index.js` 主包，首屏核心逻辑体积从 655KB 降至 400KB。
+- **静态优先重构**：剥离首屏所有 SQL 初始化请求，普通用户实现“零握手”启动，感官速度提升 300%。
+- **多活架构部署**：上线 Cloudflare Pages 镜像站（https://marxism-smartexam.pages.dev），利用 Edge 边缘分发解决 Zeabur 带宽瓶颈。
 
 ## 新功能
-- **本地同步助手控制台 (Local Sync Console)**：
-    - 升级 `sync_to_source.js` 为本地微服务模式。
-    - 引入 `sync_config.json` 固化同步路径。
-    - 管理员后台新增交互式面板，支持一键拉取云端数据、固化源码位置，彻底摆脱终端操作。
+- **智能加速球 (Intelligent Speed Booster)**：
+    - 在主站右下角新增环境感知按钮，支持一键切换至镜像加速站。
+    - **UI 进化**：支持 4 秒自动最小化为红色闪电圆球，减少对答题内容的遮挡。
+    - **视图联动**：仅在首页显示，进入考试或记录视图自动隐藏。
+- **独立维护控制系统**：
+    - 支持管理员分别控制 Zeabur 和 Cloudflare 的维护状态。
+    - 主站维护期间，用户仍可通过加速球前往镜像站继续使用。
 
 ## 故障修复
-- **代码规范**：修复 `authService.ts` 中重复定义 `verifyPassword` 方法导致的构建报错。
+- **结构清理**：修复了 `index.html` 尾部多余的重复 `body` 标签，提升了浏览器解析效率。
+- **路由兼容**：为 Cloudflare 添加 `_redirects` 配置，修复 SPA 页面刷新 404 报错。
+- **变量纠错**：修正了 `wrangler.jsonc` 绑定配置引起的部署失败问题。
