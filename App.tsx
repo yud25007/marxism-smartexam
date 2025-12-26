@@ -26,8 +26,7 @@ const App: React.FC = () => {
     window.dispatchEvent(new CustomEvent('switchView', { detail: view }));
   }, [view]);
 
-  // Load user on mount
-  useEffect(() => {
+  const handleStartExam = async (exam: Exam) => {
     // 1. Special Case: Trial Exam for Guests
     if (exam.id === 'trial-chapter') {
       const guestUser: User = {
@@ -38,7 +37,6 @@ const App: React.FC = () => {
         aiModel: 'gemini-3-pro-preview' // Hardcode best model
       };
       
-      // If no current user, use temporary guest session
       if (!currentUser) {
         setCurrentUser(guestUser);
       }
@@ -55,21 +53,35 @@ const App: React.FC = () => {
       window.scrollTo(0, 0);
       return;
     }
-    // ... (rest of the logic remains same)
 
-
-    // Double check maintenance on action
+    // Dynamic checks only when starting (On-demand fetching)
     try {
+      // 1. Domain-aware Maintenance Check
       const isZeabur = window.location.hostname === 'marx.zeabur.app';
       const maintKey = isZeabur ? 'maintenance_mode_zeabur' : 'maintenance_mode_cloudflare';
+      
       const isMaint = await systemService.isEnabled(maintKey);
       if (isMaint && currentUser.role !== 'ADMIN') {
         setIsMaintenance(true);
         return;
       }
-      
-      // ... (rest of start logic)
-    } catch (e) {}
+
+      // 2. Check permissions for this specific exam
+      const perm = await permissionService.getPermission(exam.id);
+      const isHighLevelUser = currentUser.role === 'ADMIN' || currentUser.role === 'VIP';
+      if (perm) {
+        if (perm.min_role === 'ADMIN' && !isHighLevelUser) {
+          alert('该题库目前仅限高级用户及管理员访问。');
+          return;
+        }
+        if (!perm.is_public && !isHighLevelUser) {
+          alert('该题库尚未公开。');
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Permission check skipped due to network", err);
+    }
 
     // OPTIMIZATION: Prioritize pre-compiled STATIC_CLOUD_EXAMS for instant load
     const staticExam = STATIC_CLOUD_EXAMS.find(e => e.id === exam.id);
