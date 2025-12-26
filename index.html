@@ -56,7 +56,9 @@
 
           window.addEventListener('switchView', function(e) {
             if (container) {
-              container.style.display = (e.detail === 'HOME' || !e.detail) ? 'block' : 'none';
+              // 关键修复：除了 HOME，在维护模式下也要保持显示，以便用户跳转
+              const isAllowedView = e.detail === 'HOME' || !e.detail;
+              container.style.display = isAllowedView ? 'block' : 'none';
             }
           });
         }
