@@ -4,6 +4,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>马克思主义基本原理在线智能题库</title>
+    
+    <!-- 智能节点切换器 -->
+    <script>
+      (function() {
+        const mirrorHost = 'marxism-smartexam.pages.dev';
+        const isZeabur = window.location.hostname === 'marx.zeabur.app';
+        
+        if (isZeabur) {
+          // 仅在主站显示加速提示
+          window.addEventListener('DOMContentLoaded', () => {
+            const btn = document.createElement('div');
+            btn.innerHTML = `
+              <div id="speed-booster" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: pointer; background: linear-gradient(135deg, #ef4444, #f97316); color: white; padding: 10px 16px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; font-family: sans-serif; transition: all 0.3s ease; animation: bounce 2s infinite;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span style="font-size: 13px; font-weight: bold;">国内加速模式</span>
+              </div>
+              <style>
+                @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-5px);} 60% {transform: translateY(-3px);} }
+                #speed-booster:hover { transform: scale(1.05); filter: brightness(1.1); }
+              </style>
+            `;
+            btn.onclick = () => {
+              window.location.replace('https://' + mirrorHost + window.location.pathname + window.location.search);
+            };
+            document.body.appendChild(btn);
+          });
+        }
+      })();
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
