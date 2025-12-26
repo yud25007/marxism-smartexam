@@ -15,6 +15,13 @@ import { systemService } from './services/systemService';
 import { examService } from './services/examService';
 import { GraduationCap, Search, TrendingUp, Lock, Star, Wrench, RefreshCcw, Loader2, Sparkles } from 'lucide-react';
 
+// Lazy load heavy components to reduce initial bundle size
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const ExamPlayer = React.lazy(() => import('./components/ExamPlayer').then(m => ({ default: m.ExamPlayer })));
+const ResultView = React.lazy(() => import('./components/ResultView').then(m => ({ default: m.ResultView })));
+const HistoryView = React.lazy(() => import('./components/HistoryView').then(m => ({ default: m.HistoryView })));
+const CollectionView = React.lazy(() => import('./components/CollectionView').then(m => ({ default: m.CollectionView })));
+
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
   const [activeExam, setActiveExam] = useState<Exam | null>(null);
@@ -447,47 +454,54 @@ const App: React.FC = () => {
     );
   }
 
-  if (view === 'EXAM' && activeExam && currentUser) {
-    return (
-      <React.Suspense fallback={<LoadingScreen />}>
-        <ExamPlayer 
-          exam={activeExam} 
-          onFinish={handleFinishExam} 
-          onExit={handleGoHome} 
-          isCloud={isLiveActive}
-        />
-      </React.Suspense>
-    );
+  if (view === 'EXAM' && activeExam) {
+    // For trial, we can proceed even if currentUser state is still propagating
+    const isTrial = activeExam.id === 'trial-chapter';
+    if (currentUser || isTrial) {
+      return (
+        <React.Suspense fallback={<LoadingScreen />}>
+          <ExamPlayer 
+            exam={activeExam} 
+            onFinish={handleFinishExam} 
+            onExit={handleGoHome} 
+            isCloud={isLiveActive}
+          />
+        </React.Suspense>
+      );
+    }
   }
 
   if (view === 'RESULT' && activeExam && examResult) {
-    return (
-      <React.Suspense fallback={<LoadingScreen />}>
-        <AnnouncementModal 
-          isOpen={showAnnouncement} 
-          onClose={() => setShowAnnouncement(false)} 
-        />
-        <Header 
-          onGoHome={handleGoHome} 
-          user={currentUser} 
-          onLoginClick={() => setView('LOGIN')}
-          onLogoutClick={handleLogout}
-          onRegisterClick={() => setView('REGISTER')}
-          onHistoryClick={handleHistoryClick}
-          onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
-          onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
-          onAnnouncementClick={() => setShowAnnouncement(true)}
-          currentView={view}
-        />
-        <ResultView 
-          exam={activeExam} 
-          result={examResult} 
-          user={currentUser}
-          onRetry={handleRetry} 
-          onGoHome={handleGoHome}
-        />
-      </React.Suspense>
-    );
+    const isTrial = activeExam.id === 'trial-chapter';
+    if (currentUser || isTrial) {
+      return (
+        <React.Suspense fallback={<LoadingScreen />}>
+          <AnnouncementModal 
+            isOpen={showAnnouncement} 
+            onClose={() => setShowAnnouncement(false)} 
+          />
+          <Header 
+            onGoHome={handleGoHome} 
+            user={currentUser} 
+            onLoginClick={() => setView('LOGIN')}
+            onLogoutClick={handleLogout}
+            onRegisterClick={() => setView('REGISTER')}
+            onHistoryClick={handleHistoryClick}
+            onChangePasswordClick={() => setView('CHANGE_PASSWORD')}
+            onAdminDashboardClick={() => setView('ADMIN_DASHBOARD')}
+            onAnnouncementClick={() => setShowAnnouncement(true)}
+            currentView={view}
+          />
+          <ResultView 
+            exam={activeExam} 
+            result={examResult} 
+            user={currentUser}
+            onRetry={handleRetry} 
+            onGoHome={handleGoHome}
+          />
+        </React.Suspense>
+      );
+    }
   }
 
   if (view === 'COLLECTION' && currentUser) {
