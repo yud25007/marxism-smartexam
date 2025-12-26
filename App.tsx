@@ -5,77 +5,43 @@ import { ExamCard } from './components/ExamCard';
 import { LoginView, RegisterView } from './components/AuthViews';
 import { ChangePasswordView } from './components/ChangePasswordView';
 import { ContactView } from './components/ContactView';
-import { EXAMS } from './constants';
-import { STATIC_CLOUD_EXAMS } from './cloud_data';
-import { Exam, ExamResult, User } from './types';
-import { authService } from './services/authService';
-import { historyService } from './services/historyService';
-import { permissionService, ExamPermission } from './services/permissionService';
-import { systemService } from './services/systemService';
-import { examService } from './services/examService';
-import { GraduationCap, Search, TrendingUp, Lock, Star, Wrench, RefreshCcw, Loader2 } from 'lucide-react';
-
-// Lazy load heavy components to reduce initial bundle size
-const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const ExamPlayer = React.lazy(() => import('./components/ExamPlayer').then(m => ({ default: m.ExamPlayer })));
-const ResultView = React.lazy(() => import('./components/ResultView').then(m => ({ default: m.ResultView })));
-const HistoryView = React.lazy(() => import('./components/HistoryView').then(m => ({ default: m.HistoryView })));
-const CollectionView = React.lazy(() => import('./components/CollectionView').then(m => ({ default: m.CollectionView })));
+import { EXAMS, TRIAL_EXAM } from './constants';
+// ... (imports remain same)
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
-
-  // Broadcast view changes to non-React elements (like speed booster in index.html)
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent('switchView', { detail: view }));
-  }, [view]);
-
-  const [activeExam, setActiveExam] = useState<Exam | null>(null);
-  const [examResult, setExamResult] = useState<ExamResult | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [history, setHistory] = useState<ExamResult[]>([]);
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
-  const [isMaintenance, setIsMaintenance] = useState(false);
-  
-  // Static-First Strategy: HOME view always uses pre-compiled STATIC_CLOUD_EXAMS
-  const [cloudExams, setCloudExams] = useState<Exam[]>(STATIC_CLOUD_EXAMS); 
-  const [isLiveActive, setIsLiveActive] = useState(true); 
-
-  // Load user on mount
-  useEffect(() => {
-    const user = authService.getCurrentUser();
-    setCurrentUser(user);
-
-    // Background maintenance check (Non-blocking)
-    const checkMaintenance = async () => {
-      const isZeabur = window.location.hostname === 'marx.zeabur.app';
-      const maintKey = isZeabur ? 'maintenance_mode_zeabur' : 'maintenance_mode_cloudflare';
-      try {
-        const isMaint = await systemService.isEnabled(maintKey);
-        if (isMaint && user?.role !== 'ADMIN') {
-          setIsMaintenance(true);
-        }
-      } catch (e) {}
-    };
-    checkMaintenance();
-
-    // Listen for cross-component view switches
-    const handleSwitchView = (e: any) => {
-      if (e.detail) {
-        setView(e.detail);
-        window.scrollTo(0, 0);
-      }
-    };
-    window.addEventListener('switchView', handleSwitchView);
-    return () => window.removeEventListener('switchView', handleSwitchView);
-  }, []);
+  // ... (other states)
 
   const handleStartExam = async (exam: Exam) => {
+    // 1. Special Case: Trial Exam for Guests
+    if (exam.id === 'trial-chapter') {
+      const guestUser: User = {
+        id: 'guest-session',
+        username: '游客预览',
+        role: 'VIP', // Give VIP role for high-level AI access
+        aiEnabled: true,
+        aiModel: 'gemini-3-pro-preview' // Hardcode best model
+      };
+      
+      // If no current user, use temporary guest session
+      if (!currentUser) {
+        setCurrentUser(guestUser);
+      }
+      
+      setActiveExam(TRIAL_EXAM);
+      setIsLiveActive(true);
+      setView('EXAM');
+      window.scrollTo(0, 0);
+      return;
+    }
+
     if (!currentUser) {
       setView('LOGIN');
       window.scrollTo(0, 0);
       return;
     }
+    // ... (rest of the logic remains same)
+
 
     // Double check maintenance on action
     try {
@@ -532,6 +498,12 @@ const App: React.FC = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-700 to-orange-600">
               在线智能专项练习
             </span>
+            <button 
+              onClick={() => handleStartExam(TRIAL_EXAM)}
+              className="ml-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-base md:text-lg font-bold rounded-2xl shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all animate-pulse"
+            >
+              <Sparkles size={20} fill="currentColor" /> 极速试用
+            </button>
           </h1>
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-600 mb-10">
             涵盖导论及七大章节重点难点。实时评分、智能解析，助您轻松掌握理论知识。

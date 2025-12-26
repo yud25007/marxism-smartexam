@@ -142,7 +142,10 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
 
   const handleToggleFavorite = async (questionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!user || user.id === 'guest-session') {
+      alert('⚠️ 请登录后使用收藏功能，登录后可同步错题与重点题目。');
+      return;
+    }
     try {
       await favoriteService.toggleFavorite(user.username, questionId);
       setFavorites(prev => 
@@ -243,8 +246,10 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
   ];
 
   const isAiEnabled = user?.aiEnabled;
-  const isNannyModeEnabled = user?.role === 'ADMIN';
-  const isVipOrAdmin = user?.role === 'ADMIN' || user?.role === 'VIP';
+  const isTrialExam = exam.id === 'trial-chapter';
+  const isGuest = user?.id === 'guest-session';
+  const isNannyModeEnabled = user?.role === 'ADMIN' || isTrialExam;
+  const isVipOrAdmin = (user?.role === 'ADMIN' || user?.role === 'VIP') && !isGuest;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -252,6 +257,11 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 text-center border-b bg-gradient-to-b from-white to-red-50/30">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">考试结果</h2>
+            {isGuest && (
+              <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-100">
+                <Sparkles size={12} /> 极速试用模式 (保姆级 AI 已开启)
+              </div>
+            )}
             <p className="text-gray-500">{exam.title}</p>
             <div className="mt-8 relative inline-flex items-center justify-center">
                <div className="w-48 h-48">
@@ -524,7 +534,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                               </div>
                             )}
 
-                            {isNannyModeEnabled && explanation && (
+                            {isAdmin && explanation && (
                               <div className="flex gap-2">
                                 <div className="flex-1 relative">
                                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><MessageSquareText className="h-4 w-4 text-gray-400" /></div>

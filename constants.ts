@@ -414,6 +414,86 @@ const getOptionsArray = (optionsObj: Record<string, string>): string[] => {
 };
 
 // Transform raw data into App's Exam structure
+// TRIAL_EXAM for guests
+export const TRIAL_EXAM: Exam = {
+  id: 'trial-chapter',
+  title: '极速试用：全书核心考点精选',
+  description: '涵盖全书七大章节典型考点，包含单选、多选、判断。',
+  questionCount: 10,
+  questions: [
+    {
+      id: 'trial-1',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "马克思主义产生的阶级基础和实践基础是",
+      options: ["资本主义的剥削和压迫", "无产阶级作为一支独立的政治力量登上了历史舞台", "工人罢工和起义", "工人运动得到了“农民的合唱”"],
+      correctAnswers: [1]
+    },
+    {
+      id: 'trial-2',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "列宁的物质定义揭示物质的唯一特性是",
+      options: ["运动", "物质可以认识", "物质能为感官感知", "客观实在性"],
+      correctAnswers: [3]
+    },
+    {
+      id: 'trial-3',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "唯物辩证法的实质和核心是",
+      options: ["质量互变规律", "对立统一规律", "否定之否定规律", "联系和发展的规律"],
+      correctAnswers: [1]
+    },
+    {
+      id: 'trial-4',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "区分量变和质变的根本标志是",
+      options: ["事物的变化是否迅速", "事物的变化是否平稳", "事物的变化是否具有必然性", "事物的变化是否超出度的范围"],
+      correctAnswers: [3]
+    },
+    {
+      id: 'trial-5',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "“一把钥匙开一把锁”，从哲学上讲，这体现了",
+      options: ["矛盾的普遍性", "矛盾的同一性", "矛盾的特殊性", "矛盾的斗争性"],
+      correctAnswers: [2]
+    },
+    {
+      id: 'trial-6',
+      type: QuestionType.MULTIPLE_CHOICE,
+      text: "马克思恩格斯最重要的理论贡献（两大发现）是",
+      options: ["辩证法", "劳动价值论", "唯物史观", "剩余价值学说"],
+      correctAnswers: [2, 3]
+    },
+    {
+      id: 'trial-7',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "商品价值的唯一源泉是",
+      options: ["具体的劳动", "抽象的劳动", "机器设备", "原材料"],
+      correctAnswers: [1]
+    },
+    {
+      id: 'trial-8',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "垄断价格的来源归根结底是",
+      options: ["垄断组织自由定价", "本国工人和他国劳动者创造的价值和剩余价值", "国家的财政补贴", "消费者手中的货币"],
+      correctAnswers: [1]
+    },
+    {
+      id: 'trial-9',
+      type: QuestionType.TRUE_FALSE,
+      text: "马克思主义是为全人类服务的。",
+      options: ["正确", "错误"],
+      correctAnswers: [1]
+    },
+    {
+      id: 'trial-10',
+      type: QuestionType.SINGLE_CHOICE,
+      text: "社会主义从空想到科学的标志是",
+      options: ["《共产党宣言》的发表", "《资本论》的出版", "唯物史观和剩余价值学说的创立", "1848年欧洲革命的爆发"],
+      correctAnswers: [2]
+    }
+  ]
+};
+
 export const EXAMS: Exam[] = RAW_DATA.chapters.map((chapter) => {
   const questions: Question[] = [];
 

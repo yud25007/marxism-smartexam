@@ -17,11 +17,14 @@ export const getAIExplanation = async (
   }
 
   const user = authService.getCurrentUser();
+  const isTrialQuestion = question.id.startsWith('trial-');
   const isAdmin = user?.role === 'ADMIN';
-  const isVip = user?.role === 'VIP';
+  const isVip = user?.role === 'VIP' || isTrialQuestion;
   
   let selectedModel = user?.aiModel || DEFAULT_MODEL;
-  if (!user?.aiModel) {
+  if (isTrialQuestion) {
+    selectedModel = 'gemini-3-pro-preview';
+  } else if (!user?.aiModel) {
     if (isAdmin) selectedModel = 'gemini-3-pro-preview';
     else if (isVip) selectedModel = 'qwen3-coder-plus';
   }
@@ -29,6 +32,7 @@ export const getAIExplanation = async (
   let userAnswers = "";
   let correctAnswers = "";
 
+  // ... (Answers logic)
   if (question.type === QuestionType.SHORT_ANSWER) {
     userAnswers = "用户已阅读题目并进行了自主思考。";
     correctAnswers = question.answerText || "";
@@ -37,8 +41,15 @@ export const getAIExplanation = async (
     correctAnswers = question.correctAnswers.map(i => question.options[i]).join(', ');
   }
 
-  // ... (Prompt construction logic remains same)
-  let prompt = `你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
+  // Force Nanny Prompt for Admin or Trial Chapter
+  let prompt = "";
+  if (isAdmin || isTrialQuestion) {
+    prompt = `你现在是一位针对期末考试冲刺的“保姆级”马原辅导老师。
+    当前题目: "${question.text}"
+    正确答案: "${correctAnswers}"
+    你的任务是帮助用户彻底理解并背诵该知识点。请包含：白话拆解、考点避坑、记忆口诀、核心得分点。语气幽默亲和。`;
+  } else {
+    prompt = `你是一位专业的马克思主义理论辅导老师。请为以下题目提供简洁明了的解析：
     题目: "${question.text}"
     ${question.type !== QuestionType.SHORT_ANSWER ? `选项: ${JSON.stringify(question.options)}` : ''}
     用户的回答: "${userAnswers}"
@@ -47,12 +58,6 @@ export const getAIExplanation = async (
     1. 解释正确答案的原因（结合马克思主义基本原理）。
     2. 如果用户答错了，指出其误区所在。
     3. 字数控制在 150 字以内。`;
-
-  if (isAdmin) {
-    prompt = `你现在是一位针对期末考试冲刺的“保姆级”马原辅导老师。
-    当前题目: "${question.text}"
-    正确答案: "${correctAnswers}"
-    你的任务是帮助管理员彻底理解并背诵该知识点。请包含：白话拆解、考点避坑、记忆口诀、核心得分点。语气幽默亲和。`;
   }
 
   if (followUpQuestion) {
