@@ -65,10 +65,13 @@ const App: React.FC = () => {
 
     // Dynamic checks only when starting (On-demand fetching)
     try {
-      // 1. Check maintenance mode
-      const isMaint = await systemService.isEnabled('maintenance_mode');
+      // 1. Domain-aware Maintenance Check
+      const isZeabur = window.location.hostname === 'marx.zeabur.app';
+      const maintKey = isZeabur ? 'maintenance_mode_zeabur' : 'maintenance_mode_cloudflare';
+      
+      const isMaint = await systemService.isEnabled(maintKey);
       if (isMaint && currentUser.role !== 'ADMIN') {
-        alert('系统正在维护中，暂时无法开始考试，请稍后再试。');
+        alert(`系统正在进行${isZeabur ? '主站' : '镜像站'}维护，暂时无法开始考试，请稍后再试。`);
         return;
       }
 

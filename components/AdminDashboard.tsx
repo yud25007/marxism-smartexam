@@ -389,10 +389,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {systemSettings.map((setting) => {
+                // Special handling for maintenance mode split
+                if (setting.key === 'maintenance_mode') return null;
+
                 const getIcon = (key: string) => {
                   switch(key) {
                     case 'public_registration': return <UserPlus size={18} />;
-                    case 'maintenance_mode': return <Wrench size={18} />;
+                    case 'maintenance_mode_zeabur': return <Database size={18} />;
+                    case 'maintenance_mode_cloudflare': return <Cloud size={18} />;
                     case 'allow_sync': return <RefreshCw size={18} />;
                     default: return <Sparkles size={18} />;
                   }
@@ -400,7 +404,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
                 const getColor = (key: string) => {
                   switch(key) {
                     case 'public_registration': return setting.value ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400';
-                    case 'maintenance_mode': return setting.value ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-400';
+                    case 'maintenance_mode_zeabur': return setting.value ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-400';
+                    case 'maintenance_mode_cloudflare': return setting.value ? 'bg-orange-50 text-orange-600' : 'bg-gray-50 text-gray-400';
                     case 'allow_sync': return setting.value ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400';
                     default: return 'bg-blue-50 text-blue-600';
                   }
