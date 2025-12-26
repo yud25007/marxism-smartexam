@@ -24,6 +24,12 @@ const CollectionView = React.lazy(() => import('./components/CollectionView').th
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
+
+  // Broadcast view changes to non-React elements (like speed booster in index.html)
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('switchView', { detail: view }));
+  }, [view]);
+
   const [activeExam, setActiveExam] = useState<Exam | null>(null);
   const [examResult, setExamResult] = useState<ExamResult | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
