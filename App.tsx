@@ -10,9 +10,24 @@ import { EXAMS, TRIAL_EXAM } from './constants';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
-  // ... (other states)
+  const [activeExam, setActiveExam] = useState<Exam | null>(null);
+  const [examResult, setExamResult] = useState<ExamResult | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [history, setHistory] = useState<ExamResult[]>([]);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  
+  // Static-First Strategy: HOME view always uses pre-compiled STATIC_CLOUD_EXAMS
+  const [cloudExams, setCloudExams] = useState<Exam[]>(STATIC_CLOUD_EXAMS); 
+  const [isLiveActive, setIsLiveActive] = useState(true); 
 
-  const handleStartExam = async (exam: Exam) => {
+  // Broadcast view changes to non-React elements (like speed booster in index.html)
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('switchView', { detail: view }));
+  }, [view]);
+
+  // Load user on mount
+  useEffect(() => {
     // 1. Special Case: Trial Exam for Guests
     if (exam.id === 'trial-chapter') {
       const guestUser: User = {
