@@ -570,7 +570,12 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
       )}
 
       {showNotebook && (
-        <Notebook recordId={result.id} initialContent={notes} onClose={() => setShowNotebook(false)} />
+        <Notebook 
+          recordId={result.id} 
+          initialContent={notes} 
+          onClose={() => setShowNotebook(false)} 
+          onSaveSuccess={(newContent) => setNotes(newContent)}
+        />
       )}
 
       {!showNotebook && isVipOrAdmin && (

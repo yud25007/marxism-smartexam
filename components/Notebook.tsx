@@ -13,9 +13,10 @@ interface NotebookProps {
   recordId: string | undefined;
   initialContent: string;
   onClose: () => void;
+  onSaveSuccess?: (content: string) => void;
 }
 
-export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, onClose }) => {
+export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, onClose, onSaveSuccess }) => {
   const [content, setContent] = useState(initialContent);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
@@ -31,7 +32,10 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
     if (!recordId) return;
     setIsSaving(true);
     const success = await historyService.updateNotes(recordId, content);
-    if (success) setLastSaved(new Date());
+    if (success) {
+      setLastSaved(new Date());
+      if (onSaveSuccess) onSaveSuccess(content);
+    }
     setIsSaving(false);
   };
 
