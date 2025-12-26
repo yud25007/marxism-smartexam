@@ -140,24 +140,49 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     }
   };
 
+  const handleToggleFavorite = async (questionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    try {
+      await favoriteService.toggleFavorite(user.username, questionId);
+      setFavorites(prev => 
+        prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+      );
+    } catch (err) {
+      console.error('Failed to toggle favorite:', err);
+    }
+  };
+
   const handleAddToNotes = (question: Question) => {
     const personalNote = localNotesMap[question.id] || "（暂无个人心得）";
-    const optionsText = question.options.length > 0 
-      ? question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('<br/>')
-      : "（简答/填空题）";
+    
+    // 自动处理选项前缀，避免出现 "A. A." 的情况
+    const cleanOptions = question.options.map((opt, i) => {
+      const prefix = `${String.fromCharCode(65 + i)}.`;
+      return opt.trim().startsWith(prefix) ? opt.trim() : `${prefix} ${opt}`;
+    });
+
     const correctAns = question.correctAnswers.length > 0
       ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
       : (question.answerText || "详见解析");
 
-    // Construct Clean & Foldable HTML Block
-    let block = `<details data-q-id="${question.id}" style="border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem; background: white; overflow: hidden;">`;
-    block += `<summary style="padding: 12px 16px; cursor: pointer; font-weight: bold; background: #f8fafc; list-style: none;">📝 考点记录：${question.text.substring(0, 35)}...</summary>`;
-    block += `<div style="padding: 16px; border-top: 1px solid #e2e8f0;">`;
-    block += `<h4 style="margin-top: 0; color: #1e40af;">📥 题目原文</h4><blockquote style="border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px; margin: 12px 0;">${question.text}</blockquote>`;
-    block += `<p><strong>选项参考：</strong><br/><code style="background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">${optionsText}</code></p>`;
-    block += `<p><strong>标准答案：</strong> <code style="background: #dcfce7; color: #166534; padding: 2px 4px; border-radius: 4px;">${correctAns}</code></p>`;
-    block += `<h4 style="color: #1e40af;">💡 我的心得体会</h4><div>${personalNote}</div>`;
-    block += `</div></details><hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 1rem 0;"/>`;
+    // 构建更加稳健且支持 Markdown 的 HTML 块，关键点在于标签前后的换行符
+    let block = `\n\n<details data-q-id="${question.id}" style="border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1.5rem; background: white; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">\n`;
+    block += `  <summary style="padding: 14px 18px; cursor: pointer; font-weight: bold; background: #f8fafc; border-bottom: 1px solid transparent; list-style: none; transition: all 0.2s;">📝 考点记录：${question.text.substring(0, 35)}...</summary>\n`;
+    block += `  <div style="padding: 20px; border-top: 1px solid #e2e8f0;">\n\n`;
+    
+    block += `#### 📥 题目原文\n\n`;
+    block += `> ${question.text}\n\n`;
+    
+    block += `**选项参考：**  \n${cleanOptions.join('  \n')}\n\n`;
+    block += `**标准答案：** \`${correctAns}\`\n\n`;
+    
+    block += `#### 💡 我的心得体会\n\n`;
+    block += `<div style="background: #fdfdfd; padding: 12px; border-radius: 8px; border: 1px dashed #e2e8f0; line-height: 1.6;">\n\n`;
+    block += `${personalNote}\n\n`;
+    block += `</div>\n\n`;
+    
+    block += `  </div>\n</details>\n\n<hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 1.5rem 0;"/>\n\n`;
     
     setNotes(prev => prev + block);
     setShowNotebook(true);
