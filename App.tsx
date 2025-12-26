@@ -6,7 +6,14 @@ import { LoginView, RegisterView } from './components/AuthViews';
 import { ChangePasswordView } from './components/ChangePasswordView';
 import { ContactView } from './components/ContactView';
 import { EXAMS, TRIAL_EXAM } from './constants';
-// ... (imports remain same)
+import { STATIC_CLOUD_EXAMS } from './cloud_data';
+import { Exam, ExamResult, User, AppState } from './types';
+import { authService } from './services/authService';
+import { historyService } from './services/historyService';
+import { permissionService, ExamPermission } from './services/permissionService';
+import { systemService } from './services/systemService';
+import { examService } from './services/examService';
+import { GraduationCap, Search, TrendingUp, Lock, Star, Wrench, RefreshCcw, Loader2, Sparkles } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppState>('HOME');
