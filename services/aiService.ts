@@ -21,10 +21,17 @@ export const getAIExplanation = async (
   const isAdmin = user?.role === 'ADMIN';
   const isVip = user?.role === 'VIP' || isTrialQuestion;
   
-  let selectedModel = user?.aiModel || DEFAULT_MODEL;
+  // Model Selection Priority:
+  // 1. Trial chapters always use High-Performance model (Now using Flash for speed)
+  // 2. User-specific config from Admin Dashboard
+  // 3. Environment default (.env GEMINI_MODEL)
+  // 4. Role-based defaults
+  let selectedModel = user?.aiModel || DEFAULT_MODEL || 'gemini-1.5-flash';
+  
   if (isTrialQuestion) {
-    selectedModel = 'gemini-3-pro-preview';
-  } else if (!user?.aiModel) {
+    selectedModel = 'gemini-3-flash-preview';
+  } else if (!user?.aiModel && !DEFAULT_MODEL) {
+    // Only use hardcoded fallbacks if NO user config and NO env config exists
     if (isAdmin) selectedModel = 'gemini-3-pro-preview';
     else if (isVip) selectedModel = 'qwen3-coder-plus';
   }
