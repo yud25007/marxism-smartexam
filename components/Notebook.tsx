@@ -22,10 +22,14 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
   const [isPreview, setIsPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [hasExternalUpdate, setHasExternalUpdate] = useState(false);
 
   // Sync with external updates
   useEffect(() => {
-    setContent(initialContent);
+    if (initialContent !== content) {
+      setContent(initialContent);
+      setHasExternalUpdate(true); // Mark as dirty when new content arrives from ResultView
+    }
   }, [initialContent]);
 
   const handleSave = async () => {
@@ -34,6 +38,7 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
     const success = await historyService.updateNotes(recordId, content);
     if (success) {
       setLastSaved(new Date());
+      setHasExternalUpdate(false); // Reset dirty flag after successful manual save
       if (onSaveSuccess) onSaveSuccess(content);
     }
     setIsSaving(false);
@@ -269,7 +274,7 @@ export const Notebook: React.FC<NotebookProps> = ({ recordId, initialContent, on
              <Printer size={12} /> PDF/打印
            </button>
          </div>
-         <Button size="sm" onClick={handleSave} disabled={isSaving || content === initialContent} className="bg-indigo-600 text-white h-8 text-xs">
+         <Button size="sm" onClick={handleSave} disabled={isSaving || (content === initialContent && !hasExternalUpdate)} className="bg-indigo-600 text-white h-8 text-xs">
            <Save size={14} className="mr-1" /> 立即保存
          </Button>
       </div>

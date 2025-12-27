@@ -156,7 +156,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     }
   };
 
-  const handleAddToNotes = (question: Question) => {
+  const handleAddToNotes = async (question: Question) => {
     const personalNote = localNotesMap[question.id] || "（暂无个人心得）";
     
     // 自动处理选项前缀，避免出现 "A. A." 的情况
@@ -169,9 +169,9 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
       ? question.correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ')
       : (question.answerText || "详见解析");
 
-    // 构建更加稳健且支持 Markdown 的 HTML 块，关键点在于标签前后的换行符
-    let block = `\n\n<details data-q-id="${question.id}" style="border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1.5rem; background: white; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">\n`;
-    block += `  <summary style="padding: 14px 18px; cursor: pointer; font-weight: bold; background: #f8fafc; border-bottom: 1px solid transparent; list-style: none; transition: all 0.2s;">📝 考点记录：${question.text.substring(0, 35)}...</summary>\n`;
+    // CRITICAL: Eliminate excessive \n characters to fix vertical spacing issue between folding cards
+    let block = `<details data-q-id="${question.id}" style="border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 0.75rem; background: white; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">\n`;
+    block += `  <summary style="padding: 12px 18px; cursor: pointer; font-weight: bold; background: #f8fafc; border-bottom: 1px solid transparent; list-style: none; transition: all 0.2s;">📝 考点记录：${question.text.substring(0, 35)}...</summary>\n`;
     block += `  <div style="padding: 20px; border-top: 1px solid #e2e8f0;">\n\n`;
     
     block += `#### 📥 题目原文\n\n`;
@@ -185,10 +185,24 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
     block += `${personalNote}\n\n`;
     block += `</div>\n\n`;
     
-    block += `  </div>\n</details>\n\n<hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 1.5rem 0;"/>\n\n`;
+    block += `  </div>\n</details>\n`;
     
-    setNotes(prev => prev + block);
+    const newNotes = notes + block;
+    setNotes(newNotes);
     setShowNotebook(true);
+
+    // CRITICAL: Immediate sync to DB instead of waiting for auto-save
+    if (result.id) {
+      console.log(`[NotesSync] Attempting immediate sync for record ${result.id}...`);
+      const success = await historyService.updateNotes(result.id, newNotes);
+      if (success) {
+        console.log(`[NotesSync] Successfully synced notes to DB.`);
+      } else {
+        console.warn(`[NotesSync] Sync failed for record ${result.id}.`);
+      }
+    } else {
+      console.warn(`[NotesSync] Cannot sync: result.id is missing.`);
+    }
   };
 
   const handleRemoveFromNotes = (questionId: string) => {
@@ -445,7 +459,18 @@ export const ResultView: React.FC<ResultViewProps> = ({ exam, result, user, onRe
                             <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100 relative">
                                <div className="absolute top-4 left-4"><Sparkles size={20} className="text-indigo-500" /></div>
                                <div className="pl-9">
-                                 <h4 className="text-sm font-bold text-indigo-900 mb-1">{isNannyModeEnabled ? '保姆级辅导' : 'AI 解析'}</h4>
+                                 <div className="flex items-center justify-between mb-2">
+                                   <h4 className="text-sm font-bold text-indigo-900">{isNannyModeEnabled ? '保姆级辅导' : 'AI 解析'}</h4>
+                                   {!isLoading && (
+                                     <button 
+                                       onClick={(e) => { e.stopPropagation(); handleAskAI(question); }}
+                                       className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 hover:text-indigo-700 bg-white/50 px-2 py-0.5 rounded border border-indigo-100 transition-colors"
+                                       title="重新解析此题"
+                                     >
+                                       <RefreshCcw size={10} /> 重新生成
+                                     </button>
+                                   )}
+                                 </div>
                                  {isLoading && !explanation ? (
                                    <div className="space-y-2 animate-pulse"><div className="h-2 bg-indigo-200 rounded w-3/4"></div><div className="h-2 bg-indigo-200 rounded w-full"></div></div>
                                  ) : (

@@ -126,9 +126,11 @@ const App: React.FC = () => {
 
   const handleFinishExam = async (result: ExamResult) => {
     if (currentUser && currentUser.username !== '游客预览') {
+      // historyService.saveResult will mutate 'result' to add the generated 'id'
       await historyService.saveResult(currentUser.username, result);
     }
-    setExamResult(result);
+    // Set the mutated result (with ID) into state so ResultView can use it for notes sync
+    setExamResult({ ...result });
     setView('RESULT');
     window.scrollTo(0, 0);
   };
