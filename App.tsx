@@ -35,6 +35,14 @@ const App: React.FC = () => {
   const [cloudExams, setCloudExams] = useState<Exam[]>(STATIC_CLOUD_EXAMS); 
   const [isLiveActive, setIsLiveActive] = useState(true); 
 
+  // 1. Session Restoration: Check localStorage on mount
+  useEffect(() => {
+    const savedUser = authService.getCurrentUser();
+    if (savedUser) {
+      setCurrentUser(savedUser);
+    }
+  }, []);
+
   // Broadcast view changes to non-React elements (like speed booster in index.html)
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('switchView', { detail: view }));
