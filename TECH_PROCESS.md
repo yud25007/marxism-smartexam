@@ -124,6 +124,14 @@
 *   **解决办法**：在 `App.tsx` 根组件中补全了挂载时的生命周期逻辑。新增了一个 `useEffect` 钩子，专门在应用初始化时调用 `authService.getCurrentUser()` 从 `localStorage` 中恢复用户 Session。
 *   **最终成果**：实现了登录状态的持久化，极大提升了用户体验的连续性。
 
+### 41. AI 模型管理链路打通与 Gemini 3 Flash 支持
+*   **需求**：在管理员后台动态为用户分配特定的 AI 模型，并新增对 `gemini-3-flash-preview` 的支持。
+*   **技术方案**：
+    1.  **类型系统对齐**：在 `types.ts` 的 `User` 接口中扩充 `aiModel` 联合类型。
+    2.  **Auth 服务闭环**：在 `authService.ts` 中实现了 `updateAiModel` 方法，支持本地存储与 Supabase 云端的同步更新。
+    3.  **UI 动态化**：在 `AdminDashboard` 用户列表中集成下拉选择器，管理员可一键为不同用户指定不同的 AI 引擎。
+*   **最终成果**：提升了系统对 AI 资源的精细化管理能力，解决了后台无法显示和切换新模型的问题。
+
 ## 📅 2025-12-26
 
 ### 28. 全量迁移至 Cloudflare Pages 与域重定向

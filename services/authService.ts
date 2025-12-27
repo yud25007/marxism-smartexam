@@ -16,7 +16,7 @@ const dbUserToUser = (dbUser: DbUser): StoredUser => ({
   role: dbUser.role,
   status: dbUser.status,
   aiEnabled: dbUser.ai_enabled,
-  aiModel: dbUser.ai_model as any || 'gemini-2.5-pro',
+  aiModel: dbUser.ai_model as any,
   invitedBy: dbUser.invited_by
 });
 
@@ -94,6 +94,17 @@ const localAuth = {
     const idx = users.findIndex((u: any) => u.username === username);
     if (idx !== -1) {
       users[idx].aiEnabled = enabled;
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      return true;
+    }
+    return false;
+  },
+
+  updateAiModel: (username: string, model: string): boolean => {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const idx = users.findIndex((u: any) => u.username === username);
+    if (idx !== -1) {
+      users[idx].aiModel = model;
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
       return true;
     }
@@ -266,6 +277,30 @@ export const authService = {
         const currentUser = JSON.parse(currentUserStr);
         if (currentUser.username === username) {
           currentUser.aiEnabled = enabled;
+          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+        }
+      }
+    }
+
+    return !error;
+  },
+
+  updateAiModel: async (username: string, model: string): Promise<boolean> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return localAuth.updateAiModel(username, model);
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ ai_model: model })
+      .eq('username', username);
+
+    if (!error) {
+      const currentUserStr = localStorage.getItem(CURRENT_USER_KEY);
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser.username === username) {
+          currentUser.aiModel = model;
           localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
         }
       }

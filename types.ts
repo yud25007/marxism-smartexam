@@ -55,7 +55,7 @@ export interface User {
   role: UserRole;
   status: UserStatus; // New field for approval workflow
   aiEnabled?: boolean; 
-  aiModel?: 'gemini-3-pro-preview' | 'gemini-2.5-pro' | 'qwen3-coder-plus';
+  aiModel?: 'gemini-3-pro-preview' | 'gemini-2.5-pro' | 'qwen3-coder-plus' | 'gemini-3-flash-preview';
   invitedBy?: string;
 }
 

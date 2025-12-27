@@ -959,6 +959,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
                         className={`px-2 py-1 rounded border text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none bg-white ${!user.aiEnabled ? 'opacity-50 grayscale' : ''}`}
                       >
                         <option value="gemini-3-pro-preview">Gemini 3 Pro</option>
+                        <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
                         <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
                         <option value="qwen3-coder-plus">Qwen 3 Coder</option>
                       </select>
