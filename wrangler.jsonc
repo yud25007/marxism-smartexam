@@ -1,7 +1,5 @@
 {
   "name": "marxism-smartexam",
   "compatibility_date": "2025-12-26",
-  "assets": {
-    "directory": "./dist"
-  }
+  "pages_build_output_dir": "./dist"
 }

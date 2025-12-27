@@ -5,21 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>马克思主义基本原理在线智能题库</title>
     
-    <!-- 智能节点切换器 (智能收缩版) -->
+    <!-- 智能节点切换器 (双向多活版) -->
     <script>
       (function() {
         const mirrorHost = 'marxism-smartexam.pages.dev';
-        const isZeabur = window.location.hostname === 'marx.zeabur.app';
+        const mainHost = 'marx.zeabur.app';
+        const currentHost = window.location.hostname;
         
-        if (isZeabur) {
+        const isZeabur = currentHost === mainHost;
+        const isCloudflare = currentHost === mirrorHost;
+        
+        // 只有在已知的两个域名下才显示切换器
+        if (isZeabur || isCloudflare) {
+          const targetHost = isZeabur ? mirrorHost : mainHost;
+          const targetName = isZeabur ? '镜像加速站' : '主站入口';
+          
           const container = document.createElement('div');
           container.id = 'booster-container';
           container.innerHTML = `
-            <div id="speed-booster" style="position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; cursor: pointer; background: linear-gradient(135deg, #ef4444, #f97316); color: white; padding: 10px 18px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 0px; font-family: sans-serif; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; white-space: nowrap; max-width: 300px; height: 42px;">
+            <div id="speed-booster" style="position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; cursor: pointer; background: linear-gradient(135deg, ${isZeabur ? '#ef4444, #f97316' : '#3b82f6, #06b6d4'}); color: white; padding: 10px 18px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 0px; font-family: sans-serif; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; white-space: nowrap; max-width: 300px; height: 42px;">
               <svg id="booster-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0; transition: transform 0.3s ease;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               <div id="booster-text" style="display: flex; flex-direction: column; margin-left: 10px; opacity: 1; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateX(0);">
-                <span style="font-size: 13px; font-weight: bold; line-height: 1.2;">首次加载时间较长</span>
-                <span style="font-size: 11px; opacity: 0.9;">加载失败点击切换站点</span>
+                <span style="font-size: 13px; font-weight: bold; line-height: 1.2;">${isZeabur ? '访问较慢？' : '正在访问镜像站'}</span>
+                <span style="font-size: 11px; opacity: 0.9;">点击切换至${targetName}</span>
               </div>
             </div>
             <style>
@@ -36,13 +44,13 @@
           booster.classList.add('booster-animate');
 
           container.onclick = () => {
-            window.location.replace('https://' + mirrorHost + window.location.pathname + window.location.search);
+            window.location.replace('https://' + targetHost + window.location.pathname + window.location.search);
           };
 
           const inject = () => {
             if (document.body) {
               document.body.appendChild(container);
-              // 3秒后自动最小化
+              // 4秒后自动最小化
               setTimeout(() => {
                 booster.classList.remove('booster-animate');
                 booster.classList.add('booster-minimized');
@@ -56,7 +64,7 @@
 
           window.addEventListener('switchView', function(e) {
             if (container) {
-              // 关键修复：除了 HOME，在维护模式下也要保持显示，以便用户跳转
+              // 关键逻辑：除了 HOME，在维护模式下也要保持显示
               const isAllowedView = e.detail === 'HOME' || !e.detail;
               container.style.display = isAllowedView ? 'block' : 'none';
             }
