@@ -46,7 +46,8 @@ const App: React.FC = () => {
       const guestUser: User = {
         id: 'guest-session',
         username: '游客预览',
-        role: 'VIP', // Give VIP role for high-level AI access
+        role: 'VIP', // Give VIP role for high-level AI access during trial
+        status: 'ACTIVE',
         aiEnabled: true,
         aiModel: 'gemini-3-pro-preview' // Hardcode best model
       };
@@ -124,7 +125,7 @@ const App: React.FC = () => {
   };
 
   const handleFinishExam = async (result: ExamResult) => {
-    if (currentUser) {
+    if (currentUser && currentUser.username !== '游客预览') {
       await historyService.saveResult(currentUser.username, result);
     }
     setExamResult(result);
@@ -133,6 +134,10 @@ const App: React.FC = () => {
   };
 
   const handleGoHome = () => {
+    // CRITICAL: Clear guest user session when returning home to prevent permission leakage
+    if (currentUser && currentUser.username === '游客预览') {
+      setCurrentUser(null);
+    }
     setActiveExam(null);
     setExamResult(null);
     setView('HOME');

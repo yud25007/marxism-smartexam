@@ -363,12 +363,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome, onSett
         </div>
 
         {isSupabaseConfigured ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-            <Cloud className="text-green-600 flex-shrink-0 mt-0.5" size={20} />
-            <div className="text-sm text-green-800">
-              <p className="font-bold mb-1">云端模式已启用</p>
-              <p>所有用户数据存储在云端服务器，您在此处的操作将实时同步到所有设备。</p>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <Cloud className="text-green-600 flex-shrink-0 mt-0.5" size={20} />
+              <div className="text-sm text-green-800">
+                <p className="font-bold mb-1">云端模式已启用</p>
+                <p>所有用户数据存储在云端服务器，您在此处的操作将实时同步到所有设备。</p>
+              </div>
             </div>
+            <a 
+              href="https://supabase.com/dashboard/project/_/editor" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+            >
+              <Database size={16} />
+              直达云端数据库
+            </a>
           </div>
         ) : (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
