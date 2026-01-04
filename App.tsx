@@ -639,7 +639,7 @@ const App: React.FC = () => {
       <footer className="bg-white border-t border-gray-100 mt-auto">
         <div className="container mx-auto px-4 py-8">
            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-gray-500">©️2025 清言观 马原在线答题系统</p>
+              <p className="text-sm text-gray-500">©️2026 清言观 马原在线答题系统</p>
               <div className="flex gap-6">
                 <a href="#" className="text-sm text-gray-500 hover:text-gray-900">隐私政策</a>
                 <a href="#" className="text-sm text-gray-500 hover:text-gray-900">使用条款</a>
